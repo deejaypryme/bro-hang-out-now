@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
 import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
+import { Button } from './ui/button';
 import ProgressIndicator from './ProgressIndicator';
 import FriendSelection from './FriendSelection';
 import TimeSelection from './TimeSelection';
@@ -134,45 +135,34 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
 
       {/* Navigation Buttons */}
       <div className="flex items-center justify-between pt-md border-t border-default">
-        <button
+        <Button
+          variant="ghost"
           onClick={handleBack}
           disabled={currentStep === 'friend'}
-          className={`btn-ghost ${
-            currentStep === 'friend'
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-bg-secondary'
-          }`}
+          className="flex items-center gap-2"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-4 h-4" />
           Back
-        </button>
+        </Button>
 
         {currentStep === 'activity' ? (
-          <button
+          <Button
             onClick={handleSend}
             disabled={!canProceed()}
-            className={`btn-primary ${
-              !canProceed()
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:scale-105'
-            }`}
+            className="flex items-center gap-2"
           >
-            <Send className="w-4 h-4 mr-2" />
+            <Send className="w-4 h-4" />
             Send BYF Invite
-          </button>
+          </Button>
         ) : (
-          <button
+          <Button
             onClick={handleNext}
             disabled={!canProceed()}
-            className={`btn-primary ${
-              !canProceed()
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:scale-105'
-            }`}
+            className="flex items-center gap-2"
           >
             Next
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </button>
+            <ArrowRight className="w-4 h-4" />
+          </Button>
         )}
       </div>
     </div>

@@ -13,8 +13,8 @@
     --primary-light: 124 136 230; /* #7C88E6 */
     --primary-dark: 64 84 180; /* #4054B4 */
     --secondary: 139 146 178; /* #8B92B2 */
-    --accent: 245 158 11; /* #F59E0B */
-    --accent-light: 251 191 36; /* #FBBF24 */
+    --accent: 76 99 210; /* Updated to use primary blue instead of yellow */
+    --accent-light: 124 136 230; /* Updated to use primary light blue */
     --success: 6 214 160; /* #06D6A0 */
     --success-light: 52 211 153; /* #34D399 */
     --warning: 251 146 60; /* #FB923C */

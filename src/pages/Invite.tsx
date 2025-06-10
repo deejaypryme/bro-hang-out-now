@@ -12,7 +12,7 @@ const Invite = () => {
   return (
     <div className="min-h-screen bg-bg-secondary">
       {/* Header */}
-      <header className="bg-bg-primary border-b border-custom">
+      <header className="bg-bg-primary border-b border-default">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-center gap-4">
             <Button
