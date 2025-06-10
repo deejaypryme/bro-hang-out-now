@@ -1,94 +1,38 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
+/* BroYouFree Design System */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Custom BYF Color Palette */
+    --primary: 94 106 210; /* #5E6AD2 */
+    --primary-hover: 76 99 210; /* #4C63D2 */
+    --secondary: 139 146 178; /* #8B92B2 */
+    --accent: 245 158 11; /* #F59E0B */
+    --success: 6 214 160; /* #06D6A0 */
+    --text-primary: 15 20 25; /* #0F1419 */
+    --text-secondary: 88 96 105; /* #586069 */
+    --text-muted: 124 141 176; /* #7C8DB0 */
+    --bg-primary: 255 255 255; /* #FFFFFF */
+    --bg-secondary: 246 248 250; /* #F6F8FA */
+    --bg-tertiary: 235 238 242; /* #EBEEF2 */
+    --border: 225 228 232; /* #E1E4E8 */
+    
+    /* shadcn overrides */
+    --background: var(--bg-primary);
+    --foreground: var(--text-primary);
+    --card: var(--bg-primary);
+    --card-foreground: var(--text-primary);
+    --popover: var(--bg-primary);
+    --popover-foreground: var(--text-primary);
+    --muted: var(--bg-secondary);
+    --muted-foreground: var(--text-muted);
+    --input: var(--border);
+    --ring: var(--primary);
+    --radius: 0.75rem;
   }
 }
 
@@ -98,6 +42,98 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-bg-primary text-text-primary;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+}
+
+@layer utilities {
+  .text-primary {
+    color: rgb(var(--text-primary));
+  }
+  
+  .text-secondary {
+    color: rgb(var(--text-secondary));
+  }
+  
+  .text-muted {
+    color: rgb(var(--text-muted));
+  }
+  
+  .bg-primary {
+    background-color: rgb(var(--bg-primary));
+  }
+  
+  .bg-secondary {
+    background-color: rgb(var(--bg-secondary));
+  }
+  
+  .bg-tertiary {
+    background-color: rgb(var(--bg-tertiary));
+  }
+  
+  .border-custom {
+    border-color: rgb(var(--border));
+  }
+  
+  .btn-primary {
+    background-color: rgb(var(--primary));
+    color: white;
+    transition: all 0.15s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: rgb(var(--primary-hover));
+  }
+  
+  .btn-accent {
+    background-color: rgb(var(--accent));
+    color: white;
+  }
+  
+  .text-accent {
+    color: rgb(var(--accent));
+  }
+  
+  .bg-accent {
+    background-color: rgb(var(--accent));
+  }
+  
+  .text-success {
+    color: rgb(var(--success));
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
