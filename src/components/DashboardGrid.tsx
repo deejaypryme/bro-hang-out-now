@@ -37,7 +37,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
       {isNewUser ? (
         <>
           {/* New User Sample Cards */}
-          <Card className="bg-bg-primary border-custom">
+          <Card className="bg-bg-primary border-default">
             <CardHeader className="flex flex-row items-center gap-3 pb-4">
               <div className="w-8 h-8 bg-success/10 rounded-lg flex items-center justify-center">
                 📅
@@ -46,12 +46,12 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardHeader>
             <CardContent className="text-center py-6">
               <div className="text-4xl mb-2">📭</div>
-              <p className="text-text-muted mb-1">Your hangouts will appear here</p>
-              <p className="text-sm text-text-secondary">Add friends to start coordinating!</p>
+              <p className="text-muted mb-1">Your hangouts will appear here</p>
+              <p className="text-sm text-secondary">Add friends to start coordinating!</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-bg-primary border-custom">
+          <Card className="bg-bg-primary border-default">
             <CardHeader className="flex flex-row items-center gap-3 pb-4">
               <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                 👥
@@ -60,14 +60,14 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardHeader>
             <CardContent className="text-center py-6">
               <div className="text-4xl mb-2">👤</div>
-              <p className="text-text-muted mb-3">No friends added yet</p>
+              <p className="text-muted mb-3">No friends added yet</p>
               <Button onClick={handleAddFriends} className="btn-primary px-4 py-2 rounded-lg text-sm">
                 Add Friends
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-bg-primary border-custom">
+          <Card className="bg-bg-primary border-default">
             <CardHeader className="flex flex-row items-center gap-3 pb-4">
               <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
                 ⚡
@@ -76,7 +76,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardHeader>
             <CardContent className="text-center py-4">
               <div className="text-3xl font-bold text-accent mb-2">0</div>
-              <p className="text-sm text-text-muted">
+              <p className="text-sm text-muted">
                 Earn points by coordinating hangouts!
               </p>
             </CardContent>
@@ -85,7 +85,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
       ) : (
         <>
           {/* Existing User Cards */}
-          <Card className="bg-bg-primary border-custom">
+          <Card className="bg-bg-primary border-default">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <span>📅</span>
@@ -101,7 +101,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
                   <div className="text-lg font-semibold mb-1">
                     {nextHangout.time}
                   </div>
-                  <div className="text-text-secondary mb-3">
+                  <div className="text-secondary mb-3">
                     {nextHangout.activity} with {nextHangout.friendName}
                   </div>
                   <div className="flex gap-2">
@@ -116,7 +116,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
               ) : (
                 <div className="text-center py-4">
                   <div className="text-2xl mb-2">📭</div>
-                  <p className="text-text-muted mb-2">No hangouts scheduled</p>
+                  <p className="text-muted mb-2">No hangouts scheduled</p>
                   <Button variant="ghost" onClick={handleScheduleBroTime} className="text-primary text-sm p-0 h-auto">
                     Send invite?
                   </Button>
@@ -125,7 +125,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="bg-bg-primary border-custom">
+          <Card className="bg-bg-primary border-default">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
               <CardTitle className="text-base font-semibold flex items-center gap-2">
                 <span>👥</span>
@@ -144,7 +144,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
                     </div>
                     <div className="flex-1">
                       <div className="font-medium text-sm">{friend.name}</div>
-                      <div className="text-xs text-text-secondary">
+                      <div className="text-xs text-secondary">
                         <Badge 
                           variant={friend.status === 'online' ? 'default' : 'secondary'}
                           className="text-xs"
@@ -162,7 +162,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="bg-bg-primary border-custom">
+          <Card className="bg-bg-primary border-default">
             <CardHeader className="flex flex-row items-center gap-2 pb-4">
               <span>📊</span>
               <CardTitle className="text-base font-semibold">This Month</CardTitle>
@@ -170,15 +170,15 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Hangouts</span>
+                  <span className="text-secondary">Hangouts</span>
                   <span className="font-semibold">8</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Response Rate</span>
+                  <span className="text-secondary">Response Rate</span>
                   <span className="font-semibold">85%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-text-secondary">Current Streak</span>
+                  <span className="text-secondary">Current Streak</span>
                   <span className="font-semibold text-success">{userStats.currentStreak} days</span>
                 </div>
               </div>
