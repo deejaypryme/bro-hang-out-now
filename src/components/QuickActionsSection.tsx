@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 
 interface QuickActionsSectionProps {
@@ -18,6 +19,16 @@ const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
   upcomingCount,
   activeStreak
 }) => {
+  const navigate = useNavigate();
+
+  const handleScheduleBroTime = () => {
+    navigate('/invite');
+  };
+
+  const handleAddFriend = () => {
+    navigate('/friends');
+  };
+
   return (
     <div className="bg-gradient-to-br from-primary to-primary-hover text-white py-6 md:py-8 mb-6 md:mb-8">
       <div className="max-w-6xl mx-auto px-4 md:px-6">
@@ -30,7 +41,10 @@ const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
               Turn "we should hang out" into actual plans in 3 taps
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-              <Button className="bg-white text-primary hover:bg-white/90 px-6 py-3 rounded-lg font-semibold flex items-center gap-2">
+              <Button 
+                onClick={handleAddFriend}
+                className="bg-white text-primary hover:bg-white/90 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+              >
                 <span>👥</span>
                 Add Your First Friend
               </Button>
@@ -49,9 +63,12 @@ const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
                 {upcomingCount} hangouts this week • {activeStreak} day streak
               </p>
             </div>
-            <Button className="bg-white text-primary hover:bg-white/90 px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-base md:text-lg flex items-center gap-3 hover:scale-105 transition-transform">
-              <span>📱</span>
-              Bro You Free?
+            <Button 
+              onClick={handleScheduleBroTime}
+              className="bg-white text-primary hover:bg-white/90 px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-base md:text-lg flex items-center gap-3 hover:scale-105 transition-transform"
+            >
+              <span>📅</span>
+              Schedule Bro Time
             </Button>
           </div>
         )}

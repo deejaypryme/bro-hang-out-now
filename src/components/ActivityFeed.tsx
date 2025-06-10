@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 
@@ -9,6 +9,12 @@ interface ActivityFeedProps {
 }
 
 const ActivityFeed: React.FC<ActivityFeedProps> = ({ isNewUser, friends }) => {
+  const navigate = useNavigate();
+
+  const handleAddFriend = () => {
+    navigate('/friends');
+  };
+
   const mockActivity = [
     {
       id: 1,
@@ -62,7 +68,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ isNewUser, friends }) => {
             <p className="text-text-muted max-w-sm mx-auto mb-6">
               Add some friends and send your first "Bro You Free?" invite to see your activity here.
             </p>
-            <Button className="btn-primary px-6 py-3 rounded-lg font-semibold">
+            <Button onClick={handleAddFriend} className="btn-primary px-6 py-3 rounded-lg font-semibold">
               Add Your First Friend
             </Button>
           </div>

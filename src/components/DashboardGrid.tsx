@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -19,8 +20,17 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
   hangouts,
   userStats
 }) => {
+  const navigate = useNavigate();
   const nextHangout = hangouts[0];
   const activeFriends = friends.slice(0, 3);
+
+  const handleAddFriends = () => {
+    navigate('/friends');
+  };
+
+  const handleScheduleBroTime = () => {
+    navigate('/invite');
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
@@ -51,7 +61,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             <CardContent className="text-center py-6">
               <div className="text-4xl mb-2">👤</div>
               <p className="text-text-muted mb-3">No friends added yet</p>
-              <Button className="btn-primary px-4 py-2 rounded-lg text-sm">
+              <Button onClick={handleAddFriends} className="btn-primary px-4 py-2 rounded-lg text-sm">
                 Add Friends
               </Button>
             </CardContent>
@@ -107,7 +117,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
                 <div className="text-center py-4">
                   <div className="text-2xl mb-2">📭</div>
                   <p className="text-text-muted mb-2">No hangouts scheduled</p>
-                  <Button variant="ghost" className="text-primary text-sm p-0 h-auto">
+                  <Button variant="ghost" onClick={handleScheduleBroTime} className="text-primary text-sm p-0 h-auto">
                     Send invite?
                   </Button>
                 </div>
@@ -121,7 +131,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
                 <span>👥</span>
                 Active Friends ({friends.length})
               </CardTitle>
-              <Button variant="ghost" className="text-primary text-sm p-0 h-auto">
+              <Button variant="ghost" onClick={handleAddFriends} className="text-primary text-sm p-0 h-auto">
                 + Add
               </Button>
             </CardHeader>
@@ -143,7 +153,7 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
                         </Badge>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" className="text-primary text-xs px-2 py-1">
+                    <Button variant="outline" onClick={handleScheduleBroTime} size="sm" className="text-primary text-xs px-2 py-1">
                       BYF?
                     </Button>
                   </div>
