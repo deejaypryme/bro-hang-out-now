@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { Plus } from 'lucide-react';
 import { type Friend } from '../data/mockData';
 
 interface FriendSelectionProps {
@@ -24,60 +25,71 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'online': return 'bg-success';
-      case 'busy': return 'bg-accent';
+      case 'busy': return 'bg-warning';
       default: return 'bg-gray-400';
     }
   };
 
+  const getStatusText = (friend: Friend) => {
+    switch (friend.status) {
+      case 'online': return 'Available now';
+      case 'busy': return 'Busy';
+      default: return `Last seen ${friend.lastSeen.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+    }
+  };
+
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-primary">Who do you want to hang with?</h3>
+    <div className="space-lg animate-slide-up">
+      <div className="space-sm">
+        <h3 className="heading-3 text-primary">Who do you want to hang with?</h3>
+        <p className="body text-secondary">Select a friend to send your invite to</p>
+      </div>
       
-      <div className="space-y-2">
+      <div className="space-sm">
         {friends.map((friend) => (
           <div
             key={friend.id}
             onClick={() => onSelectFriend(friend)}
             className={`
-              flex items-center space-x-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 hover:scale-[1.02]
-              ${selectedFriend?.id === friend.id
-                ? 'border-primary bg-primary/5 shadow-md'
-                : 'border-custom hover:border-primary/30 bg-bg-primary'
-              }
+              card-interactive p-sm space-xs touch-target transition-all duration-200
+              ${selectedFriend?.id === friend.id ? 'selected' : ''}
             `}
           >
-            <div className="relative">
-              <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(friend.name)}`}>
-                {friend.avatar}
+            <div className="flex items-center gap-sm">
+              <div className="relative flex-shrink-0">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(friend.name)}`}>
+                  {friend.avatar}
+                </div>
+                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
               </div>
-              <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
+              
+              <div className="flex-1 min-w-0">
+                <div className="body-large font-semibold text-primary">{friend.name}</div>
+                <div className="body text-secondary">{getStatusText(friend)}</div>
+                <div className="caption text-muted">
+                  Usually free {friend.preferredTimes.join(', ')}
+                </div>
+              </div>
+              
+              {selectedFriend?.id === friend.id && (
+                <div className="text-primary flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+              )}
             </div>
-            
-            <div className="flex-1">
-              <div className="font-medium text-primary">{friend.name}</div>
-              <div className="text-sm text-text-secondary">
-                {friend.status === 'online' ? 'Available now' : 
-                 friend.status === 'busy' ? 'Busy' : 
-                 `Last seen ${friend.lastSeen.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-              </div>
-              <div className="text-xs text-text-muted">
-                Usually free {friend.preferredTimes.join(', ')}
-              </div>
-            </div>
-            
-            {selectedFriend?.id === friend.id && (
-              <div className="text-primary">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </div>
-            )}
           </div>
         ))}
       </div>
       
-      <button className="w-full p-3 text-center text-primary border-2 border-dashed border-primary/30 rounded-xl hover:border-primary/60 hover:bg-primary/5 transition-colors">
-        <span className="text-sm">+ Add a new friend</span>
+      <button className="w-full p-sm text-center touch-target card-interactive border-2 border-dashed border-primary/30 text-primary hover:border-primary hover:bg-primary/5 transition-all duration-200">
+        <div className="flex items-center justify-center gap-xs">
+          <Plus className="w-5 h-5" />
+          <span className="body font-medium">Add a new friend</span>
+        </div>
       </button>
     </div>
   );

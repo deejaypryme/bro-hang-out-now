@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
 import { toast } from '@/hooks/use-toast';
+import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
+import ProgressIndicator from './ProgressIndicator';
 import FriendSelection from './FriendSelection';
 import TimeSelection from './TimeSelection';
 import ActivitySelection from './ActivitySelection';
@@ -15,6 +17,7 @@ type Step = 'friend' | 'time' | 'activity';
 
 const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
   const [currentStep, setCurrentStep] = useState<Step>('friend');
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [selectedTimes, setSelectedTimes] = useState<TimeSlot[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
@@ -47,9 +50,14 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
   };
 
   const handleNext = () => {
-    if (currentStep === 'friend' && selectedFriend) {
+    if (!canProceed()) return;
+
+    const currentStepCompleted = currentStep;
+    setCompletedSteps(prev => [...prev, currentStepCompleted]);
+
+    if (currentStep === 'friend') {
       setCurrentStep('time');
-    } else if (currentStep === 'time' && selectedTimes.length > 0) {
+    } else if (currentStep === 'time') {
       setCurrentStep('activity');
     }
   };
@@ -57,8 +65,10 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
   const handleBack = () => {
     if (currentStep === 'time') {
       setCurrentStep('friend');
+      setCompletedSteps(prev => prev.filter(step => step !== 'friend'));
     } else if (currentStep === 'activity') {
       setCurrentStep('time');
+      setCompletedSteps(prev => prev.filter(step => step !== 'time'));
     }
   };
 
@@ -82,48 +92,17 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
       setSelectedActivity(null);
       setSelectedSignal(null);
       setCurrentStep('friend');
-    }
-  };
-
-  const getStepNumber = (step: Step) => {
-    switch (step) {
-      case 'friend': return 1;
-      case 'time': return 2;
-      case 'activity': return 3;
+      setCompletedSteps([]);
     }
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-lg mx-auto space-lg">
       {/* Progress Indicator */}
-      <div className="flex items-center justify-center mb-8">
-        {(['friend', 'time', 'activity'] as Step[]).map((step, index) => (
-          <React.Fragment key={step}>
-            <div className={`
-              flex items-center justify-center w-10 h-10 rounded-full font-semibold text-sm transition-colors
-              ${currentStep === step
-                ? 'bg-primary text-white'
-                : getStepNumber(currentStep) > getStepNumber(step)
-                ? 'bg-success text-white'
-                : 'bg-bg-tertiary text-text-muted'
-              }
-            `}>
-              {getStepNumber(currentStep) > getStepNumber(step) ? '✓' : getStepNumber(step)}
-            </div>
-            {index < 2 && (
-              <div className={`
-                w-12 h-1 mx-2 rounded-full transition-colors
-                ${getStepNumber(currentStep) > getStepNumber(step) + 1
-                  ? 'bg-success'
-                  : getStepNumber(currentStep) === getStepNumber(step) + 1
-                  ? 'bg-primary'
-                  : 'bg-bg-tertiary'
-                }
-              `} />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
+      <ProgressIndicator 
+        currentStep={currentStep} 
+        completedSteps={completedSteps} 
+      />
 
       {/* Step Content */}
       <div className="min-h-96 animate-fade-in">
@@ -154,49 +133,45 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between mt-8 pt-6 border-t border-custom">
+      <div className="flex items-center justify-between pt-md border-t border-default">
         <button
           onClick={handleBack}
           disabled={currentStep === 'friend'}
-          className={`
-            px-6 py-3 rounded-lg font-medium transition-colors
-            ${currentStep === 'friend'
-              ? 'text-text-muted cursor-not-allowed'
-              : 'text-primary hover:bg-primary/10'
-            }
-          `}
+          className={`btn-ghost ${
+            currentStep === 'friend'
+              ? 'opacity-50 cursor-not-allowed'
+              : 'hover:bg-bg-secondary'
+          }`}
         >
-          ← Back
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
         </button>
 
         {currentStep === 'activity' ? (
           <button
             onClick={handleSend}
             disabled={!canProceed()}
-            className={`
-              px-8 py-3 rounded-lg font-medium transition-all duration-150 flex items-center space-x-2
-              ${canProceed()
-                ? 'btn-primary hover:scale-[1.02] shadow-md'
-                : 'bg-bg-tertiary text-text-muted cursor-not-allowed'
-              }
-            `}
+            className={`btn-primary ${
+              !canProceed()
+                ? 'opacity-50 cursor-not-allowed'
+                : 'hover:scale-105'
+            }`}
           >
-            <span>📤</span>
-            <span>Send BYF Invite</span>
+            <Send className="w-4 h-4 mr-2" />
+            Send BYF Invite
           </button>
         ) : (
           <button
             onClick={handleNext}
             disabled={!canProceed()}
-            className={`
-              px-6 py-3 rounded-lg font-medium transition-all duration-150
-              ${canProceed()
-                ? 'btn-primary hover:scale-[1.02]'
-                : 'bg-bg-tertiary text-text-muted cursor-not-allowed'
-              }
-            `}
+            className={`btn-primary ${
+              !canProceed()
+                ? 'opacity-50 cursor-not-allowed'
+                : 'hover:scale-105'
+            }`}
           >
-            Next →
+            Next
+            <ArrowRight className="w-4 h-4 ml-2" />
           </button>
         )}
       </div>
