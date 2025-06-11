@@ -4,7 +4,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
-import { CalendarIcon, Clock, X, Calendar as CalendarViewIcon } from 'lucide-react';
+import { CalendarIcon, Clock, X, Calendar as CalendarViewIcon, ArrowRight } from 'lucide-react';
 
 export interface TimeOption {
   id: string;
@@ -16,11 +16,13 @@ export interface TimeOption {
 interface TimeSelectionProps {
   selectedOptions: TimeOption[];
   onUpdateOptions: (options: TimeOption[]) => void;
+  onNext?: () => void; // Add optional onNext prop
 }
 
 const TimeSelection: React.FC<TimeSelectionProps> = ({
   selectedOptions,
-  onUpdateOptions
+  onUpdateOptions,
+  onNext
 }) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
@@ -212,6 +214,17 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
           >
             Add Time Option ({selectedOptions.length}/4)
           </Button>
+
+          {/* Next Button - Show when at least one option is selected */}
+          {selectedOptions.length > 0 && onNext && (
+            <Button 
+              onClick={onNext}
+              className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+            >
+              Continue with {selectedOptions.length} option{selectedOptions.length > 1 ? 's' : ''}
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       )}
 

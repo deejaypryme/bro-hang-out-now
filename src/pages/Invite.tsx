@@ -112,6 +112,7 @@ const Invite = () => {
           onUpdateTimeOptions={setSelectedTimeOptions}
           onSelectActivity={setSelectedActivity}
           onSelectSignal={setSelectedSignal}
+          onNext={handleNext}
         />
       </div>
 
