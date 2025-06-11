@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '../components/ui/button';
 import InviteFlow from '../components/InviteFlow';
-import NavigationButtons from '../components/NavigationButtons';
 import { mockFriends } from '../data/mockData';
 import { type Friend, type TimeSlot } from '../data/mockData';
 import { type Activity, type EmotionalSignal } from '../data/activities';
@@ -21,6 +20,30 @@ const Invite = () => {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<EmotionalSignal | null>(null);
 
+  // Auto-advance when friend is selected
+  useEffect(() => {
+    if (selectedFriend && currentStep === 'friend') {
+      const timer = setTimeout(() => {
+        setCompletedSteps(prev => [...prev, 'friend']);
+        setCurrentStep('time');
+      }, 500); // Small delay for smooth UX
+      
+      return () => clearTimeout(timer);
+    }
+  }, [selectedFriend, currentStep]);
+
+  // Auto-advance when times are selected
+  useEffect(() => {
+    if (selectedTimes.length > 0 && currentStep === 'time') {
+      const timer = setTimeout(() => {
+        setCompletedSteps(prev => [...prev, 'time']);
+        setCurrentStep('activity');
+      }, 800); // Slightly longer delay to let user see their selection
+      
+      return () => clearTimeout(timer);
+    }
+  }, [selectedTimes.length, currentStep]);
+
   const handleSelectTime = (timeSlot: TimeSlot) => {
     setSelectedTimes(prev => {
       const exists = prev.some(slot => 
@@ -36,32 +59,6 @@ const Invite = () => {
         return [...prev, timeSlot];
       }
     });
-  };
-
-  const canProceed = () => {
-    switch (currentStep) {
-      case 'friend': 
-        return selectedFriend !== null;
-      case 'time': 
-        return selectedTimes.length > 0;
-      case 'activity': 
-        return selectedActivity !== null;
-      default: 
-        return false;
-    }
-  };
-
-  const handleNext = () => {
-    if (!canProceed()) return;
-
-    const currentStepCompleted = currentStep;
-    setCompletedSteps(prev => [...prev, currentStepCompleted]);
-
-    if (currentStep === 'friend') {
-      setCurrentStep('time');
-    } else if (currentStep === 'time') {
-      setCurrentStep('activity');
-    }
   };
 
   const handleBack = () => {
@@ -110,8 +107,8 @@ const Invite = () => {
         </div>
       </header>
 
-      {/* Main Content with proper spacing for mobile navigation */}
-      <div className="pb-32 md:pb-24">
+      {/* Main Content */}
+      <div className="pb-6">
         <InviteFlow 
           friends={mockFriends}
           currentStep={currentStep}
@@ -127,16 +124,29 @@ const Invite = () => {
         />
       </div>
 
-      {/* Navigation Buttons - Fixed at bottom with proper mobile spacing */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
-        <NavigationButtons
-          currentStep={currentStep}
-          canProceed={canProceed()}
-          onNext={handleNext}
-          onBack={handleBack}
-          onSend={handleSend}
-        />
-      </div>
+      {/* Send Button - Only show on final step */}
+      {currentStep === 'activity' && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4">
+          <div className="max-w-2xl mx-auto flex items-center justify-between">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </Button>
+            
+            <Button
+              onClick={handleSend}
+              disabled={!selectedActivity}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+            >
+              Send Invite
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
