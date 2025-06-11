@@ -85,17 +85,17 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
 
       {/* Time and Duration Selection */}
       {selectedDate && (
-        <div className="space-y-4">
+        <div className="space-y-4 relative z-10">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Start time</label>
               <Select value={selectedStartTime} onValueChange={setSelectedStartTime}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white border border-gray-300">
                   <SelectValue placeholder="Select time" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
                   {timeSlots.map((time) => (
-                    <SelectItem key={time} value={time}>
+                    <SelectItem key={time} value={time} className="bg-white hover:bg-gray-100">
                       {time}
                     </SelectItem>
                   ))}
@@ -106,12 +106,12 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">Duration</label>
               <Select value={selectedDuration.toString()} onValueChange={(value) => setSelectedDuration(Number(value))}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-white border border-gray-300">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
                   {durations.map((duration) => (
-                    <SelectItem key={duration.value} value={duration.value.toString()}>
+                    <SelectItem key={duration.value} value={duration.value.toString()} className="bg-white hover:bg-gray-100">
                       {duration.label}
                     </SelectItem>
                   ))}
