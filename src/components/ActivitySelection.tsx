@@ -1,6 +1,8 @@
 
 import React, { useState } from 'react';
-import { ACTIVITY_CATEGORIES, EMOTIONAL_SIGNALS, type Activity, type EmotionalSignal } from '../data/activities';
+import { ACTIVITY_CATEGORIES, EMOTIONAL_SIGNALS, type Activity, type EmotionalSignal, type ActivityCategory } from '../data/activities';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, X } from 'lucide-react';
 
 interface ActivitySelectionProps {
   selectedActivity: Activity | null;
@@ -15,60 +17,75 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
   onSelectActivity,
   onSelectSignal
 }) => {
-  const [activeCategory, setActiveCategory] = useState(ACTIVITY_CATEGORIES[0].name);
+  const [selectedCategory, setSelectedCategory] = useState<ActivityCategory | null>(null);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
 
-  const activeActivities = ACTIVITY_CATEGORIES.find(cat => cat.name === activeCategory)?.activities || [];
+  const handleCategorySelect = (category: ActivityCategory) => {
+    setSelectedCategory(category);
+    setShowCategoryModal(true);
+  };
+
+  const handleActivitySelect = (activity: Activity) => {
+    onSelectActivity(activity);
+    setShowCategoryModal(false);
+    setSelectedCategory(null);
+  };
+
+  const handleBackToCategories = () => {
+    setShowCategoryModal(false);
+    setSelectedCategory(null);
+  };
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-xl font-semibold text-gray-900">What do you want to do?</h3>
-        <p className="text-sm text-gray-600">Pick an activity that sounds fun</p>
+        <p className="text-sm text-gray-600">Pick an activity category that sounds fun</p>
       </div>
       
-      {/* Category Tabs */}
-      <div className="space-y-2">
-        <div className="flex overflow-x-auto gap-2 pb-2">
-          {ACTIVITY_CATEGORIES.map((category) => (
-            <button
-              key={category.name}
-              onClick={() => setActiveCategory(category.name)}
-              className={`
-                min-h-[44px] px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200
-                ${activeCategory === category.name
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-blue-600'
-                }
-              `}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
+      {/* Category Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {ACTIVITY_CATEGORIES.map((category) => (
+          <button
+            key={category.name}
+            onClick={() => handleCategorySelect(category)}
+            className="p-6 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-left"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-lg font-semibold text-gray-900 mb-2">{category.name}</h4>
+                <p className="text-sm text-gray-600">{category.activities.length} activities</p>
+              </div>
+              <div className="text-2xl">
+                {category.activities[0]?.emoji || '🎯'}
+              </div>
+            </div>
+          </button>
+        ))}
       </div>
-      
-      {/* Activity Grid */}
-      <div className="space-y-2">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {activeActivities.map((activity) => (
-            <button
-              key={activity.name}
-              onClick={() => onSelectActivity(activity)}
-              className={`
-                min-h-[80px] p-3 rounded-xl text-center transition-all duration-200 border-2
-                ${selectedActivity?.name === activity.name
-                  ? 'bg-blue-50 border-blue-500 shadow-md'
-                  : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                }
-              `}
+
+      {/* Selected Activity Display */}
+      {selectedActivity && (
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">{selectedActivity.emoji}</span>
+              <div>
+                <h4 className="font-semibold text-gray-900">{selectedActivity.name}</h4>
+                <p className="text-sm text-gray-600">{selectedActivity.duration} minutes</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onSelectActivity(null as any)}
+              className="text-gray-500 hover:text-red-600"
             >
-              <div className="text-2xl mb-1">{activity.emoji}</div>
-              <div className="text-sm font-semibold mb-1 text-gray-900">{activity.name}</div>
-              <div className="text-xs text-gray-500">{activity.duration}min</div>
-            </button>
-          ))}
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Emotional Signal Section */}
       <div className="space-y-4 border-t border-gray-200 pt-4">
@@ -116,6 +133,55 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
           })}
         </div>
       </div>
+
+      {/* Category Activities Modal */}
+      {showCategoryModal && selectedCategory && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-2xl max-w-md w-full max-h-[80vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">{selectedCategory.name}</h3>
+                  <p className="text-sm text-gray-600">Choose an activity</p>
+                </div>
+                <button
+                  onClick={handleBackToCategories}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              <div className="grid grid-cols-2 gap-3">
+                {selectedCategory.activities.map((activity) => (
+                  <button
+                    key={activity.name}
+                    onClick={() => handleActivitySelect(activity)}
+                    className="min-h-[80px] p-3 rounded-xl text-center transition-all duration-200 border-2 bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50"
+                  >
+                    <div className="text-2xl mb-1">{activity.emoji}</div>
+                    <div className="text-sm font-semibold mb-1 text-gray-900">{activity.name}</div>
+                    <div className="text-xs text-gray-500">{activity.duration}min</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-200">
+              <Button
+                onClick={handleBackToCategories}
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to Categories
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
