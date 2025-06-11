@@ -141,7 +141,9 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
       {/* Emotional Signal Section - Centered */}
       <div className="space-y-4 border-t border-gray-200 pt-4">
         <div className="text-center space-y-1">
-          <h4 className="text-base font-semibold text-gray-900">Vibe check (optional)</h4>
+          <h4 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Vibe Check
+          </h4>
           <p className="text-xs text-gray-600">Let them know how you're feeling</p>
           {selectedSignal && (
             <button
@@ -163,10 +165,10 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
                 key={signal.label}
                 onClick={() => onSelectSignal(isSelected ? null : signal)}
                 className={`
-                  min-h-[60px] p-3 rounded-xl text-left transition-all duration-200 border-2
+                  min-h-[60px] p-3 rounded-xl text-center transition-all duration-200 border-4 shadow-lg
                   ${isSelected
-                    ? 'shadow-md'
-                    : 'bg-gray-50 hover:bg-gray-100 hover:shadow-sm'
+                    ? 'shadow-xl'
+                    : 'bg-gray-50 hover:bg-gray-100 hover:shadow-xl'
                   }
                 `}
                 style={{
@@ -174,7 +176,7 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
                   borderColor: isSelected ? borderColor : borderColor + '40'
                 }}
               >
-                <div className="flex items-center gap-2 mb-1">
+                <div className="flex flex-col items-center gap-1 mb-1">
                   <span className="text-lg">{signal.emoji}</span>
                   <span className="text-sm font-semibold">{signal.label}</span>
                 </div>
