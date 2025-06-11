@@ -32,6 +32,16 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
     "Short & Sweet": "Quick Hang"
   };
 
+  // Color mapping for category cards
+  const categoryColorMap: { [key: string]: string } = {
+    "Chill Vibes": "#4ECDC4", // Teal - calm and relaxation
+    "Food & Drink": "#FF6B35", // Orange - appetite and warmth
+    "Competitive & Active": "#FF6B9D", // Pink - energy and excitement
+    "Health & Wellness": "#96CEB4", // Green - health and wellness
+    "Big Plans": "#45B7D1", // Blue - adventure and exploration
+    "Short & Sweet": "#C7CEEA" // Lavender - quick and easy
+  };
+
   // Color psychology mapping for vibe check borders
   const vibeColorMap: { [key: string]: string } = {
     "Excited": "#FF6B35", // Orange - energy and enthusiasm
@@ -88,25 +98,35 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
       
       {/* Compact Category Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {ACTIVITY_CATEGORIES.map((category) => (
-          <button
-            key={category.name}
-            onClick={() => handleCategorySelect(category)}
-            className="h-20 p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center"
-          >
-            <div className="text-xl mb-1">
-              {category.activities[0]?.emoji || '🎯'}
-            </div>
-            <div className="text-sm font-semibold text-gray-900">
-              {categoryNameMap[category.name] || category.name}
-            </div>
-          </button>
-        ))}
+        {ACTIVITY_CATEGORIES.map((category) => {
+          const borderColor = categoryColorMap[category.name] || '#4ECDC4';
+          
+          return (
+            <button
+              key={category.name}
+              onClick={() => handleCategorySelect(category)}
+              className="h-20 p-3 rounded-xl border-4 bg-white hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center shadow-lg hover:shadow-xl"
+              style={{
+                borderColor: borderColor
+              }}
+            >
+              <div className="text-xl mb-1">
+                {category.activities[0]?.emoji || '🎯'}
+              </div>
+              <div className="text-sm font-semibold text-gray-900">
+                {categoryNameMap[category.name] || category.name}
+              </div>
+            </button>
+          );
+        })}
         
         {/* Something Else Option */}
         <button
           onClick={handleCustomActivity}
-          className="h-20 p-3 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center"
+          className="h-20 p-3 rounded-xl border-4 border-dashed bg-gray-50 hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center shadow-lg hover:shadow-xl"
+          style={{
+            borderColor: '#9CA3AF'
+          }}
         >
           <Plus className="w-5 h-5 text-gray-500 mb-1" />
           <div className="text-sm font-semibold text-gray-700">
