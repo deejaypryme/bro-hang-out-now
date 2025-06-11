@@ -10,9 +10,9 @@ const Invite = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-bg-secondary pb-20">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-bg-primary border-b border-default sticky top-0 z-20">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-center gap-4">
             <Button
@@ -23,7 +23,7 @@ const Invite = () => {
               <ArrowLeft className="w-4 h-4" />
               Back
             </Button>
-            <h1 className="text-lg md:text-xl font-semibold">Schedule Bro Time</h1>
+            <h1 className="text-lg md:text-xl font-semibold text-gray-900">Schedule Bro Time</h1>
           </div>
         </div>
       </header>

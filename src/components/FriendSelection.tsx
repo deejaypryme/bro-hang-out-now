@@ -53,8 +53,8 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
             className={`
               p-4 min-h-[60px] transition-all duration-200 cursor-pointer rounded-xl border-2
               ${selectedFriend?.id === friend.id 
-                ? 'bg-primary/10 border-primary shadow-md scale-[1.02]' 
-                : 'bg-white border-gray-200 hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.01]'
+                ? 'bg-blue-50 border-blue-500 shadow-md scale-[1.02]' 
+                : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-25 hover:scale-[1.01]'
               }
             `}
           >
@@ -67,16 +67,16 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
               </div>
               
               <div className="flex-1 min-w-0">
-                <div className="text-base font-semibold text-foreground">{friend.name}</div>
-                <div className="text-sm text-foreground/70">{getStatusText(friend)}</div>
-                <div className="text-xs text-foreground/50">
+                <div className="text-base font-semibold text-gray-900">{friend.name}</div>
+                <div className="text-sm text-gray-600">{getStatusText(friend)}</div>
+                <div className="text-xs text-gray-500">
                   Usually free {friend.preferredTimes.join(', ')}
                 </div>
               </div>
               
               {selectedFriend?.id === friend.id && (
-                <div className="text-primary flex-shrink-0">
-                  <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                <div className="text-blue-500 flex-shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-blue-500 flex items-center justify-center">
                     <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
@@ -88,7 +88,7 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
         ))}
       </div>
       
-      <button className="w-full p-4 min-h-[60px] text-center rounded-xl border-2 border-dashed border-primary/30 text-primary hover:border-primary hover:bg-primary/5 transition-all duration-200 group">
+      <button className="w-full p-4 min-h-[60px] text-center rounded-xl border-2 border-dashed border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 group">
         <div className="flex items-center justify-center gap-2">
           <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
           <span className="text-sm font-medium">Add a new friend</span>
