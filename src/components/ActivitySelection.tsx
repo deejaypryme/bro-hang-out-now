@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { ACTIVITY_CATEGORIES, EMOTIONAL_SIGNALS, type Activity, type EmotionalSignal, type ActivityCategory } from '../data/activities';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft, X, Plus } from 'lucide-react';
 
 interface ActivitySelectionProps {
   selectedActivity: Activity | null;
@@ -19,6 +19,18 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<ActivityCategory | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customActivityName, setCustomActivityName] = useState('');
+
+  // Map original category names to shorter ones
+  const categoryNameMap: { [key: string]: string } = {
+    "Chill Vibes": "Let's Chill",
+    "Food & Drink": "Get Food", 
+    "Competitive & Active": "Get Active",
+    "Health & Wellness": "Fitness Time",
+    "Big Plans": "Hit the Streets",
+    "Short & Sweet": "Quick Hang"
+  };
 
   const handleCategorySelect = (category: ActivityCategory) => {
     setSelectedCategory(category);
@@ -36,6 +48,25 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
     setSelectedCategory(null);
   };
 
+  const handleCustomActivity = () => {
+    setShowCustomModal(true);
+  };
+
+  const handleCreateCustomActivity = () => {
+    if (customActivityName.trim()) {
+      const customActivity: Activity = {
+        name: customActivityName.trim(),
+        emoji: "✨",
+        duration: 60,
+        type: "custom",
+        customizable: true
+      };
+      onSelectActivity(customActivity);
+      setCustomActivityName('');
+      setShowCustomModal(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="space-y-2">
@@ -43,25 +74,33 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
         <p className="text-sm text-gray-600">Pick an activity category that sounds fun</p>
       </div>
       
-      {/* Category Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Compact Category Cards Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {ACTIVITY_CATEGORIES.map((category) => (
           <button
             key={category.name}
             onClick={() => handleCategorySelect(category)}
-            className="p-6 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-left"
+            className="h-20 p-3 rounded-xl border-2 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">{category.name}</h4>
-                <p className="text-sm text-gray-600">{category.activities.length} activities</p>
-              </div>
-              <div className="text-2xl">
-                {category.activities[0]?.emoji || '🎯'}
-              </div>
+            <div className="text-xl mb-1">
+              {category.activities[0]?.emoji || '🎯'}
+            </div>
+            <div className="text-sm font-semibold text-gray-900">
+              {categoryNameMap[category.name] || category.name}
             </div>
           </button>
         ))}
+        
+        {/* Something Else Option */}
+        <button
+          onClick={handleCustomActivity}
+          className="h-20 p-3 rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center"
+        >
+          <Plus className="w-5 h-5 text-gray-500 mb-1" />
+          <div className="text-sm font-semibold text-gray-700">
+            Something Else
+          </div>
+        </button>
       </div>
 
       {/* Selected Activity Display */}
@@ -141,7 +180,9 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900">{selectedCategory.name}</h3>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {categoryNameMap[selectedCategory.name] || selectedCategory.name}
+                  </h3>
                   <p className="text-sm text-gray-600">Choose an activity</p>
                 </div>
                 <button
@@ -177,6 +218,56 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back to Categories
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Activity Modal */}
+      {showCustomModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-2xl max-w-sm w-full overflow-hidden">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Custom Activity</h3>
+                  <p className="text-sm text-gray-600">What do you want to do?</p>
+                </div>
+                <button
+                  onClick={() => setShowCustomModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <input
+                type="text"
+                placeholder="Enter activity name..."
+                value={customActivityName}
+                onChange={(e) => setCustomActivityName(e.target.value)}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                autoFocus
+              />
+            </div>
+            
+            <div className="p-6 border-t border-gray-200 flex gap-3">
+              <Button
+                onClick={() => setShowCustomModal(false)}
+                variant="outline"
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateCustomActivity}
+                disabled={!customActivityName.trim()}
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Add Activity
               </Button>
             </div>
           </div>
