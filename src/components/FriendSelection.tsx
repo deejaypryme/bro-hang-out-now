@@ -51,8 +51,11 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
             key={friend.id}
             onClick={() => onSelectFriend(friend)}
             className={`
-              card-interactive p-sm space-xs touch-target transition-all duration-200 cursor-pointer
-              ${selectedFriend?.id === friend.id ? 'border-primary bg-primary/5 shadow-md scale-[1.02]' : 'hover:border-primary/30 hover:bg-primary/5'}
+              p-sm space-xs touch-target transition-all duration-200 cursor-pointer rounded-xl border
+              ${selectedFriend?.id === friend.id 
+                ? 'bg-primary/10 border-primary shadow-md' 
+                : 'bg-bg-primary border-border hover:border-primary/30 hover:bg-primary/5'
+              }
             `}
           >
             <div className="flex items-center gap-sm">
@@ -85,7 +88,7 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
         ))}
       </div>
       
-      <button className="w-full p-sm text-center touch-target card-interactive border-2 border-dashed border-primary/30 text-primary hover:border-primary hover:bg-primary/5 transition-all duration-200">
+      <button className="w-full p-sm text-center touch-target rounded-xl border-2 border-dashed border-primary/30 text-primary hover:border-primary hover:bg-primary/5 transition-all duration-200">
         <div className="flex items-center justify-center gap-xs">
           <Plus className="w-5 h-5" />
           <span className="body font-medium">Add a new friend</span>
