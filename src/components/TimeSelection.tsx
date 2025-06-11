@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
@@ -98,43 +99,60 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
       </div>
 
       {/* Date Selection */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <label className="text-sm font-medium text-gray-700">Pick a date</label>
         
         {viewMode === 'week' ? (
-          // Week View
-          <div className="grid grid-cols-7 gap-3">
-            {weekDays.map((day) => {
-              const isToday = isSameDay(day, new Date());
-              const isPast = day < new Date() && !isToday;
-              const isSelected = selectedDate && isSameDay(day, selectedDate);
-              
-              return (
-                <button
-                  key={day.toISOString()}
-                  onClick={() => !isPast && setSelectedDate(day)}
-                  disabled={isPast}
-                  className={`
-                    p-4 rounded-lg border text-center transition-all duration-200 min-h-[80px] flex flex-col justify-center
-                    ${isPast 
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200' 
-                      : isSelected
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                      : isToday
-                      ? 'bg-blue-50 text-blue-600 border-2 border-blue-400 hover:bg-blue-100 shadow-lg shadow-blue-200/50'
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }
-                  `}
-                >
-                  <div className="text-xs font-medium mb-1">
+          // Week View - Calendly Style
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            {/* Week Header */}
+            <div className="grid grid-cols-7 border-b border-gray-200">
+              {weekDays.map((day) => (
+                <div key={`header-${day.toISOString()}`} className="p-3 text-center border-r border-gray-200 last:border-r-0">
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
                     {format(day, 'EEE')}
                   </div>
-                  <div className="text-xl font-semibold">
-                    {format(day, 'd')}
-                  </div>
-                </button>
-              );
-            })}
+                </div>
+              ))}
+            </div>
+            
+            {/* Week Days */}
+            <div className="grid grid-cols-7">
+              {weekDays.map((day) => {
+                const isToday = isSameDay(day, new Date());
+                const isPast = day < new Date() && !isToday;
+                const isSelected = selectedDate && isSameDay(day, selectedDate);
+                
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => !isPast && setSelectedDate(day)}
+                    disabled={isPast}
+                    className={`
+                      p-4 text-center border-r border-gray-200 last:border-r-0 transition-all duration-200 min-h-[70px] flex items-center justify-center relative
+                      ${isPast 
+                        ? 'bg-gray-50 text-gray-300 cursor-not-allowed' 
+                        : isSelected
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-900 hover:bg-gray-50'
+                      }
+                    `}
+                  >
+                    <div className={`
+                      text-2xl font-semibold
+                      ${isToday && !isSelected ? 'text-blue-600' : ''}
+                    `}>
+                      {format(day, 'd')}
+                    </div>
+                    
+                    {/* Today indicator */}
+                    {isToday && !isSelected && (
+                      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"></div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         ) : (
           // Calendar View
