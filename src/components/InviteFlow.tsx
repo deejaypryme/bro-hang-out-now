@@ -136,7 +136,7 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto relative min-h-screen pb-24">
+    <div className="flex flex-col min-h-screen">
       {/* Progress Indicator */}
       <div className="mb-6">
         <ProgressIndicator 
@@ -145,10 +145,10 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
         />
       </div>
 
-      {/* Step Content */}
+      {/* Step Content - Takes remaining space but leaves room for buttons */}
       <div 
         ref={contentRef}
-        className="space-y-6 animate-fade-in"
+        className="flex-1 space-y-6 animate-fade-in pb-32 overflow-y-auto"
       >
         {currentStep === 'friend' && (
           <FriendSelection
@@ -180,15 +180,15 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
       {showScrollIndicator && (
         <div 
           onClick={scrollToBottom}
-          className="absolute bottom-32 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-primary cursor-pointer animate-bounce z-20"
+          className="fixed bottom-32 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-blue-600 cursor-pointer animate-bounce z-20"
         >
           <span className="text-xs mb-1">Scroll for more</span>
           <ChevronDown className="h-4 w-4" />
         </div>
       )}
 
-      {/* Fixed Navigation Buttons - Always Visible */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-t border-border shadow-lg">
+      {/* Fixed Navigation Buttons - Always Visible at Bottom */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-gray-200 shadow-lg z-50">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Button
             variant="ghost"
@@ -204,7 +204,7 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
             <Button
               onClick={handleSend}
               disabled={!canProceed()}
-              className="bg-gradient-to-r from-primary to-primary-hover text-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
             >
               <Send className="w-4 h-4" />
               Send BYF Invite
@@ -213,7 +213,7 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
-              className="bg-gradient-to-r from-primary to-primary-hover text-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
             >
               Next
               <ArrowRight className="w-4 h-4" />
