@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format } from 'date-fns';
-import { CalendarIcon, Clock, X } from 'lucide-react';
+import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
+import { CalendarIcon, Clock, X, Calendar as CalendarViewIcon } from 'lucide-react';
 
 export interface TimeOption {
   id: string;
@@ -25,6 +25,7 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
   const [selectedDuration, setSelectedDuration] = useState<number>(2);
+  const [viewMode, setViewMode] = useState<'week' | 'calendar'>('week');
 
   const timeSlots = [
     '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -39,6 +40,15 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
     { value: 3, label: '3 hours' },
     { value: 4, label: '4+ hours' }
   ];
+
+  // Generate the current week starting from today
+  const generateWeekDays = () => {
+    const today = new Date();
+    const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 0 }); // Start on Sunday
+    return Array.from({ length: 7 }, (_, i) => addDays(startOfCurrentWeek, i));
+  };
+
+  const weekDays = generateWeekDays();
 
   const addTimeOption = () => {
     if (!selectedDate || !selectedStartTime) return;
@@ -69,18 +79,79 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
         <p className="text-sm text-gray-600">Choose up to 4 time options to give your friend</p>
       </div>
       
-      {/* Date Picker */}
+      {/* View Mode Toggle */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant={viewMode === 'week' ? 'default' : 'outline'}
+          onClick={() => setViewMode('week')}
+          className="text-sm"
+        >
+          This Week
+        </Button>
+        <Button
+          variant={viewMode === 'calendar' ? 'default' : 'outline'}
+          onClick={() => setViewMode('calendar')}
+          className="text-sm flex items-center gap-2"
+        >
+          <CalendarViewIcon className="w-4 h-4" />
+          Full Calendar
+        </Button>
+      </div>
+
+      {/* Date Selection */}
       <div className="space-y-3">
         <label className="text-sm font-medium text-gray-700">Pick a date</label>
-        <div className="border rounded-lg p-3 bg-white">
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            disabled={(date) => date < new Date()}
-            className="rounded-md"
-          />
-        </div>
+        
+        {viewMode === 'week' ? (
+          // Week View
+          <div className="grid grid-cols-7 gap-2">
+            {weekDays.map((day) => {
+              const isToday = isSameDay(day, new Date());
+              const isPast = day < new Date() && !isToday;
+              const isSelected = selectedDate && isSameDay(day, selectedDate);
+              
+              return (
+                <button
+                  key={day.toISOString()}
+                  onClick={() => !isPast && setSelectedDate(day)}
+                  disabled={isPast}
+                  className={`
+                    p-3 rounded-lg border text-center transition-all duration-200
+                    ${isPast 
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200' 
+                      : isSelected
+                      ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                      : isToday
+                      ? 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }
+                  `}
+                >
+                  <div className="text-xs font-medium">
+                    {format(day, 'EEE')}
+                  </div>
+                  <div className="text-lg font-semibold">
+                    {format(day, 'd')}
+                  </div>
+                  {isToday && (
+                    <div className="text-xs text-blue-600 font-medium">Today</div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          // Calendar View
+          <div className="border rounded-lg p-3 bg-white">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              disabled={(date) => date < new Date()}
+              className="rounded-md"
+            />
+          </div>
+        )}
       </div>
 
       {/* Time and Duration Selection */}
