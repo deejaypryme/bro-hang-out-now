@@ -13,7 +13,7 @@ const Invite = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+        <div className="max-w-2xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -23,15 +23,13 @@ const Invite = () => {
               <ArrowLeft className="w-4 h-4" />
               Back
             </Button>
-            <h1 className="text-lg md:text-xl font-semibold text-gray-900">Schedule Bro Time</h1>
+            <h1 className="text-lg font-semibold text-gray-900">Schedule Bro Time</h1>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
-        <InviteFlow friends={mockFriends} />
-      </div>
+      <InviteFlow friends={mockFriends} />
     </div>
   );
 };

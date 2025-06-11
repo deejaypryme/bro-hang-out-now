@@ -37,7 +37,7 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-slide-up">
+    <div className="space-y-6">
       <div className="space-y-2">
         <h3 className="text-xl font-semibold text-gray-900">When works for you?</h3>
         <p className="text-sm text-gray-600">Select multiple times to give options</p>
@@ -61,10 +61,10 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
                     className={`
                       min-h-[60px] p-3 rounded-xl text-center transition-all duration-200 font-medium border-2
                       ${selected
-                        ? 'bg-blue-500 text-white shadow-md scale-105 border-blue-500'
+                        ? 'bg-blue-500 text-white shadow-md border-blue-500'
                         : unavailable
                         ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50 border-gray-200'
-                        : 'bg-white text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50 hover:scale-[1.02]'
+                        : 'bg-white text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
                       }
                     `}
                   >

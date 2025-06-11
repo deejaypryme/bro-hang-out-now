@@ -38,17 +38,17 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
   const progressPercentage = currentStepIndex >= 0 ? steps[currentStepIndex].percentage : 0;
 
   return (
-    <div className="w-full max-w-md mx-auto space-md">
+    <div className="w-full max-w-md mx-auto space-y-4">
       {/* Progress Bar */}
       <div className="relative">
-        <div className="h-2 bg-bg-tertiary rounded-full overflow-hidden">
+        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
           <div 
-            className="h-full bg-gradient-to-r from-primary to-primary-hover transition-all duration-500 ease-out"
+            className="h-full bg-blue-600 transition-all duration-500 ease-out"
             style={{ width: `${progressPercentage}%` }}
           />
         </div>
         <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-4">
-          <span className="caption text-muted">{progressPercentage}%</span>
+          <span className="text-xs text-gray-500">{progressPercentage}%</span>
         </div>
       </div>
 
@@ -58,21 +58,29 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
           const state = getStepState(step);
           
           return (
-            <React.Fragment key={step.id}>
-              <div className="flex flex-col items-center gap-xs">
-                <div className={`progress-step ${state}`}>
+            <div key={step.id} className="flex items-center">
+              <div className="flex flex-col items-center gap-1">
+                <div className={`
+                  w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200
+                  ${state === 'completed' 
+                    ? 'bg-green-500 text-white' 
+                    : state === 'active' 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-200 text-gray-500'
+                  }
+                `}>
                   {state === 'completed' ? (
-                    <Check className="w-5 h-5" />
+                    <Check className="w-4 h-4" />
                   ) : (
-                    <span className="caption font-semibold">{step.number}</span>
+                    <span className="text-xs font-semibold">{step.number}</span>
                   )}
                 </div>
-                <span className={`caption ${
+                <span className={`text-xs font-medium ${
                   state === 'active' 
-                    ? 'text-primary font-semibold' 
+                    ? 'text-blue-600' 
                     : state === 'completed' 
-                    ? 'text-success font-medium' 
-                    : 'text-muted'
+                    ? 'text-green-600' 
+                    : 'text-gray-500'
                 }`}>
                   {step.label}
                 </span>
@@ -80,19 +88,19 @@ const ProgressIndicator: React.FC<ProgressIndicatorProps> = ({
               
               {/* Connector Line */}
               {index < steps.length - 1 && (
-                <div className="flex-1 h-0.5 mx-4 bg-bg-tertiary relative">
+                <div className="flex-1 h-0.5 mx-4 bg-gray-200 relative">
                   <div 
                     className={`absolute top-0 left-0 h-full transition-all duration-500 ${
                       completedSteps.includes(step.id) 
-                        ? 'bg-success w-full' 
+                        ? 'bg-green-500 w-full' 
                         : currentStep === step.id 
-                        ? 'bg-primary w-1/2' 
+                        ? 'bg-blue-600 w-1/2' 
                         : 'w-0'
                     }`}
                   />
                 </div>
               )}
-            </React.Fragment>
+            </div>
           );
         })}
       </div>

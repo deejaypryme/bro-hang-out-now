@@ -39,10 +39,10 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-slide-up">
+    <div className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-xl font-semibold text-foreground">Who do you want to hang with?</h3>
-        <p className="text-sm text-foreground/70">Select a friend to send your invite to</p>
+        <h3 className="text-xl font-semibold text-gray-900">Who do you want to hang with?</h3>
+        <p className="text-sm text-gray-600">Select a friend to send your invite to</p>
       </div>
       
       <div className="space-y-3">
@@ -51,10 +51,10 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
             key={friend.id}
             onClick={() => onSelectFriend(friend)}
             className={`
-              p-4 min-h-[60px] transition-all duration-200 cursor-pointer rounded-xl border-2
+              p-4 transition-all duration-200 cursor-pointer rounded-xl border-2
               ${selectedFriend?.id === friend.id 
-                ? 'bg-blue-50 border-blue-500 shadow-md scale-[1.02]' 
-                : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-25 hover:scale-[1.01]'
+                ? 'bg-blue-50 border-blue-500 shadow-md' 
+                : 'bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50'
               }
             `}
           >
@@ -88,7 +88,7 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
         ))}
       </div>
       
-      <button className="w-full p-4 min-h-[60px] text-center rounded-xl border-2 border-dashed border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 group">
+      <button className="w-full p-4 text-center rounded-xl border-2 border-dashed border-blue-300 text-blue-600 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 group">
         <div className="flex items-center justify-center gap-2">
           <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
           <span className="text-sm font-medium">Add a new friend</span>
