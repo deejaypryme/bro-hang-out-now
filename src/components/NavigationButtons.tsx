@@ -18,23 +18,22 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   onBack,
   onSend
 }) => {
-  console.log('NavigationButtons render:', { currentStep, canProceed });
-
   return (
     <div className="bg-white border-t border-gray-200 shadow-lg">
-      <div className="max-w-2xl mx-auto px-4 py-4">
+      {/* Add extra padding on mobile to account for mobile browsers */}
+      <div className="max-w-2xl mx-auto px-4 py-4 pb-6 md:pb-4">
         <div className="flex items-center justify-between gap-4">
           <Button
             variant="outline"
             onClick={onBack}
             disabled={currentStep === 'friend'}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 min-h-[44px]"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
           </Button>
 
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 text-center">
             Step {currentStep === 'friend' ? '1' : currentStep === 'time' ? '2' : '3'} of 3
           </div>
 
@@ -42,7 +41,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
             <Button
               onClick={onSend}
               disabled={!canProceed}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors min-h-[44px]"
             >
               <Send className="w-4 h-4" />
               Send Invite
@@ -51,7 +50,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({
             <Button
               onClick={onNext}
               disabled={!canProceed}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
             >
               Next
               <ArrowRight className="w-4 h-4" />
