@@ -1,96 +1,163 @@
 
-import React from 'react';
-import { format, isToday, isTomorrow } from 'date-fns';
-import { type TimeSlot } from '../data/mockData';
+import React, { useState } from 'react';
+import { Calendar } from '@/components/ui/calendar';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { format } from 'date-fns';
+import { CalendarIcon, Clock, X } from 'lucide-react';
+
+export interface TimeOption {
+  id: string;
+  date: Date;
+  startTime: string;
+  duration: number; // in hours
+}
 
 interface TimeSelectionProps {
-  timeSlots: TimeSlot[];
-  selectedTimes: TimeSlot[];
-  onSelectTime: (timeSlot: TimeSlot) => void;
+  selectedOptions: TimeOption[];
+  onUpdateOptions: (options: TimeOption[]) => void;
 }
 
 const TimeSelection: React.FC<TimeSelectionProps> = ({
-  timeSlots,
-  selectedTimes,
-  onSelectTime
+  selectedOptions,
+  onUpdateOptions
 }) => {
-  const groupedSlots = timeSlots.reduce((groups, slot) => {
-    const dateKey = format(slot.date, 'yyyy-MM-dd');
-    if (!groups[dateKey]) {
-      groups[dateKey] = { date: slot.date, slots: [] };
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedStartTime, setSelectedStartTime] = useState<string>('');
+  const [selectedDuration, setSelectedDuration] = useState<number>(2);
+
+  const timeSlots = [
+    '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
+    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM',
+    '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM',
+    '9:00 PM', '10:00 PM'
+  ];
+
+  const durations = [
+    { value: 1, label: '1 hour' },
+    { value: 2, label: '2 hours' },
+    { value: 3, label: '3 hours' },
+    { value: 4, label: '4+ hours' }
+  ];
+
+  const addTimeOption = () => {
+    if (!selectedDate || !selectedStartTime) return;
+    
+    const newOption: TimeOption = {
+      id: `${selectedDate.getTime()}-${selectedStartTime}`,
+      date: selectedDate,
+      startTime: selectedStartTime,
+      duration: selectedDuration
+    };
+
+    if (selectedOptions.length < 4) {
+      onUpdateOptions([...selectedOptions, newOption]);
+      setSelectedStartTime('');
     }
-    groups[dateKey].slots.push(slot);
-    return groups;
-  }, {} as Record<string, { date: Date; slots: TimeSlot[] }>);
-
-  const getDayLabel = (date: Date) => {
-    if (isToday(date)) return 'Today';
-    if (isTomorrow(date)) return 'Tomorrow';
-    return format(date, 'EEEE, MMM d');
   };
 
-  const isSelected = (slot: TimeSlot) => {
-    return selectedTimes.some(selected => 
-      selected.date.getTime() === slot.date.getTime() && 
-      selected.startTime === slot.startTime
-    );
+  const removeTimeOption = (id: string) => {
+    onUpdateOptions(selectedOptions.filter(option => option.id !== id));
   };
+
+  const canAddOption = selectedDate && selectedStartTime && selectedOptions.length < 4;
 
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-xl font-semibold text-gray-900">When works for you?</h3>
-        <p className="text-sm text-gray-600">Select multiple times to give options</p>
+        <h3 className="text-xl font-semibold text-gray-900">When are you free?</h3>
+        <p className="text-sm text-gray-600">Choose up to 4 time options to give your friend</p>
       </div>
       
-      <div className="space-y-6 max-h-96 overflow-y-auto">
-        {Object.values(groupedSlots).map(({ date, slots }) => (
-          <div key={format(date, 'yyyy-MM-dd')} className="space-y-3">
-            <h4 className="text-base font-semibold text-gray-900">{getDayLabel(date)}</h4>
+      {/* Date Picker */}
+      <div className="space-y-3">
+        <label className="text-sm font-medium text-gray-700">Pick a date</label>
+        <div className="border rounded-lg p-3 bg-white">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            disabled={(date) => date < new Date()}
+            className="rounded-md"
+          />
+        </div>
+      </div>
+
+      {/* Time and Duration Selection */}
+      {selectedDate && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Start time</label>
+              <Select value={selectedStartTime} onValueChange={setSelectedStartTime}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select time" />
+                </SelectTrigger>
+                <SelectContent>
+                  {timeSlots.map((time) => (
+                    <SelectItem key={time} value={time}>
+                      {time}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {slots.map((slot, index) => {
-                const selected = isSelected(slot);
-                const unavailable = !slot.available || slot.busy;
-                
-                return (
-                  <button
-                    key={index}
-                    onClick={() => !unavailable && onSelectTime(slot)}
-                    disabled={unavailable}
-                    className={`
-                      min-h-[60px] p-3 rounded-xl text-center transition-all duration-200 font-medium border-2
-                      ${selected
-                        ? 'bg-blue-500 text-white shadow-md border-blue-500'
-                        : unavailable
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50 border-gray-200'
-                        : 'bg-white text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
-                      }
-                    `}
-                  >
-                    <div className="text-base font-semibold">{slot.startTime}</div>
-                    <div className="text-xs opacity-75">
-                      {slot.busy ? 'Busy' : 'Available'}
-                    </div>
-                  </button>
-                );
-              })}
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-gray-700">Duration</label>
+              <Select value={selectedDuration.toString()} onValueChange={(value) => setSelectedDuration(Number(value))}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {durations.map((duration) => (
+                    <SelectItem key={duration.value} value={duration.value.toString()}>
+                      {duration.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
-        ))}
-      </div>
-      
-      {selectedTimes.length > 0 && (
-        <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-xl">
-          <div className="text-base font-semibold text-gray-900 mb-2">
-            Selected times ({selectedTimes.length}):
-          </div>
-          <div className="text-xs text-gray-600">
-            {selectedTimes.map((slot, index) => (
-              <span key={index}>
-                {getDayLabel(slot.date)} at {slot.startTime}
-                {index < selectedTimes.length - 1 ? ', ' : ''}
-              </span>
+
+          <Button 
+            onClick={addTimeOption}
+            disabled={!canAddOption}
+            className="w-full"
+          >
+            Add Time Option ({selectedOptions.length}/4)
+          </Button>
+        </div>
+      )}
+
+      {/* Selected Options */}
+      {selectedOptions.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-lg font-medium text-gray-900">Your time options:</h4>
+          <div className="space-y-2">
+            {selectedOptions.map((option) => (
+              <div key={option.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <CalendarIcon className="w-4 h-4 text-blue-600" />
+                  <div>
+                    <div className="font-medium text-gray-900">
+                      {format(option.date, 'EEEE, MMM d')}
+                    </div>
+                    <div className="text-sm text-gray-600 flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {option.startTime} • {option.duration} hour{option.duration > 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => removeTimeOption(option.id)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
             ))}
           </div>
         </div>

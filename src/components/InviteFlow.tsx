@@ -3,9 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ProgressIndicator from './ProgressIndicator';
 import FriendSelection from './FriendSelection';
-import TimeSelection from './TimeSelection';
+import TimeSelection, { type TimeOption } from './TimeSelection';
 import ActivitySelection from './ActivitySelection';
-import { type Friend, type TimeSlot, mockTimeSlots } from '../data/mockData';
+import { type Friend } from '../data/mockData';
 import { type Activity, type EmotionalSignal } from '../data/activities';
 
 interface InviteFlowProps {
@@ -13,11 +13,11 @@ interface InviteFlowProps {
   currentStep: 'friend' | 'time' | 'activity';
   completedSteps: string[];
   selectedFriend: Friend | null;
-  selectedTimes: TimeSlot[];
+  selectedTimeOptions: TimeOption[];
   selectedActivity: Activity | null;
   selectedSignal: EmotionalSignal | null;
   onSelectFriend: (friend: Friend) => void;
-  onSelectTime: (timeSlot: TimeSlot) => void;
+  onUpdateTimeOptions: (options: TimeOption[]) => void;
   onSelectActivity: (activity: Activity) => void;
   onSelectSignal: (signal: EmotionalSignal | null) => void;
 }
@@ -27,11 +27,11 @@ const InviteFlow: React.FC<InviteFlowProps> = ({
   currentStep,
   completedSteps,
   selectedFriend,
-  selectedTimes,
+  selectedTimeOptions,
   selectedActivity,
   selectedSignal,
   onSelectFriend,
-  onSelectTime,
+  onUpdateTimeOptions,
   onSelectActivity,
   onSelectSignal
 }) => {
@@ -53,7 +53,7 @@ const InviteFlow: React.FC<InviteFlowProps> = ({
     return () => {
       window.removeEventListener('resize', checkScroll);
     };
-  }, [currentStep, selectedFriend, selectedTimes.length, selectedActivity]);
+  }, [currentStep, selectedFriend, selectedTimeOptions.length, selectedActivity]);
 
   const scrollToBottom = () => {
     if (contentRef.current) {
@@ -94,9 +94,8 @@ const InviteFlow: React.FC<InviteFlowProps> = ({
           {currentStep === 'time' && (
             <div className="animate-fade-in">
               <TimeSelection
-                timeSlots={mockTimeSlots}
-                selectedTimes={selectedTimes}
-                onSelectTime={onSelectTime}
+                selectedOptions={selectedTimeOptions}
+                onUpdateOptions={onUpdateTimeOptions}
               />
             </div>
           )}

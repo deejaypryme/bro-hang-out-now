@@ -5,8 +5,9 @@ import { toast } from '@/hooks/use-toast';
 import { Button } from '../components/ui/button';
 import InviteFlow from '../components/InviteFlow';
 import { mockFriends } from '../data/mockData';
-import { type Friend, type TimeSlot } from '../data/mockData';
+import { type Friend } from '../data/mockData';
 import { type Activity, type EmotionalSignal } from '../data/activities';
+import { type TimeOption } from '../components/TimeSelection';
 import { ArrowLeft } from 'lucide-react';
 
 type Step = 'friend' | 'time' | 'activity';
@@ -16,7 +17,7 @@ const Invite = () => {
   const [currentStep, setCurrentStep] = useState<Step>('friend');
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
-  const [selectedTimes, setSelectedTimes] = useState<TimeSlot[]>([]);
+  const [selectedTimeOptions, setSelectedTimeOptions] = useState<TimeOption[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<EmotionalSignal | null>(null);
 
@@ -32,9 +33,9 @@ const Invite = () => {
     }
   }, [selectedFriend, currentStep]);
 
-  // Auto-advance when times are selected
+  // Auto-advance when time options are selected
   useEffect(() => {
-    if (selectedTimes.length > 0 && currentStep === 'time') {
+    if (selectedTimeOptions.length > 0 && currentStep === 'time') {
       const timer = setTimeout(() => {
         setCompletedSteps(prev => [...prev, 'time']);
         setCurrentStep('activity');
@@ -42,24 +43,7 @@ const Invite = () => {
       
       return () => clearTimeout(timer);
     }
-  }, [selectedTimes.length, currentStep]);
-
-  const handleSelectTime = (timeSlot: TimeSlot) => {
-    setSelectedTimes(prev => {
-      const exists = prev.some(slot => 
-        slot.date.getTime() === timeSlot.date.getTime() && 
-        slot.startTime === timeSlot.startTime
-      );
-      
-      if (exists) {
-        return prev.filter(slot => 
-          !(slot.date.getTime() === timeSlot.date.getTime() && slot.startTime === timeSlot.startTime)
-        );
-      } else {
-        return [...prev, timeSlot];
-      }
-    });
-  };
+  }, [selectedTimeOptions.length, currentStep]);
 
   const handleBack = () => {
     if (currentStep === 'time') {
@@ -72,7 +56,7 @@ const Invite = () => {
   };
 
   const handleSend = () => {
-    if (selectedFriend && selectedTimes.length > 0 && selectedActivity) {
+    if (selectedFriend && selectedTimeOptions.length > 0 && selectedActivity) {
       toast({
         title: "BYF Invite Sent! 🎉",
         description: `Your invite to ${selectedFriend.name} has been sent. They'll get a notification to respond.`,
@@ -80,7 +64,7 @@ const Invite = () => {
 
       // Reset form
       setSelectedFriend(null);
-      setSelectedTimes([]);
+      setSelectedTimeOptions([]);
       setSelectedActivity(null);
       setSelectedSignal(null);
       setCurrentStep('friend');
@@ -114,11 +98,11 @@ const Invite = () => {
           currentStep={currentStep}
           completedSteps={completedSteps}
           selectedFriend={selectedFriend}
-          selectedTimes={selectedTimes}
+          selectedTimeOptions={selectedTimeOptions}
           selectedActivity={selectedActivity}
           selectedSignal={selectedSignal}
           onSelectFriend={setSelectedFriend}
-          onSelectTime={handleSelectTime}
+          onUpdateTimeOptions={setSelectedTimeOptions}
           onSelectActivity={setSelectedActivity}
           onSelectSignal={setSelectedSignal}
         />
