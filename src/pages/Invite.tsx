@@ -8,7 +8,7 @@ import { mockFriends } from '../data/mockData';
 import { type Friend } from '../data/mockData';
 import { type Activity, type EmotionalSignal } from '../data/activities';
 import { type TimeOption } from '../components/TimeSelection';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 type Step = 'friend' | 'time' | 'activity';
 
@@ -33,9 +33,9 @@ const Invite = () => {
     }
   }, [selectedFriend, currentStep]);
 
-  // Auto-advance when time options are selected
+  // Auto-advance only when 4 time options are selected
   useEffect(() => {
-    if (selectedTimeOptions.length > 0 && currentStep === 'time') {
+    if (selectedTimeOptions.length === 4 && currentStep === 'time') {
       const timer = setTimeout(() => {
         setCompletedSteps(prev => [...prev, 'time']);
         setCurrentStep('activity');
@@ -52,6 +52,13 @@ const Invite = () => {
     } else if (currentStep === 'activity') {
       setCurrentStep('time');
       setCompletedSteps(prev => prev.filter(step => step !== 'time'));
+    }
+  };
+
+  const handleNext = () => {
+    if (currentStep === 'time' && selectedTimeOptions.length > 0) {
+      setCompletedSteps(prev => [...prev, 'time']);
+      setCurrentStep('activity');
     }
   };
 
@@ -108,8 +115,8 @@ const Invite = () => {
         />
       </div>
 
-      {/* Send Button - Only show on final step */}
-      {currentStep === 'activity' && (
+      {/* Bottom Navigation - Show on time and activity steps */}
+      {(currentStep === 'time' || currentStep === 'activity') && (
         <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <Button
@@ -121,13 +128,24 @@ const Invite = () => {
               Back
             </Button>
             
-            <Button
-              onClick={handleSend}
-              disabled={!selectedActivity}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
-            >
-              Send Invite
-            </Button>
+            {currentStep === 'time' ? (
+              <Button
+                onClick={handleNext}
+                disabled={selectedTimeOptions.length === 0}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+              >
+                Next
+                <ArrowRight className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSend}
+                disabled={!selectedActivity}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+              >
+                Send Invite
+              </Button>
+            )}
           </div>
         </div>
       )}
