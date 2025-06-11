@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
@@ -104,7 +103,7 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
         
         {viewMode === 'week' ? (
           // Week View
-          <div className="grid grid-cols-7 gap-2">
+          <div className="grid grid-cols-7 gap-3">
             {weekDays.map((day) => {
               const isToday = isSameDay(day, new Date());
               const isPast = day < new Date() && !isToday;
@@ -116,26 +115,23 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
                   onClick={() => !isPast && setSelectedDate(day)}
                   disabled={isPast}
                   className={`
-                    p-3 rounded-lg border text-center transition-all duration-200
+                    p-4 rounded-lg border text-center transition-all duration-200 min-h-[80px] flex flex-col justify-center
                     ${isPast 
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200' 
                       : isSelected
                       ? 'bg-blue-600 text-white border-blue-600 shadow-md'
                       : isToday
-                      ? 'bg-blue-50 text-blue-600 border-blue-200 hover:bg-blue-100'
+                      ? 'bg-blue-50 text-blue-600 border-2 border-blue-400 hover:bg-blue-100 shadow-lg shadow-blue-200/50'
                       : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                     }
                   `}
                 >
-                  <div className="text-xs font-medium">
+                  <div className="text-xs font-medium mb-1">
                     {format(day, 'EEE')}
                   </div>
-                  <div className="text-lg font-semibold">
+                  <div className="text-xl font-semibold">
                     {format(day, 'd')}
                   </div>
-                  {isToday && (
-                    <div className="text-xs text-blue-600 font-medium">Today</div>
-                  )}
                 </button>
               );
             })}
