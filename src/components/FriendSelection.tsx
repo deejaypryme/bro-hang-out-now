@@ -17,7 +17,7 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
   const getAvatarColor = (name: string) => {
     const colors = [
       'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-red-500',
-      'bg-yellow-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'
+      'bg-orange-500', 'bg-indigo-500', 'bg-pink-500', 'bg-teal-500'
     ];
     return colors[name.length % colors.length];
   };
@@ -51,8 +51,8 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
             key={friend.id}
             onClick={() => onSelectFriend(friend)}
             className={`
-              card-interactive p-sm space-xs touch-target transition-all duration-200
-              ${selectedFriend?.id === friend.id ? 'selected' : ''}
+              card-interactive p-sm space-xs touch-target transition-all duration-200 cursor-pointer
+              ${selectedFriend?.id === friend.id ? 'border-primary bg-primary/5 shadow-md scale-[1.02]' : 'hover:border-primary/30 hover:bg-primary/5'}
             `}
           >
             <div className="flex items-center gap-sm">

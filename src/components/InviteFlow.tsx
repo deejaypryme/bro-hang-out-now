@@ -31,11 +31,10 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
     const checkScroll = () => {
       if (contentRef.current) {
         const { scrollHeight, clientHeight } = contentRef.current;
-        setShowScrollIndicator(scrollHeight > clientHeight + 100);
+        setShowScrollIndicator(scrollHeight > clientHeight + 50);
       }
     };
 
-    // Check on mount and whenever step or selections change
     checkScroll();
     window.addEventListener('resize', checkScroll);
     
@@ -137,7 +136,7 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto space-lg pb-24 relative">
+    <div className="w-full max-w-lg mx-auto space-lg relative">
       {/* Progress Indicator */}
       <ProgressIndicator 
         currentStep={currentStep} 
@@ -147,7 +146,7 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
       {/* Step Content */}
       <div 
         ref={contentRef}
-        className="min-h-[400px] max-h-[60vh] overflow-y-auto pb-6 animate-fade-in scroll-smooth"
+        className="min-h-[50vh] max-h-[60vh] overflow-y-auto pb-32 animate-fade-in scroll-smooth"
       >
         {currentStep === 'friend' && (
           <FriendSelection
@@ -179,15 +178,15 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
       {showScrollIndicator && (
         <div 
           onClick={scrollToBottom}
-          className="flex justify-center items-center my-2 text-primary animate-bounce cursor-pointer"
+          className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex flex-col items-center text-primary cursor-pointer animate-bounce z-20"
         >
-          <span className="text-xs mr-1">Scroll for more</span>
+          <span className="text-xs mb-1">Scroll for more</span>
           <ChevronDown className="h-4 w-4" />
         </div>
       )}
 
-      {/* Sticky Navigation Buttons */}
-      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/80 backdrop-blur-md border-t border-default">
+      {/* Fixed Navigation Buttons */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-sm border-t border-border">
         <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
           <Button
             variant="ghost"
@@ -203,7 +202,8 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
             <Button
               onClick={handleSend}
               disabled={!canProceed()}
-              className="flex items-center gap-2 btn-glow"
+              variant="gradient"
+              className="flex items-center gap-2"
               size="lg"
             >
               <Send className="w-4 h-4" />
@@ -213,7 +213,8 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
             <Button
               onClick={handleNext}
               disabled={!canProceed()}
-              className="flex items-center gap-2 btn-glow"
+              variant="gradient"
+              className="flex items-center gap-2"
               size="lg"
             >
               Next

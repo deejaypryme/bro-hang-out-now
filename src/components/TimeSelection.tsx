@@ -61,10 +61,10 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
                     className={`
                       touch-target p-sm rounded-xl text-center transition-all duration-200 font-medium
                       ${selected
-                        ? 'selected bg-primary text-white shadow-custom-md scale-105'
+                        ? 'bg-primary text-white shadow-md scale-105'
                         : unavailable
                         ? 'bg-bg-tertiary text-muted cursor-not-allowed opacity-50'
-                        : 'card-interactive bg-bg-primary text-primary border border-default hover:border-primary/50 hover:bg-primary/5'
+                        : 'card-interactive bg-bg-primary text-primary hover:border-primary/50 hover:bg-primary/5'
                       }
                     `}
                   >
