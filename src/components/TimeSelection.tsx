@@ -37,18 +37,18 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
   };
 
   return (
-    <div className="space-lg animate-slide-up">
-      <div className="space-sm">
-        <h3 className="heading-3 text-primary">When works for you?</h3>
-        <p className="body text-secondary">Select multiple times to give options</p>
+    <div className="space-y-6 animate-slide-up">
+      <div className="space-y-2">
+        <h3 className="text-xl font-semibold text-foreground">When works for you?</h3>
+        <p className="text-sm text-foreground/70">Select multiple times to give options</p>
       </div>
       
-      <div className="space-md max-h-96 overflow-y-auto">
+      <div className="space-y-6 max-h-96 overflow-y-auto">
         {Object.values(groupedSlots).map(({ date, slots }) => (
-          <div key={format(date, 'yyyy-MM-dd')} className="space-sm">
-            <h4 className="body-large font-semibold text-primary mb-sm">{getDayLabel(date)}</h4>
+          <div key={format(date, 'yyyy-MM-dd')} className="space-y-3">
+            <h4 className="text-base font-semibold text-foreground">{getDayLabel(date)}</h4>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-sm">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {slots.map((slot, index) => {
                 const selected = isSelected(slot);
                 const unavailable = !slot.available || slot.busy;
@@ -59,17 +59,17 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
                     onClick={() => !unavailable && onSelectTime(slot)}
                     disabled={unavailable}
                     className={`
-                      touch-target p-sm rounded-xl text-center transition-all duration-200 font-medium
+                      min-h-[60px] p-3 rounded-xl text-center transition-all duration-200 font-medium border-2
                       ${selected
-                        ? 'bg-primary text-white shadow-md scale-105'
+                        ? 'bg-primary text-white shadow-md scale-105 border-primary'
                         : unavailable
-                        ? 'bg-bg-tertiary text-muted cursor-not-allowed opacity-50'
-                        : 'card-interactive bg-bg-primary text-primary hover:border-primary/50 hover:bg-primary/5'
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50 border-gray-200'
+                        : 'bg-white text-foreground border-gray-200 hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.02]'
                       }
                     `}
                   >
-                    <div className="body-large font-semibold">{slot.startTime}</div>
-                    <div className="caption text-current opacity-75">
+                    <div className="text-base font-semibold">{slot.startTime}</div>
+                    <div className="text-xs opacity-75">
                       {slot.busy ? 'Busy' : 'Available'}
                     </div>
                   </button>
@@ -81,11 +81,11 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
       </div>
       
       {selectedTimes.length > 0 && (
-        <div className="card-elevated p-sm bg-primary/5 border-primary/20">
-          <div className="body-large font-semibold text-primary mb-xs">
+        <div className="p-4 bg-primary/5 border-2 border-primary/20 rounded-xl">
+          <div className="text-base font-semibold text-foreground mb-2">
             Selected times ({selectedTimes.length}):
           </div>
-          <div className="caption text-secondary">
+          <div className="text-xs text-foreground/70">
             {selectedTimes.map((slot, index) => (
               <span key={index}>
                 {getDayLabel(slot.date)} at {slot.startTime}

@@ -43,12 +43,15 @@ const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
             <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
               <Button 
                 onClick={handleAddFriend}
-                className="bg-white text-primary hover:bg-white/90 px-6 py-3 rounded-lg font-semibold flex items-center gap-2"
+                className="bg-white text-primary hover:bg-white/90 hover:scale-105 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all duration-300"
               >
                 <span>👥</span>
                 Add Your First Friend
               </Button>
-              <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 px-6 py-3 rounded-lg font-semibold">
+              <Button 
+                variant="outline" 
+                className="border-white/30 text-white hover:bg-white/10 hover:scale-105 px-6 py-3 rounded-lg font-semibold transition-all duration-300"
+              >
                 Import Contacts
               </Button>
             </div>
@@ -65,7 +68,7 @@ const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
             </div>
             <Button 
               onClick={handleScheduleBroTime}
-              className="btn-prominent px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-base md:text-lg flex items-center gap-3 hover:scale-105 transition-transform"
+              className="bg-white text-primary hover:bg-white/90 hover:scale-105 hover:shadow-lg px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-base md:text-lg flex items-center gap-3 transition-all duration-300"
             >
               <span>📅</span>
               Schedule Bro Time

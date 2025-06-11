@@ -24,8 +24,8 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online': return 'bg-success';
-      case 'busy': return 'bg-warning';
+      case 'online': return 'bg-green-500';
+      case 'busy': return 'bg-orange-500';
       default: return 'bg-gray-400';
     }
   };
@@ -39,26 +39,26 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
   };
 
   return (
-    <div className="space-lg animate-slide-up">
-      <div className="space-sm">
-        <h3 className="heading-3 text-primary">Who do you want to hang with?</h3>
-        <p className="body text-secondary">Select a friend to send your invite to</p>
+    <div className="space-y-6 animate-slide-up">
+      <div className="space-y-2">
+        <h3 className="text-xl font-semibold text-foreground">Who do you want to hang with?</h3>
+        <p className="text-sm text-foreground/70">Select a friend to send your invite to</p>
       </div>
       
-      <div className="space-sm">
+      <div className="space-y-3">
         {friends.map((friend) => (
           <div
             key={friend.id}
             onClick={() => onSelectFriend(friend)}
             className={`
-              p-sm space-xs touch-target transition-all duration-200 cursor-pointer rounded-xl border
+              p-4 min-h-[60px] transition-all duration-200 cursor-pointer rounded-xl border-2
               ${selectedFriend?.id === friend.id 
-                ? 'bg-primary/10 border-primary shadow-md' 
-                : 'bg-bg-primary border-border hover:border-primary/30 hover:bg-primary/5'
+                ? 'bg-primary/10 border-primary shadow-md scale-[1.02]' 
+                : 'bg-white border-gray-200 hover:border-primary/50 hover:bg-primary/5 hover:scale-[1.01]'
               }
             `}
           >
-            <div className="flex items-center gap-sm">
+            <div className="flex items-center gap-3">
               <div className="relative flex-shrink-0">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold ${getAvatarColor(friend.name)}`}>
                   {friend.avatar}
@@ -67,9 +67,9 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
               </div>
               
               <div className="flex-1 min-w-0">
-                <div className="body-large font-semibold text-primary">{friend.name}</div>
-                <div className="body text-secondary">{getStatusText(friend)}</div>
-                <div className="caption text-muted">
+                <div className="text-base font-semibold text-foreground">{friend.name}</div>
+                <div className="text-sm text-foreground/70">{getStatusText(friend)}</div>
+                <div className="text-xs text-foreground/50">
                   Usually free {friend.preferredTimes.join(', ')}
                 </div>
               </div>
@@ -88,10 +88,10 @@ const FriendSelection: React.FC<FriendSelectionProps> = ({
         ))}
       </div>
       
-      <button className="w-full p-sm text-center touch-target rounded-xl border-2 border-dashed border-primary/30 text-primary hover:border-primary hover:bg-primary/5 transition-all duration-200">
-        <div className="flex items-center justify-center gap-xs">
-          <Plus className="w-5 h-5" />
-          <span className="body font-medium">Add a new friend</span>
+      <button className="w-full p-4 min-h-[60px] text-center rounded-xl border-2 border-dashed border-primary/30 text-primary hover:border-primary hover:bg-primary/5 transition-all duration-200 group">
+        <div className="flex items-center justify-center gap-2">
+          <Plus className="w-5 h-5 group-hover:scale-110 transition-transform" />
+          <span className="text-sm font-medium">Add a new friend</span>
         </div>
       </button>
     </div>
