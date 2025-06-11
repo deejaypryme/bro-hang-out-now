@@ -32,16 +32,6 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
     "Short & Sweet": "Quick Hang"
   };
 
-  // Color mapping for category cards
-  const categoryColorMap: { [key: string]: string } = {
-    "Chill Vibes": "#4ECDC4", // Teal - calm and relaxation
-    "Food & Drink": "#FF6B35", // Orange - appetite and warmth
-    "Competitive & Active": "#FF6B9D", // Pink - energy and excitement
-    "Health & Wellness": "#96CEB4", // Green - health and wellness
-    "Big Plans": "#45B7D1", // Blue - adventure and exploration
-    "Short & Sweet": "#C7CEEA" // Lavender - quick and easy
-  };
-
   // Color psychology mapping for vibe check borders
   const vibeColorMap: { [key: string]: string } = {
     "Excited": "#FF6B35", // Orange - energy and enthusiasm
@@ -99,21 +89,16 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
       {/* Compact Category Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {ACTIVITY_CATEGORIES.map((category) => {
-          const borderColor = categoryColorMap[category.name] || '#4ECDC4';
-          
           return (
             <button
               key={category.name}
               onClick={() => handleCategorySelect(category)}
-              className="h-20 p-3 rounded-xl border-4 bg-white hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center shadow-lg hover:shadow-xl"
-              style={{
-                borderColor: borderColor
-              }}
+              className="h-16 p-2 rounded-xl border-2 border-blue-300 bg-white hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center shadow-lg hover:shadow-xl"
             >
-              <div className="text-xl mb-1">
+              <div className="text-lg mb-0.5">
                 {category.activities[0]?.emoji || '🎯'}
               </div>
-              <div className="text-sm font-semibold text-gray-900">
+              <div className="text-xs font-semibold text-gray-900">
                 {categoryNameMap[category.name] || category.name}
               </div>
             </button>
@@ -123,13 +108,10 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
         {/* Something Else Option */}
         <button
           onClick={handleCustomActivity}
-          className="h-20 p-3 rounded-xl border-4 border-dashed bg-gray-50 hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center shadow-lg hover:shadow-xl"
-          style={{
-            borderColor: '#9CA3AF'
-          }}
+          className="h-16 p-2 rounded-xl border-2 border-dashed border-gray-400 bg-gray-50 hover:bg-blue-50 transition-all duration-200 text-center flex flex-col items-center justify-center shadow-lg hover:shadow-xl"
         >
-          <Plus className="w-5 h-5 text-gray-500 mb-1" />
-          <div className="text-sm font-semibold text-gray-700">
+          <Plus className="w-4 h-4 text-gray-500 mb-0.5" />
+          <div className="text-xs font-semibold text-gray-700">
             Something Else
           </div>
         </button>
@@ -185,7 +167,7 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
                 key={signal.label}
                 onClick={() => onSelectSignal(isSelected ? null : signal)}
                 className={`
-                  min-h-[60px] p-3 rounded-xl text-center transition-all duration-200 border-4 shadow-lg
+                  min-h-[60px] p-3 rounded-xl text-center transition-all duration-200 border-2 shadow-lg
                   ${isSelected
                     ? 'shadow-xl'
                     : 'bg-gray-50 hover:bg-gray-100 hover:shadow-xl'
