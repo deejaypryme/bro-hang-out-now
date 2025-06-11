@@ -65,7 +65,7 @@ const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
             </div>
             <Button 
               onClick={handleScheduleBroTime}
-              className="bg-white text-primary hover:bg-white/90 px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-base md:text-lg flex items-center gap-3 hover:scale-105 transition-transform"
+              className="btn-prominent px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-base md:text-lg flex items-center gap-3 hover:scale-105 transition-transform"
             >
               <span>📅</span>
               Schedule Bro Time

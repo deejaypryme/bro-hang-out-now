@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from '@/hooks/use-toast';
-import { ArrowLeft, ArrowRight, Send } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send, ChevronDown } from 'lucide-react';
 import { Button } from './ui/button';
 import ProgressIndicator from './ProgressIndicator';
 import FriendSelection from './FriendSelection';
@@ -23,6 +23,35 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
   const [selectedTimes, setSelectedTimes] = useState<TimeSlot[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<EmotionalSignal | null>(null);
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  // Check if we need to show scroll indicator
+  useEffect(() => {
+    const checkScroll = () => {
+      if (contentRef.current) {
+        const { scrollHeight, clientHeight } = contentRef.current;
+        setShowScrollIndicator(scrollHeight > clientHeight + 100);
+      }
+    };
+
+    // Check on mount and whenever step or selections change
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    
+    return () => {
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [currentStep, selectedFriend, selectedTimes.length, selectedActivity]);
+
+  const scrollToBottom = () => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({
+        top: contentRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   const handleSelectTime = (timeSlot: TimeSlot) => {
     setSelectedTimes(prev => {
@@ -61,6 +90,11 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
     } else if (currentStep === 'time') {
       setCurrentStep('activity');
     }
+
+    // Scroll to top when switching steps
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
   };
 
   const handleBack = () => {
@@ -70,6 +104,11 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
     } else if (currentStep === 'activity') {
       setCurrentStep('time');
       setCompletedSteps(prev => prev.filter(step => step !== 'time'));
+    }
+
+    // Scroll to top when switching steps
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
     }
   };
 
@@ -98,7 +137,7 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto space-lg">
+    <div className="w-full max-w-lg mx-auto space-lg pb-24 relative">
       {/* Progress Indicator */}
       <ProgressIndicator 
         currentStep={currentStep} 
@@ -106,7 +145,10 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
       />
 
       {/* Step Content */}
-      <div className="min-h-96 animate-fade-in">
+      <div 
+        ref={contentRef}
+        className="min-h-[400px] max-h-[60vh] overflow-y-auto pb-6 animate-fade-in scroll-smooth"
+      >
         {currentStep === 'friend' && (
           <FriendSelection
             friends={friends}
@@ -133,37 +175,52 @@ const InviteFlow: React.FC<InviteFlowProps> = ({ friends }) => {
         )}
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-md border-t border-default">
-        <Button
-          variant="ghost"
-          onClick={handleBack}
-          disabled={currentStep === 'friend'}
-          className="flex items-center gap-2"
+      {/* Scroll Indicator */}
+      {showScrollIndicator && (
+        <div 
+          onClick={scrollToBottom}
+          className="flex justify-center items-center my-2 text-primary animate-bounce cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" />
-          Back
-        </Button>
+          <span className="text-xs mr-1">Scroll for more</span>
+          <ChevronDown className="h-4 w-4" />
+        </div>
+      )}
 
-        {currentStep === 'activity' ? (
+      {/* Sticky Navigation Buttons */}
+      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white/80 backdrop-blur-md border-t border-default">
+        <div className="max-w-lg mx-auto px-4 py-4 flex items-center justify-between">
           <Button
-            onClick={handleSend}
-            disabled={!canProceed()}
+            variant="ghost"
+            onClick={handleBack}
+            disabled={currentStep === 'friend'}
             className="flex items-center gap-2"
           >
-            <Send className="w-4 h-4" />
-            Send BYF Invite
+            <ArrowLeft className="w-4 h-4" />
+            Back
           </Button>
-        ) : (
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className="flex items-center gap-2"
-          >
-            Next
-            <ArrowRight className="w-4 h-4" />
-          </Button>
-        )}
+
+          {currentStep === 'activity' ? (
+            <Button
+              onClick={handleSend}
+              disabled={!canProceed()}
+              className="flex items-center gap-2 btn-glow"
+              size="lg"
+            >
+              <Send className="w-4 h-4" />
+              Send BYF Invite
+            </Button>
+          ) : (
+            <Button
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className="flex items-center gap-2 btn-glow"
+              size="lg"
+            >
+              Next
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );

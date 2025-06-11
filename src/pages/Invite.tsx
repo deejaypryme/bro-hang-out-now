@@ -10,9 +10,9 @@ const Invite = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-bg-secondary">
+    <div className="min-h-screen bg-bg-secondary pb-20">
       {/* Header */}
-      <header className="bg-bg-primary border-b border-default">
+      <header className="bg-bg-primary border-b border-default sticky top-0 z-20">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
           <div className="flex items-center gap-4">
             <Button
