@@ -32,6 +32,16 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
     "Short & Sweet": "Quick Hang"
   };
 
+  // Color psychology mapping for vibe check borders
+  const vibeColorMap: { [key: string]: string } = {
+    "Excited": "#FF6B35", // Orange - energy and enthusiasm
+    "Chill": "#4ECDC4", // Teal - calm and peaceful
+    "Social": "#45B7D1", // Blue - trust and social connection
+    "Focused": "#96CEB4", // Green - balance and focus
+    "Adventurous": "#FF6B9D", // Pink - creativity and adventure
+    "Relaxed": "#C7CEEA" // Lavender - relaxation and tranquility
+  };
+
   const handleCategorySelect = (category: ActivityCategory) => {
     setSelectedCategory(category);
     setShowCategoryModal(true);
@@ -64,6 +74,8 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
       onSelectActivity(customActivity);
       setCustomActivityName('');
       setShowCustomModal(false);
+      setShowCategoryModal(false);
+      setSelectedCategory(null);
     }
   };
 
@@ -126,13 +138,11 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
         </div>
       )}
       
-      {/* Emotional Signal Section */}
+      {/* Emotional Signal Section - Centered */}
       <div className="space-y-4 border-t border-gray-200 pt-4">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <h4 className="text-base font-semibold text-gray-900">Vibe check (optional)</h4>
-            <p className="text-xs text-gray-600">Let them know how you're feeling</p>
-          </div>
+        <div className="text-center space-y-1">
+          <h4 className="text-base font-semibold text-gray-900">Vibe check (optional)</h4>
+          <p className="text-xs text-gray-600">Let them know how you're feeling</p>
           {selectedSignal && (
             <button
               onClick={() => onSelectSignal(null)}
@@ -146,6 +156,8 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {EMOTIONAL_SIGNALS.map((signal) => {
             const isSelected = selectedSignal?.label === signal.label;
+            const borderColor = vibeColorMap[signal.label] || signal.color;
+            
             return (
               <button
                 key={signal.label}
@@ -153,13 +165,13 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
                 className={`
                   min-h-[60px] p-3 rounded-xl text-left transition-all duration-200 border-2
                   ${isSelected
-                    ? 'shadow-md border-2'
-                    : 'bg-gray-50 hover:bg-gray-100 border-transparent hover:border-gray-200'
+                    ? 'shadow-md'
+                    : 'bg-gray-50 hover:bg-gray-100 hover:shadow-sm'
                   }
                 `}
                 style={{
                   backgroundColor: isSelected ? `${signal.color}10` : undefined,
-                  borderColor: isSelected ? signal.color : undefined
+                  borderColor: isSelected ? borderColor : borderColor + '40'
                 }}
               >
                 <div className="flex items-center gap-2 mb-1">
@@ -207,6 +219,16 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
                     <div className="text-xs text-gray-500">{activity.duration}min</div>
                   </button>
                 ))}
+                
+                {/* Something Else option in category modal */}
+                <button
+                  onClick={() => setShowCustomModal(true)}
+                  className="min-h-[80px] p-3 rounded-xl text-center transition-all duration-200 border-2 border-dashed border-gray-300 bg-gray-50 hover:border-blue-300 hover:bg-blue-50"
+                >
+                  <Plus className="w-6 h-6 text-gray-500 mx-auto mb-1" />
+                  <div className="text-sm font-semibold text-gray-700 mb-1">Something Else</div>
+                  <div className="text-xs text-gray-500">Custom</div>
+                </button>
               </div>
             </div>
             
