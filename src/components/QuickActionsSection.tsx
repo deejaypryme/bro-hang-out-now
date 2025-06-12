@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from './ui/button';
+import { GradientButton } from './ui/gradient-button';
 
 interface QuickActionsSectionProps {
   isNewUser: boolean;
@@ -66,13 +67,13 @@ const QuickActionsSection: React.FC<QuickActionsSectionProps> = ({
                 {upcomingCount} hangouts this week • {activeStreak} day streak
               </p>
             </div>
-            <Button 
+            <GradientButton 
               onClick={handleScheduleBroTime}
-              className="bg-white text-primary hover:bg-white/90 hover:scale-105 hover:shadow-lg px-6 md:px-8 py-3 md:py-4 rounded-lg font-bold text-base md:text-lg flex items-center gap-3 transition-all duration-300"
+              className="hover:scale-105 hover:shadow-lg flex items-center gap-3 transition-all duration-300"
             >
               <span>📅</span>
               Schedule Bro Time
-            </Button>
+            </GradientButton>
           </div>
         )}
       </div>
