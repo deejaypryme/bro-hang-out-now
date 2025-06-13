@@ -12,12 +12,12 @@ const Home = () => {
   const isNewUser = userFriends.length === 0;
 
   return (
-    <div className="min-h-screen bg-[#030303]">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
       {/* Header */}
       <Header userStats={mockUserStats} />
       
-      {/* Main Content with dark theme */}
-      <div className="bg-[#030303]">
+      {/* Main Content with lighter theme */}
+      <div className="bg-transparent">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
           {/* Quick Actions Section */}
           <div className="mb-8">

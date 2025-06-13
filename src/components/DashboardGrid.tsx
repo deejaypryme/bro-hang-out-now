@@ -37,46 +37,46 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
       {isNewUser ? (
         <>
           {/* New User Sample Cards */}
-          <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-white">
+          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center gap-3 pb-4">
-              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 📅
               </div>
-              <CardTitle className="text-base font-semibold text-white">Upcoming Hangouts</CardTitle>
+              <CardTitle className="text-base font-semibold text-gray-800">Upcoming Hangouts</CardTitle>
             </CardHeader>
             <CardContent className="text-center py-6">
               <div className="text-4xl mb-2">📭</div>
-              <p className="text-white/60 mb-1">Your hangouts will appear here</p>
-              <p className="text-sm text-white/40">Add friends to start coordinating!</p>
+              <p className="text-gray-600 mb-1 font-medium">Your hangouts will appear here</p>
+              <p className="text-sm text-gray-500">Add friends to start coordinating!</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-white">
+          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center gap-3 pb-4">
-              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                 👥
               </div>
-              <CardTitle className="text-base font-semibold text-white">Your Squad</CardTitle>
+              <CardTitle className="text-base font-semibold text-gray-800">Your Squad</CardTitle>
             </CardHeader>
             <CardContent className="text-center py-6">
               <div className="text-4xl mb-2">👤</div>
-              <p className="text-white/60 mb-3">No friends added yet</p>
-              <Button onClick={handleAddFriends} className="bg-white/10 hover:bg-white/20 text-white border-white/20 px-4 py-2 rounded-lg text-sm">
+              <p className="text-gray-600 mb-3 font-medium">No friends added yet</p>
+              <Button onClick={handleAddFriends} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300">
                 Add Friends
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-white">
+          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center gap-3 pb-4">
-              <div className="w-8 h-8 bg-white/10 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
                 ⚡
               </div>
-              <CardTitle className="text-base font-semibold text-white">Bro Points</CardTitle>
+              <CardTitle className="text-base font-semibold text-gray-800">Bro Points</CardTitle>
             </CardHeader>
             <CardContent className="text-center py-4">
-              <div className="text-3xl font-bold text-white mb-2">0</div>
-              <p className="text-sm text-white/60">
+              <div className="text-3xl font-bold text-gray-800 mb-2">0</div>
+              <p className="text-sm text-gray-600 font-medium">
                 Earn points by coordinating hangouts!
               </p>
             </CardContent>
@@ -85,30 +85,30 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
       ) : (
         <>
           {/* Existing User Cards */}
-          <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-white">
+          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-base font-semibold flex items-center gap-2 text-white">
+              <CardTitle className="text-base font-semibold flex items-center gap-2 text-gray-800">
                 <span>📅</span>
                 Next Hangout
               </CardTitle>
-              <Button variant="ghost" className="text-white/70 hover:text-white hover:bg-white/10 text-sm p-0 h-auto">
+              <Button variant="ghost" className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 text-sm p-0 h-auto font-medium">
                 View All
               </Button>
             </CardHeader>
             <CardContent>
               {nextHangout ? (
                 <div>
-                  <div className="text-lg font-semibold mb-1 text-white">
+                  <div className="text-lg font-semibold mb-1 text-gray-800">
                     {nextHangout.time}
                   </div>
-                  <div className="text-white/60 mb-3">
+                  <div className="text-gray-600 mb-3 font-medium">
                     {nextHangout.activity} with {nextHangout.friendName}
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="text-xs border-white/20 text-white hover:bg-white/10">
+                    <Button variant="outline" size="sm" className="text-xs border-gray-300 text-gray-700 hover:bg-gray-50 font-medium">
                       Reschedule
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-xs text-white/70 hover:text-white hover:bg-white/10">
+                    <Button variant="ghost" size="sm" className="text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 font-medium">
                       Details
                     </Button>
                   </div>
@@ -116,8 +116,8 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
               ) : (
                 <div className="text-center py-4">
                   <div className="text-2xl mb-2">📭</div>
-                  <p className="text-white/60 mb-2">No hangouts scheduled</p>
-                  <Button variant="ghost" onClick={handleScheduleBroTime} className="text-white/70 hover:text-white hover:bg-white/10 text-sm p-0 h-auto">
+                  <p className="text-gray-600 mb-2 font-medium">No hangouts scheduled</p>
+                  <Button variant="ghost" onClick={handleScheduleBroTime} className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 text-sm p-0 h-auto font-medium">
                     Send invite?
                   </Button>
                 </div>
@@ -125,13 +125,13 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-white">
+          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-base font-semibold flex items-center gap-2 text-white">
+              <CardTitle className="text-base font-semibold flex items-center gap-2 text-gray-800">
                 <span>👥</span>
                 Active Friends ({friends.length})
               </CardTitle>
-              <Button variant="ghost" onClick={handleAddFriends} className="text-white/70 hover:text-white hover:bg-white/10 text-sm p-0 h-auto">
+              <Button variant="ghost" onClick={handleAddFriends} className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 text-sm p-0 h-auto font-medium">
                 + Add
               </Button>
             </CardHeader>
@@ -143,17 +143,17 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
                       {friend.avatar}
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium text-sm text-white">{friend.name}</div>
+                      <div className="font-medium text-sm text-gray-800">{friend.name}</div>
                       <div className="text-xs">
                         <Badge 
                           variant={friend.status === 'online' ? 'default' : 'secondary'}
-                          className="text-xs bg-white/10 text-white border-white/20"
+                          className="text-xs bg-green-100 text-green-800 border-green-200 font-medium"
                         >
                           {friend.status}
                         </Badge>
                       </div>
                     </div>
-                    <Button variant="outline" onClick={handleScheduleBroTime} size="sm" className="text-white border-white/20 hover:bg-white/10 text-xs px-2 py-1">
+                    <Button variant="outline" onClick={handleScheduleBroTime} size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50 text-xs px-2 py-1 font-medium">
                       BYF?
                     </Button>
                   </div>
@@ -162,24 +162,24 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="bg-white/5 backdrop-blur-sm border-white/10 text-white">
+          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
             <CardHeader className="flex flex-row items-center gap-2 pb-4">
               <span>📊</span>
-              <CardTitle className="text-base font-semibold text-white">This Month</CardTitle>
+              <CardTitle className="text-base font-semibold text-gray-800">This Month</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-white/60">Hangouts</span>
-                  <span className="font-semibold text-white">8</span>
+                  <span className="text-gray-600 font-medium">Hangouts</span>
+                  <span className="font-semibold text-gray-800">8</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/60">Response Rate</span>
-                  <span className="font-semibold text-white">85%</span>
+                  <span className="text-gray-600 font-medium">Response Rate</span>
+                  <span className="font-semibold text-gray-800">85%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-white/60">Current Streak</span>
-                  <span className="font-semibold text-green-400">{userStats.currentStreak} days</span>
+                  <span className="text-gray-600 font-medium">Current Streak</span>
+                  <span className="font-semibold text-green-600">{userStats.currentStreak} days</span>
                 </div>
               </div>
             </CardContent>
