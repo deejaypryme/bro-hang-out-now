@@ -14,27 +14,29 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Navigate to="/home" replace />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/bro-mode" element={<BroMode />} />
-            <Route path="/friends" element={<Friends />} />
-            <Route path="/invite" element={<Invite />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/calendar" element={<Calendar />} />
+              <Route path="/bro-mode" element={<BroMode />} />
+              <Route path="/friends" element={<Friends />} />
+              <Route path="/invite" element={<Invite />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+        <Toaster />
+        <Sonner />
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
