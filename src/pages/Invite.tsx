@@ -68,13 +68,8 @@ const Invite = () => {
         description: `Your invite to ${selectedFriend.name} has been sent. They'll get a notification to respond.`,
       });
 
-      // Reset form
-      setSelectedFriend(null);
-      setSelectedTimeOptions([]);
-      setSelectedActivity(null);
-      setSelectedSignal(null);
-      setCurrentStep('friend');
-      setCompletedSteps([]);
+      // Navigate back to home instead of resetting form
+      navigate('/home');
     }
   };
 

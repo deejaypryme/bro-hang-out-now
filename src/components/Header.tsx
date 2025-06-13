@@ -10,11 +10,11 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ userStats }) => {
   return (
-    <header className="bg-primary text-white border-b border-default">
+    <header className="bg-transparent text-white border-b border-white/10 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-lg">
+            <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center text-lg backdrop-blur-sm">
               👊
             </div>
             <h1 className="text-lg md:text-xl font-semibold text-white">BroYouFree</h1>
@@ -26,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({ userStats }) => {
               <span className="text-sm opacity-90 text-white">Ready to hang</span>
             </div>
             
-            <div className="flex items-center gap-3 md:gap-4 bg-white/10 rounded-lg px-3 md:px-4 py-2">
+            <div className="flex items-center gap-3 md:gap-4 bg-white/10 backdrop-blur-sm rounded-lg px-3 md:px-4 py-2 border border-white/20">
               <div className="text-center">
                 <div className="text-sm md:text-lg font-semibold text-white">{userStats.broPoints}</div>
                 <div className="text-xs opacity-75 hidden md:block text-white">Bro Points</div>
