@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -113,6 +112,7 @@ const Invite = () => {
           onSelectActivity={setSelectedActivity}
           onSelectSignal={setSelectedSignal}
           onNext={handleNext}
+          onSendInvite={handleSend}
         />
       </div>
 

@@ -1,21 +1,22 @@
-
 import React, { useState } from 'react';
 import { ACTIVITY_CATEGORIES, EMOTIONAL_SIGNALS, type Activity, type EmotionalSignal, type ActivityCategory } from '../data/activities';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, X, Plus } from 'lucide-react';
+import { ArrowLeft, X, Plus, Send } from 'lucide-react';
 
 interface ActivitySelectionProps {
   selectedActivity: Activity | null;
   selectedSignal: EmotionalSignal | null;
   onSelectActivity: (activity: Activity) => void;
   onSelectSignal: (signal: EmotionalSignal | null) => void;
+  onSendInvite?: () => void; // Add optional onSendInvite prop
 }
 
 const ActivitySelection: React.FC<ActivitySelectionProps> = ({
   selectedActivity,
   selectedSignal,
   onSelectActivity,
-  onSelectSignal
+  onSelectSignal,
+  onSendInvite
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<ActivityCategory | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -188,6 +189,19 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
           })}
         </div>
       </div>
+
+      {/* Send Invite Button - Show when activity is selected */}
+      {selectedActivity && onSendInvite && (
+        <div className="pt-4 border-t border-gray-200">
+          <Button
+            onClick={onSendInvite}
+            className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2 py-3"
+          >
+            <Send className="w-4 h-4" />
+            Send Invite
+          </Button>
+        </div>
+      )}
 
       {/* Category Activities Modal */}
       {showCategoryModal && selectedCategory && (

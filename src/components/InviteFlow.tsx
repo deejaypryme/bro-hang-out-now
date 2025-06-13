@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown } from 'lucide-react';
 import ProgressIndicator from './ProgressIndicator';
@@ -19,7 +20,8 @@ interface InviteFlowProps {
   onUpdateTimeOptions: (options: TimeOption[]) => void;
   onSelectActivity: (activity: Activity) => void;
   onSelectSignal: (signal: EmotionalSignal | null) => void;
-  onNext?: () => void; // Add onNext prop
+  onNext?: () => void;
+  onSendInvite?: () => void; // Add onSendInvite prop
 }
 
 const InviteFlow: React.FC<InviteFlowProps> = ({
@@ -34,7 +36,8 @@ const InviteFlow: React.FC<InviteFlowProps> = ({
   onUpdateTimeOptions,
   onSelectActivity,
   onSelectSignal,
-  onNext
+  onNext,
+  onSendInvite
 }) => {
   const [showScrollIndicator, setShowScrollIndicator] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -109,6 +112,7 @@ const InviteFlow: React.FC<InviteFlowProps> = ({
                 selectedSignal={selectedSignal}
                 onSelectActivity={onSelectActivity}
                 onSelectSignal={onSelectSignal}
+                onSendInvite={onSendInvite}
               />
             </div>
           )}
