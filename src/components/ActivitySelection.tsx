@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ACTIVITY_CATEGORIES, EMOTIONAL_SIGNALS, type Activity, type EmotionalSignal, type ActivityCategory } from '../data/activities';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,7 @@ interface ActivitySelectionProps {
   selectedSignal: EmotionalSignal | null;
   onSelectActivity: (activity: Activity) => void;
   onSelectSignal: (signal: EmotionalSignal | null) => void;
-  onSendInvite?: () => void; // Add optional onSendInvite prop
+  onSendInvite?: () => void;
 }
 
 const ActivitySelection: React.FC<ActivitySelectionProps> = ({
@@ -168,7 +169,7 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
                 key={signal.label}
                 onClick={() => onSelectSignal(isSelected ? null : signal)}
                 className={`
-                  min-h-[60px] p-3 rounded-xl text-center transition-all duration-200 border-2 shadow-lg
+                  h-16 p-3 rounded-xl text-center transition-all duration-200 border-2 shadow-lg flex flex-col items-center justify-center
                   ${isSelected
                     ? 'shadow-xl'
                     : 'bg-gray-50 hover:bg-gray-100 hover:shadow-xl'
@@ -179,11 +180,11 @@ const ActivitySelection: React.FC<ActivitySelectionProps> = ({
                   borderColor: isSelected ? borderColor : borderColor + '40'
                 }}
               >
-                <div className="flex flex-col items-center gap-1 mb-1">
+                <div className="flex items-center gap-2 mb-1">
                   <span className="text-lg">{signal.emoji}</span>
                   <span className="text-sm font-semibold">{signal.label}</span>
                 </div>
-                <div className="text-xs text-gray-600">{signal.description}</div>
+                <div className="text-xs text-gray-600 leading-tight">{signal.description}</div>
               </button>
             );
           })}
