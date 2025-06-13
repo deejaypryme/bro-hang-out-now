@@ -85,10 +85,6 @@ function HeroGeometric({
         visible: { 
             opacity: 1, 
             y: 0,
-            transition: {
-                duration: 1,
-                ease: [0.25, 0.4, 0.25, 1],
-            },
         },
     };
 
@@ -149,7 +145,11 @@ function HeroGeometric({
                         variants={fadeUpVariants}
                         initial="hidden"
                         animate="visible"
-                        transition={{ delay: 0.5 }}
+                        transition={{ 
+                            delay: 0.5,
+                            duration: 1,
+                            ease: [0.25, 0.4, 0.25, 1],
+                        }}
                         className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/[0.03] border border-white/[0.08] mb-8 md:mb-12"
                     >
                         <Circle className="h-2 w-2 fill-rose-500/80" />
@@ -162,7 +162,11 @@ function HeroGeometric({
                         variants={fadeUpVariants}
                         initial="hidden"
                         animate="visible"
-                        transition={{ delay: 0.7 }}
+                        transition={{ 
+                            delay: 0.7,
+                            duration: 1,
+                            ease: [0.25, 0.4, 0.25, 1],
+                        }}
                     >
                         <h1 className="text-4xl sm:text-6xl md:text-8xl font-bold mb-6 md:mb-8 tracking-tight">
                             <span className="bg-clip-text text-transparent bg-gradient-to-b from-white to-white/80">
@@ -183,7 +187,11 @@ function HeroGeometric({
                         variants={fadeUpVariants}
                         initial="hidden"
                         animate="visible"
-                        transition={{ delay: 0.9 }}
+                        transition={{ 
+                            delay: 0.9,
+                            duration: 1,
+                            ease: [0.25, 0.4, 0.25, 1],
+                        }}
                     >
                         <p className="text-base sm:text-lg md:text-xl text-white/40 mb-8 leading-relaxed font-light tracking-wide max-w-xl mx-auto px-4">
                             Crafting exceptional digital experiences through
