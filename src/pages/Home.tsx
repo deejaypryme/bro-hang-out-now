@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { DemoHeroGeometric } from '../components/ui/demo';
 import Header from '../components/Header';
 import QuickActionsSection from '../components/QuickActionsSection';
 import DashboardGrid from '../components/DashboardGrid';
@@ -14,14 +13,14 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-[#030303]">
-      {/* Hero Section with elegant geometric design */}
-      <div className="relative">
-        <DemoHeroGeometric />
-        {/* Overlay content on top of hero */}
-        <div className="absolute inset-0 flex flex-col justify-between">
-          <Header userStats={mockUserStats} />
-          
-          <div className="flex-1 flex items-center justify-center">
+      {/* Header */}
+      <Header userStats={mockUserStats} />
+      
+      {/* Main Content with dark theme */}
+      <div className="bg-[#030303]">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
+          {/* Quick Actions Section */}
+          <div className="mb-8">
             <QuickActionsSection 
               isNewUser={isNewUser}
               userStats={mockUserStats}
@@ -29,12 +28,8 @@ const Home = () => {
               activeStreak={7}
             />
           </div>
-        </div>
-      </div>
-      
-      {/* Dashboard Content */}
-      <div className="bg-bg-secondary">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 pb-20 md:pb-6">
+          
+          {/* Dashboard Content */}
           <DashboardGrid 
             isNewUser={isNewUser}
             friends={userFriends}
