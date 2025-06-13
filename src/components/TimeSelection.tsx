@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
-import { CalendarIcon, Clock, X, Calendar as CalendarViewIcon, ArrowRight } from 'lucide-react';
+import { format, addDays, startOfWeek, isSameDay, addWeeks, subWeeks } from 'date-fns';
+import { CalendarIcon, Clock, X, Calendar as CalendarViewIcon, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface TimeOption {
   id: string;
@@ -28,6 +28,10 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
   const [selectedStartTime, setSelectedStartTime] = useState<string>('');
   const [selectedDuration, setSelectedDuration] = useState<number>(2);
   const [viewMode, setViewMode] = useState<'week' | 'calendar'>('week');
+  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
+    const today = new Date();
+    return startOfWeek(today, { weekStartsOn: 0 }); // Start on Sunday
+  });
 
   const timeSlots = [
     '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
@@ -43,14 +47,26 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
     { value: 4, label: '4+ hours' }
   ];
 
-  // Generate the current week starting from today
-  const generateWeekDays = () => {
-    const today = new Date();
-    const startOfCurrentWeek = startOfWeek(today, { weekStartsOn: 0 }); // Start on Sunday
-    return Array.from({ length: 7 }, (_, i) => addDays(startOfCurrentWeek, i));
+  // Generate week days based on current week
+  const generateWeekDays = (weekStart: Date) => {
+    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   };
 
-  const weekDays = generateWeekDays();
+  const weekDays = generateWeekDays(currentWeekStart);
+
+  const goToPreviousWeek = () => {
+    setCurrentWeekStart(prev => subWeeks(prev, 1));
+  };
+
+  const goToNextWeek = () => {
+    setCurrentWeekStart(prev => addWeeks(prev, 1));
+  };
+
+  const canGoToPreviousWeek = () => {
+    const today = new Date();
+    const todayWeekStart = startOfWeek(today, { weekStartsOn: 0 });
+    return currentWeekStart.getTime() > todayWeekStart.getTime();
+  };
 
   const addTimeOption = () => {
     if (!selectedDate || !selectedStartTime) return;
@@ -102,7 +118,35 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
 
       {/* Date Selection */}
       <div className="space-y-4">
-        <label className="text-sm font-medium text-gray-700">Pick a date</label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium text-gray-700">Pick a date</label>
+          {viewMode === 'week' && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToPreviousWeek}
+                disabled={!canGoToPreviousWeek()}
+                className="flex items-center gap-1"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Previous
+              </Button>
+              <span className="text-sm text-gray-600 font-medium px-3">
+                {format(currentWeekStart, 'MMM d')} - {format(addDays(currentWeekStart, 6), 'MMM d, yyyy')}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={goToNextWeek}
+                className="flex items-center gap-1"
+              >
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
+        </div>
         
         {viewMode === 'week' ? (
           // Week View - Calendly Style
