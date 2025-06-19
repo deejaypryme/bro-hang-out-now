@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -216,28 +217,28 @@ const Landing = () => {
           </div>
 
           {/* Health Consequences */}
-          <div className="bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl p-10 shadow-2xl">
+          <div className="bg-slate-800 text-white rounded-2xl p-10 shadow-xl">
             <div className="text-center mb-8">
-              <Heart className="w-16 h-16 text-red-200 mx-auto mb-4" />
-              <h4 className="text-3xl font-bold mb-4">The Devastating Health Impact</h4>
-              <p className="text-xl text-red-100 leading-relaxed max-w-4xl mx-auto">
+              <Heart className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              <h4 className="text-3xl font-bold mb-4 text-white">The Devastating Health Impact</h4>
+              <p className="text-xl text-slate-300 leading-relaxed max-w-4xl mx-auto">
                 Men struggling with social isolation face serious health consequences that can't be ignored
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
-                <div className="text-2xl font-bold text-red-200 mb-2">3x Higher Risk</div>
-                <p className="text-lg text-white">Depression and mental health issues</p>
+              <div className="bg-white/5 backdrop-blur rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                <div className="text-2xl font-bold text-red-400 mb-2">3x Higher Risk</div>
+                <p className="text-lg text-slate-200">Depression and mental health issues</p>
               </div>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
-                <div className="text-2xl font-bold text-red-200 mb-2">Increased Risk</div>
-                <p className="text-lg text-white">Heart disease and early death</p>
+              <div className="bg-white/5 backdrop-blur rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300">
+                <div className="text-2xl font-bold text-red-400 mb-2">Increased Risk</div>
+                <p className="text-lg text-slate-200">Heart disease and early death</p>
               </div>
             </div>
 
             <div className="text-center mt-8 p-6 bg-white/5 rounded-xl border border-white/10">
-              <p className="text-xl font-semibold text-red-100">
+              <p className="text-xl font-semibold text-slate-200">
                 "Scheduling" and "life busyness" are the #1 barriers preventing men from maintaining friendships
               </p>
             </div>
