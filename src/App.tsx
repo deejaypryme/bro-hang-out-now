@@ -10,6 +10,7 @@ import Calendar from "./pages/Calendar";
 import BroMode from "./pages/BroMode";
 import Friends from "./pages/Friends";
 import Invite from "./pages/Invite";
+import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => {
               <Route path="/bro-mode" element={<BroMode />} />
               <Route path="/friends" element={<Friends />} />
               <Route path="/invite" element={<Invite />} />
+              <Route path="/landing" element={<Landing />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

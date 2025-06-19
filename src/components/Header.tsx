@@ -1,5 +1,7 @@
 
 import React from 'react';
+import { Button } from './ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface HeaderProps {
   userStats: {
@@ -9,6 +11,8 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ userStats }) => {
+  const navigate = useNavigate();
+
   return (
     <header className="bg-white/90 backdrop-blur-sm text-gray-800 border-b border-gray-200/50 shadow-sm">
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
@@ -21,6 +25,14 @@ const Header: React.FC<HeaderProps> = ({ userStats }) => {
           </div>
           
           <div className="flex items-center gap-4">
+            <Button 
+              variant="ghost"
+              onClick={() => navigate('/landing')}
+              className="text-gray-600 hover:text-gray-800"
+            >
+              About App
+            </Button>
+            
             <div className="hidden sm:flex items-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm text-gray-600 font-medium">Ready to hang</span>
