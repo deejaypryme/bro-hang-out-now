@@ -1,4 +1,3 @@
-
 export interface Friend {
   id: string;
   name: string;
@@ -27,14 +26,10 @@ export interface Hangout {
   date: Date;
   time: string;
   status: 'confirmed' | 'pending' | 'completed';
-}
-
-export interface Achievement {
-  name: string;
-  emoji: string;
-  requirement: string;
-  earned: boolean;
-  progress?: number;
+  location?: string;
+  confirmed: boolean;
+  confirmedDateTime?: Date;
+  duration?: number; // duration in minutes
 }
 
 // Mock friends data
@@ -81,7 +76,7 @@ export const mockFriends: Friend[] = [
   }
 ];
 
-// Mock upcoming hangouts
+// Mock upcoming hangouts with enhanced data for calendar export
 export const mockHangouts: Hangout[] = [
   {
     id: '1',
@@ -91,7 +86,11 @@ export const mockHangouts: Hangout[] = [
     activityEmoji: '🍺',
     date: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
     time: '6:00 PM',
-    status: 'confirmed'
+    status: 'confirmed',
+    location: 'Downtown Brewery, 123 Main St',
+    confirmed: true,
+    confirmedDateTime: new Date(Date.now() + 24 * 60 * 60 * 1000 + 18 * 60 * 60 * 1000), // Tomorrow at 6 PM
+    duration: 120 // 2 hours
   },
   {
     id: '2',
@@ -101,7 +100,11 @@ export const mockHangouts: Hangout[] = [
     activityEmoji: '☕',
     date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
     time: '10:00 AM',
-    status: 'confirmed'
+    status: 'confirmed',
+    location: 'Starbucks Central Plaza',
+    confirmed: true,
+    confirmedDateTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000 + 10 * 60 * 60 * 1000), // 3 days from now at 10 AM
+    duration: 90 // 1.5 hours
   },
   {
     id: '3',
@@ -111,7 +114,24 @@ export const mockHangouts: Hangout[] = [
     activityEmoji: '🏀',
     date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 1 week from now
     time: '4:00 PM',
-    status: 'pending'
+    status: 'pending',
+    location: 'City Park Basketball Courts',
+    confirmed: false,
+    duration: 60 // 1 hour
+  },
+  {
+    id: '4',
+    friendId: '4',
+    friendName: 'Jake Wilson',
+    activity: 'Gaming Session',
+    activityEmoji: '🎮',
+    date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+    time: '7:30 PM',
+    status: 'confirmed',
+    location: 'Jake\'s Place',
+    confirmed: true,
+    confirmedDateTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 19.5 * 60 * 60 * 1000), // 2 days from now at 7:30 PM
+    duration: 180 // 3 hours
   }
 ];
 
