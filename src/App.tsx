@@ -22,7 +22,7 @@ const App = () => {
         <BrowserRouter>
           <Layout>
             <Routes>
-              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/" element={<Navigate to="/landing" replace />} />
               <Route path="/home" element={<Home />} />
               <Route path="/calendar" element={<Calendar />} />
               <Route path="/bro-mode" element={<BroMode />} />
