@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
-import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown, TrendingDown, Heart, AlertTriangle } from 'lucide-react';
+import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown, TrendingDown, Heart, AlertTriangle, Clock, Send, Activity } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -305,30 +304,154 @@ const Landing = () => {
       </section>
 
       {/* Solution Section */}
-      <section id="solution" className="bg-gradient-to-r from-green-50 to-emerald-50 py-16">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 text-center">
-          <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-8">
-            BroYouFree Changes Everything
-          </h3>
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="text-5xl mb-4">🎯</div>
-              <h4 className="text-xl font-semibold mb-3 text-gray-800">Smart Availability</h4>
-              <p className="text-gray-600 leading-relaxed">Everyone shares when they're free. The app finds the perfect time that works for the whole group automatically.</p>
-            </div>
-            <div className="bg-white rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="text-5xl mb-4">⚡</div>
-              <h4 className="text-xl font-semibold mb-3 text-gray-800">Instant Coordination</h4>
-              <p className="text-gray-600 leading-relaxed">No more endless back-and-forth. Get from "want to hang?" to confirmed plans in minutes, not weeks.</p>
+      <section id="solution" className="bg-gradient-to-r from-green-50 to-emerald-50 py-20">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="text-center mb-16">
+            <h3 className="text-4xl md:text-5xl font-bold text-gray-800 mb-6">
+              BroYouFree Changes Everything
+            </h3>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              From "we should hang out" to confirmed plans in just 3 taps. 
+              The coordination system built for how men actually communicate.
+            </p>
+          </div>
+
+          {/* 3-Tap System Visual Flow */}
+          <div className="mb-16">
+            <h4 className="text-2xl font-bold text-center text-gray-800 mb-8">The 3-Tap System</h4>
+            <div className="grid md:grid-cols-4 gap-6 items-center">
+              {/* Step 1 */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300">
+                <div className="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Users className="w-8 h-8 text-blue-600" />
+                </div>
+                <h5 className="text-lg font-semibold text-gray-800 mb-2">1. Pick Friends</h5>
+                <p className="text-gray-600 text-sm">Select who you want to hang with</p>
+              </div>
+
+              {/* Arrow */}
+              <div className="hidden md:flex justify-center">
+                <ArrowRight className="w-8 h-8 text-green-600" />
+              </div>
+
+              {/* Step 2 */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300">
+                <div className="bg-teal-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Clock className="w-8 h-8 text-teal-600" />
+                </div>
+                <h5 className="text-lg font-semibold text-gray-800 mb-2">2. Find Time</h5>
+                <p className="text-gray-600 text-sm">Auto-match everyone's availability</p>
+              </div>
+
+              {/* Arrow */}
+              <div className="hidden md:flex justify-center">
+                <ArrowRight className="w-8 h-8 text-green-600" />
+              </div>
+
+              {/* Step 3 */}
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300">
+                <div className="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+                  <Send className="w-8 h-8 text-green-600" />
+                </div>
+                <h5 className="text-lg font-semibold text-gray-800 mb-2">3. Send Invite</h5>
+                <p className="text-gray-600 text-sm">One tap sends the plan to everyone</p>
+              </div>
             </div>
           </div>
-          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-xl p-8 shadow-xl">
-            <h4 className="text-2xl font-bold mb-4">Dave & Matt Now:</h4>
-            <p className="text-lg leading-relaxed">
-              Dave opens BroYouFree, sees Matt is free Friday evening, sends a dinner invite. 
-              Matt gets notified, confirms with one tap. Dinner is booked at 7 PM. 
-              <strong className="text-yellow-300"> Total time: 30 seconds.</strong>
-            </p>
+
+          {/* Core Features */}
+          <div className="grid md:grid-cols-2 gap-8 mb-16">
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <Clock className="w-8 h-8 text-blue-600" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold mb-2 text-gray-800">Quick Coordination</h4>
+                  <p className="text-gray-600 leading-relaxed">No more endless group chats. Smart algorithms find the perfect time that works for everyone automatically.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-teal-50 p-3 rounded-lg">
+                  <Activity className="w-8 h-8 text-teal-600" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold mb-2 text-gray-800">Activity-First Planning</h4>
+                  <p className="text-gray-600 leading-relaxed">Start with what you want to do, not when you're free. Built for spontaneous hangouts and planned adventures.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-green-50 p-3 rounded-lg">
+                  <Calendar className="w-8 h-8 text-green-600" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold mb-2 text-gray-800">Smart Scheduling</h4>
+                  <p className="text-gray-600 leading-relaxed">Integrates with your calendar to automatically suggest optimal times when the whole group is available.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <MessageSquare className="w-8 h-8 text-purple-600" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold mb-2 text-gray-800">Masculine Communication</h4>
+                  <p className="text-gray-600 leading-relaxed">Direct, efficient messaging designed for how men actually communicate. No overthinking, just results.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Dave & Matt Transformation */}
+          <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-2xl p-10 shadow-xl">
+            <div className="text-center mb-8">
+              <h4 className="text-3xl font-bold mb-4">Dave & Matt Now</h4>
+              <p className="text-xl text-blue-100 leading-relaxed max-w-4xl mx-auto">
+                See how the 3-tap system transforms their coordination
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 items-center">
+              {/* Before */}
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                <div className="text-lg font-semibold text-blue-200 mb-3">Before BroYouFree</div>
+                <div className="space-y-2 text-sm text-blue-100">
+                  <p>"Want to grab dinner this week?"</p>
+                  <p>"Maybe Thursday?"</p>
+                  <p>"Actually, I have work..."</p>
+                  <p>"Let me check my calendar..."</p>
+                  <div className="text-red-300 font-medium mt-3">3 weeks later: still no dinner</div>
+                </div>
+              </div>
+
+              {/* Arrow */}
+              <div className="text-center">
+                <div className="bg-yellow-400 text-yellow-900 px-4 py-2 rounded-full font-semibold text-sm mx-auto inline-block">
+                  3-Tap System
+                </div>
+                <ArrowRight className="w-12 h-12 text-yellow-400 mx-auto mt-4" />
+              </div>
+
+              {/* After */}
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                <div className="text-lg font-semibold text-green-300 mb-3">With BroYouFree</div>
+                <div className="space-y-2 text-sm text-blue-100">
+                  <p>✓ Dave picks Matt as friend</p>
+                  <p>✓ App finds Friday 7 PM works</p>
+                  <p>✓ Sends dinner invite instantly</p>
+                  <p>✓ Matt confirms with one tap</p>
+                  <div className="text-green-300 font-medium mt-3">Total time: 30 seconds</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
