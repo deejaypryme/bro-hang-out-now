@@ -4,6 +4,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
+import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -82,46 +83,73 @@ const Landing = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 scroll-smooth">
+    <div className="min-h-screen bg-white scroll-smooth">
       {/* Hero Section */}
-      <section id="hero" className="max-w-6xl mx-auto px-4 md:px-6 py-16 animate-fade-in">
-        <div className="text-center">
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-2xl text-white shadow-lg">
-              👊
+      <section id="hero" className="hero-background min-h-screen flex items-center relative overflow-hidden">
+        <div className="max-w-6xl mx-auto px-4 md:px-6 py-16 relative z-10">
+          <div className="text-center">
+            {/* Brand Icon */}
+            <div className="flex items-center justify-center mb-8">
+              <div className="bg-gradient-to-r from-blue-500 to-teal-500 p-4 rounded-2xl shadow-2xl">
+                <Users className="w-12 h-12 text-white" />
+              </div>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            
+            {/* Brand Name */}
+            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-wide">
               BroYouFree
             </h1>
-          </div>
-          
-          <h2 className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
-            Turn "maybe later" into confirmed plans. Finally coordinate hangouts that actually happen.
-          </h2>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Button 
-              onClick={() => navigate('/home')}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-8 py-3 text-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-            >
-              Try the App
-            </Button>
-            <Button 
-              variant="outline"
-              onClick={() => scrollToSection('story')}
-              className="border-blue-600 text-blue-600 hover:bg-blue-50 px-8 py-3 text-lg shadow-md hover:shadow-lg transition-all duration-300"
-            >
-              Learn More
-            </Button>
-          </div>
-
-          {/* Scroll Indicator */}
-          <div className="scroll-indicator-bounce cursor-pointer" onClick={() => scrollToSection('story')}>
-            <div className="w-6 h-10 border-2 border-blue-400 rounded-full flex justify-center">
-              <div className="w-1 h-3 bg-blue-400 rounded-full mt-2 animate-bounce"></div>
+            
+            {/* Main Tagline */}
+            <h2 className="hero-title mb-6">
+              Because Friends Matter<br />and So Do You
+            </h2>
+            
+            {/* Hero Subtitle */}
+            <p className="hero-subtitle mb-12 max-w-3xl mx-auto">
+              Transform "we should hang out" into confirmed plans. 
+              The friendship coordination app built for how men actually communicate.
+            </p>
+            
+            {/* Hero CTAs */}
+            <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
+              <Button 
+                onClick={() => navigate('/home')}
+                className="btn-hero-primary group"
+              >
+                Try the App
+                <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button 
+                onClick={() => scrollToSection('story')}
+                className="btn-hero-secondary group"
+              >
+                Learn More
+                <ChevronDown className="ml-2 w-5 h-5 group-hover:translate-y-1 transition-transform" />
+              </Button>
             </div>
-            <p className="text-sm text-blue-400 mt-2">Scroll to learn more</p>
+
+            {/* Feature Preview Icons */}
+            <div className="flex justify-center gap-12 text-white/70">
+              <div className="flex flex-col items-center gap-2">
+                <MessageSquare className="w-8 h-8" />
+                <span className="text-sm font-medium">Quick Invite</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Calendar className="w-8 h-8" />
+                <span className="text-sm font-medium">Smart Scheduling</span>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <Users className="w-8 h-8" />
+                <span className="text-sm font-medium">Group Coordination</span>
+              </div>
+            </div>
           </div>
+        </div>
+        
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/60 animate-bounce cursor-pointer" onClick={() => scrollToSection('story')}>
+          <ChevronDown className="w-6 h-6" />
         </div>
       </section>
 

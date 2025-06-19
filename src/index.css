@@ -106,47 +106,50 @@
   }
 
   :root {
-    /* Core UI Colors */
+    /* Premium Color Scheme - Professional Blues/Teals */
     --background: 255 255 255; /* #FFFFFF */
-    --foreground: 10 17 36; /* #0A1124 */
+    --foreground: 15 23 42; /* #0F172A - Darker for better contrast */
     
-    /* Primary Brand Colors */
-    --primary: 76 99 210; /* #4C63D2 */
+    /* Primary Brand Colors - Sophisticated Blue/Teal System */
+    --primary: 30 58 138; /* #1E3A8A - Deep Professional Blue */
     --primary-foreground: 255 255 255; /* #FFFFFF */
-    --primary-hover: 58 75 178; /* #3A4BB2 */
-    --primary-light: 124 136 230; /* #7C88E6 */
-    --primary-dark: 64 84 180; /* #4054B4 */
-    --secondary: 139 146 178; /* #8B92B2 */
-    --accent: 76 99 210; /* Updated to use primary blue instead of yellow */
-    --accent-light: 124 136 230; /* Updated to use primary light blue */
-    --success: 6 214 160; /* #06D6A0 */
-    --success-light: 52 211 153; /* #34D399 */
-    --warning: 251 146 60; /* #FB923C */
-    --warning-light: 252 211 77; /* #FCDF4D */
-    --error: 255 82 82; /* #FF5252 */
-    --error-light: 254 202 202; /* #FECACA */
-    --muted: 139 146 178; /* #8B92B2 */
+    --primary-hover: 29 78 216; /* #1D4ED8 - Bright Blue Hover */
+    --primary-light: 59 130 246; /* #3B82F6 - Light Blue Accent */
+    --primary-dark: 15 23 42; /* #0F172A - Very Dark Blue */
+    
+    /* Secondary Teal Accents */
+    --secondary: 20 184 166; /* #14B8A6 - Teal */
+    --secondary-light: 45 212 191; /* #2DD4BF - Light Teal */
+    --secondary-dark: 15 118 110; /* #0F766E - Dark Teal */
+    
+    /* Accent Colors */
+    --accent: 30 58 138; /* Using primary blue */
+    --accent-light: 59 130 246; /* Light blue */
+    --success: 34 197 94; /* #22C55E - Green */
+    --warning: 245 158 11; /* #F59E0B - Amber */
+    --error: 239 68 68; /* #EF4444 - Red */
+    --muted: 100 116 139; /* #64748B - Slate */
     
     /* Background and Surface Colors */
     --bg-primary: 255 255 255; /* #FFFFFF */
-    --bg-secondary: 249 250 251; /* #F9FAFB */
-    --bg-tertiary: 243 244 246; /* #F3F4F6 */
+    --bg-secondary: 248 250 252; /* #F8FAFC - Very Light Blue */
+    --bg-tertiary: 241 245 249; /* #F1F5F9 - Light Blue Gray */
+    --bg-hero: 15 23 42; /* #0F172A - Dark Blue for Hero */
     
     /* Border Colors */
-    --border: 229 231 235; /* #E5E7EB */
-    --border-hover: 209 213 219; /* #D1D5DB */
+    --border: 226 232 240; /* #E2E8F0 */
+    --border-hover: 203 213 225; /* #CBD5E1 */
     
     /* Input Colors */
-    --input: 229 231 235; /* #E5E7EB */
-    --ring: 76 99 210; /* #4C63D2 */
+    --input: 226 232 240; /* #E2E8F0 */
+    --ring: 30 58 138; /* #1E3A8A */
     
     /* Radix UI Variables */
-    --radius: 0.5rem;
-    --ring: 76 99 210;
+    --radius: 0.75rem; /* Increased for more modern look */
   }
 
   .dark {
-    --background: 10 17 36; /* #0A1124 */
+    --background: 15 23 42; /* #0F172A */
     --foreground: 255 255 255; /* #FFFFFF */
   }
 }
@@ -441,5 +444,54 @@
   /* Scroll smooth */
   .scroll-smooth {
     scroll-behavior: smooth;
+  }
+
+  /* Premium Typography System */
+  .hero-title {
+    @apply text-5xl md:text-7xl font-black text-white leading-tight tracking-tight;
+    background: linear-gradient(135deg, #FFFFFF 0%, #3B82F6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .hero-subtitle {
+    @apply text-xl md:text-2xl text-slate-300 font-medium leading-relaxed;
+  }
+  
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-slate-900 leading-tight;
+  }
+  
+  .section-subtitle {
+    @apply text-lg md:text-xl text-slate-600 font-medium;
+  }
+
+  /* Premium Button Styles */
+  .btn-hero-primary {
+    @apply bg-gradient-to-r from-blue-600 via-blue-700 to-blue-800 text-white px-8 py-4 text-lg font-semibold rounded-xl shadow-2xl hover:shadow-blue-500/25 transform hover:-translate-y-1 transition-all duration-300 border border-blue-500/20;
+  }
+  
+  .btn-hero-secondary {
+    @apply bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 text-lg font-semibold rounded-xl hover:bg-white/20 transition-all duration-300;
+  }
+
+  /* Hero Background */
+  .hero-background {
+    background: linear-gradient(135deg, #0F172A 0%, #1E3A8A 50%, #0F766E 100%);
+    position: relative;
+  }
+  
+  .hero-background::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
+    pointer-events: none;
   }
 }
