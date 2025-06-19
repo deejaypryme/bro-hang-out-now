@@ -32,6 +32,14 @@ export interface Hangout {
   duration?: number; // duration in minutes
 }
 
+export interface Achievement {
+  name: string;
+  emoji: string;
+  requirement: string;
+  earned: boolean;
+  progress?: number;
+}
+
 // Mock friends data
 export const mockFriends: Friend[] = [
   {
