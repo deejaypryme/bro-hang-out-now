@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
-import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown } from 'lucide-react';
+import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown, TrendingDown, Heart, AlertTriangle } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -121,7 +121,7 @@ const Landing = () => {
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
-                onClick={() => scrollToSection('story')}
+                onClick={() => scrollToSection('crisis')}
                 className="btn-hero-secondary group"
               >
                 Learn More
@@ -148,8 +148,95 @@ const Landing = () => {
         </div>
         
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/60 animate-bounce cursor-pointer" onClick={() => scrollToSection('story')}>
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/60 animate-bounce cursor-pointer" onClick={() => scrollToSection('crisis')}>
           <ChevronDown className="w-6 h-6" />
+        </div>
+      </section>
+
+      {/* Male Friendship Crisis Section */}
+      <section id="crisis" className="bg-gradient-to-r from-red-50 to-orange-50 py-20">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center mb-6">
+              <AlertTriangle className="w-12 h-12 text-red-600" />
+            </div>
+            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              The Male Friendship Crisis
+            </h3>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              We're facing an epidemic of male loneliness that's destroying friendships and threatening men's health
+            </p>
+          </div>
+
+          {/* Key Statistics */}
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-white rounded-2xl p-8 shadow-xl border-l-4 border-red-500 hover:shadow-2xl transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <TrendingDown className="w-10 h-10 text-red-600 mr-4" />
+                <div>
+                  <div className="text-4xl font-black text-red-600">75%</div>
+                  <div className="text-sm text-gray-600 font-medium">OF MEN AGED 30-55</div>
+                </div>
+              </div>
+              <p className="text-gray-800 font-semibold text-lg leading-tight">
+                Want to spend more time with friends but can't overcome the coordination barrier
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-xl border-l-4 border-orange-500 hover:shadow-2xl transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <Users className="w-10 h-10 text-orange-600 mr-4" />
+                <div>
+                  <div className="text-4xl font-black text-orange-600">2</div>
+                  <div className="text-sm text-gray-600 font-medium">CLOSE FRIENDS</div>
+                </div>
+              </div>
+              <p className="text-gray-800 font-semibold text-lg leading-tight">
+                Average number of close male friends (down from 6+ in 1990)
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-8 shadow-xl border-l-4 border-red-500 hover:shadow-2xl transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <AlertTriangle className="w-10 h-10 text-red-600 mr-4" />
+                <div>
+                  <div className="text-4xl font-black text-red-600">15%</div>
+                  <div className="text-sm text-gray-600 font-medium">OF MEN</div>
+                </div>
+              </div>
+              <p className="text-gray-800 font-semibold text-lg leading-tight">
+                Have no close friends at all (up from 3% in 1990)
+              </p>
+            </div>
+          </div>
+
+          {/* Health Consequences */}
+          <div className="bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl p-10 shadow-2xl">
+            <div className="text-center mb-8">
+              <Heart className="w-16 h-16 text-red-200 mx-auto mb-4" />
+              <h4 className="text-3xl font-bold mb-4">The Devastating Health Impact</h4>
+              <p className="text-xl text-red-100 leading-relaxed max-w-4xl mx-auto">
+                Men struggling with social isolation face serious health consequences that can't be ignored
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                <div className="text-2xl font-bold text-red-200 mb-2">3x Higher Risk</div>
+                <p className="text-lg text-white">Depression and mental health issues</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                <div className="text-2xl font-bold text-red-200 mb-2">Increased Risk</div>
+                <p className="text-lg text-white">Heart disease and early death</p>
+              </div>
+            </div>
+
+            <div className="text-center mt-8 p-6 bg-white/5 rounded-xl border border-white/10">
+              <p className="text-xl font-semibold text-red-100">
+                "Scheduling" and "life busyness" are the #1 barriers preventing men from maintaining friendships
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
