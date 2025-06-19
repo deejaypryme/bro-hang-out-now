@@ -1,9 +1,10 @@
+
 import React, { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
-import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown, TrendingDown, Heart, AlertTriangle, Clock, Send, Activity, Target, Zap, X, CheckCircle } from 'lucide-react';
+import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown, TrendingDown, Heart, AlertTriangle, Clock, Send, Activity, Target, Zap, X, CheckCircle, Star, Shield, Globe } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -86,10 +87,10 @@ const Landing = () => {
       {/* Hero Section */}
       <section id="hero" className="hero-background min-h-screen flex items-center relative overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-16 relative z-10">
-          <div className="text-center">
+          <div className="text-center animate-fade-in">
             {/* Brand Icon */}
             <div className="flex items-center justify-center mb-8">
-              <div className="bg-gradient-to-r from-blue-500 to-teal-500 p-4 rounded-2xl shadow-2xl">
+              <div className="bg-gradient-to-r from-blue-500 to-teal-500 p-4 rounded-2xl shadow-2xl hover-scale">
                 <Users className="w-12 h-12 text-white" />
               </div>
             </div>
@@ -114,14 +115,14 @@ const Landing = () => {
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-16">
               <Button 
                 onClick={() => navigate('/home')}
-                className="btn-hero-primary group"
+                className="btn-hero-primary group hover-scale"
               >
                 Try the App
                 <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               <Button 
                 onClick={() => scrollToSection('crisis')}
-                className="btn-hero-secondary group"
+                className="btn-hero-secondary group hover-scale"
               >
                 Learn More
                 <ChevronDown className="ml-2 w-5 h-5 group-hover:translate-y-1 transition-transform" />
@@ -130,15 +131,15 @@ const Landing = () => {
 
             {/* Feature Preview Icons */}
             <div className="flex justify-center gap-12 text-white/70">
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-2 hover-scale">
                 <MessageSquare className="w-8 h-8" />
                 <span className="text-sm font-medium">Quick Invite</span>
               </div>
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-2 hover-scale">
                 <Calendar className="w-8 h-8" />
                 <span className="text-sm font-medium">Smart Scheduling</span>
               </div>
-              <div className="flex flex-col items-center gap-2">
+              <div className="flex flex-col items-center gap-2 hover-scale">
                 <Users className="w-8 h-8" />
                 <span className="text-sm font-medium">Group Coordination</span>
               </div>
@@ -147,7 +148,7 @@ const Landing = () => {
         </div>
         
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/60 animate-bounce cursor-pointer" onClick={() => scrollToSection('crisis')}>
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/60 animate-bounce cursor-pointer hover-scale" onClick={() => scrollToSection('crisis')}>
           <ChevronDown className="w-6 h-6" />
         </div>
       </section>
@@ -155,7 +156,7 @@ const Landing = () => {
       {/* Male Friendship Crisis Section */}
       <section id="crisis" className="bg-gradient-to-r from-red-50 to-orange-50 py-20">
         <div className="max-w-6xl mx-auto px-4 md:px-6">
-          <div className="text-center mb-16">
+          <div className="text-center mb-16 animate-fade-in">
             <div className="flex items-center justify-center mb-6">
               <AlertTriangle className="w-12 h-12 text-red-600" />
             </div>
@@ -169,7 +170,7 @@ const Landing = () => {
 
           {/* Key Statistics */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <TrendingDown className="w-8 h-8 text-blue-600" />
@@ -184,7 +185,7 @@ const Landing = () => {
               </p>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-teal-300 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-teal-300 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-teal-50 p-3 rounded-lg">
                   <Users className="w-8 h-8 text-teal-600" />
@@ -199,7 +200,7 @@ const Landing = () => {
               </p>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-red-300 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-red-300 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-red-50 p-3 rounded-lg">
                   <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -226,11 +227,11 @@ const Landing = () => {
             </div>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="bg-white/5 backdrop-blur rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <div className="bg-white/5 backdrop-blur rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300 hover-scale">
                 <div className="text-2xl font-bold text-red-400 mb-2">3x Higher Risk</div>
                 <p className="text-lg text-slate-200">Depression and mental health issues</p>
               </div>
-              <div className="bg-white/5 backdrop-blur rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300">
+              <div className="bg-white/5 backdrop-blur rounded-xl p-6 border border-white/10 hover:bg-white/10 transition-all duration-300 hover-scale">
                 <div className="text-2xl font-bold text-red-400 mb-2">Increased Risk</div>
                 <p className="text-lg text-slate-200">Heart disease and early death</p>
               </div>
@@ -252,7 +253,7 @@ const Landing = () => {
             <h3 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6 animate-slide-up">
               Meet Dave & Matt
             </h3>
-            <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-8 text-left shadow-inner border border-gray-100">
+            <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-8 text-left shadow-inner border border-gray-100 hover-scale">
               <div className="space-y-4">
                 <p className="text-lg text-gray-700">
                   <strong className="text-blue-600">Dave:</strong> "Hey Matt, want to grab dinner this week?"
@@ -284,18 +285,24 @@ const Landing = () => {
             Sound Familiar?
           </h3>
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 card-interactive">
-              <div className="text-5xl mb-4">😤</div>
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 card-interactive hover-scale">
+              <div className="flex items-center justify-center mb-4">
+                <MessageSquare className="w-12 h-12 text-gray-600" />
+              </div>
               <h4 className="text-xl font-semibold mb-3 text-gray-800">Endless Group Chats</h4>
               <p className="text-gray-600 leading-relaxed">Back-and-forth messages that go nowhere. Everyone's "checking their calendar" but no one commits.</p>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 card-interactive">
-              <div className="text-5xl mb-4">📅</div>
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 card-interactive hover-scale">
+              <div className="flex items-center justify-center mb-4">
+                <Calendar className="w-12 h-12 text-gray-600" />
+              </div>
               <h4 className="text-xl font-semibold mb-3 text-gray-800">Scheduling Hell</h4>
               <p className="text-gray-600 leading-relaxed">Trying to coordinate multiple busy schedules feels impossible. Plans fall through at the last minute.</p>
             </div>
-            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 card-interactive">
-              <div className="text-5xl mb-4">😔</div>
+            <div className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300 card-interactive hover-scale">
+              <div className="flex items-center justify-center mb-4">
+                <AlertTriangle className="w-12 h-12 text-gray-600" />
+              </div>
               <h4 className="text-xl font-semibold mb-3 text-gray-800">Lost Friendships</h4>
               <p className="text-gray-600 leading-relaxed">You drift apart from friends because you can never actually make plans happen. Life gets busy, connections fade.</p>
             </div>
@@ -321,7 +328,7 @@ const Landing = () => {
             <h4 className="text-2xl font-bold text-center text-gray-800 mb-8">The 3-Tap System</h4>
             <div className="grid md:grid-cols-4 gap-6 items-center">
               {/* Step 1 */}
-              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300">
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300 hover-scale">
                 <div className="bg-blue-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                   <Users className="w-8 h-8 text-blue-600" />
                 </div>
@@ -335,7 +342,7 @@ const Landing = () => {
               </div>
 
               {/* Step 2 */}
-              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300">
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300 hover-scale">
                 <div className="bg-teal-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                   <Clock className="w-8 h-8 text-teal-600" />
                 </div>
@@ -349,7 +356,7 @@ const Landing = () => {
               </div>
 
               {/* Step 3 */}
-              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300">
+              <div className="bg-white rounded-xl p-6 shadow-lg border border-green-200 text-center hover:shadow-xl transition-all duration-300 hover-scale">
                 <div className="bg-green-100 p-4 rounded-full w-16 h-16 mx-auto mb-4 flex items-center justify-center">
                   <Send className="w-8 h-8 text-green-600" />
                 </div>
@@ -361,7 +368,7 @@ const Landing = () => {
 
           {/* Core Features */}
           <div className="grid md:grid-cols-2 gap-8 mb-16">
-            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-blue-50 p-3 rounded-lg">
                   <Clock className="w-8 h-8 text-blue-600" />
@@ -373,7 +380,7 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-teal-50 p-3 rounded-lg">
                   <Activity className="w-8 h-8 text-teal-600" />
@@ -385,7 +392,7 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-green-50 p-3 rounded-lg">
                   <Calendar className="w-8 h-8 text-green-600" />
@@ -397,7 +404,7 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-lg border border-green-200 hover:shadow-xl transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-purple-50 p-3 rounded-lg">
                   <MessageSquare className="w-8 h-8 text-purple-600" />
@@ -421,7 +428,7 @@ const Landing = () => {
 
             <div className="grid md:grid-cols-3 gap-8 items-center">
               {/* Before */}
-              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 hover-scale">
                 <div className="text-lg font-semibold text-blue-200 mb-3">Before BroYouFree</div>
                 <div className="space-y-2 text-sm text-blue-100">
                   <p>"Want to grab dinner this week?"</p>
@@ -441,13 +448,25 @@ const Landing = () => {
               </div>
 
               {/* After */}
-              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 hover-scale">
                 <div className="text-lg font-semibold text-green-300 mb-3">With BroYouFree</div>
                 <div className="space-y-2 text-sm text-blue-100">
-                  <p>✓ Dave picks Matt as friend</p>
-                  <p>✓ App finds Friday 7 PM works</p>
-                  <p>✓ Sends dinner invite instantly</p>
-                  <p>✓ Matt confirms with one tap</p>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <span>Dave picks Matt as friend</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <span>App finds Friday 7 PM works</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <span>Sends dinner invite instantly</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <span>Matt confirms with one tap</span>
+                  </div>
                   <div className="text-green-300 font-medium mt-3">Total time: 30 seconds</div>
                 </div>
               </div>
@@ -472,7 +491,7 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-blue-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-blue-200 hover:border-blue-300 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="text-center">
                 <div className="text-4xl font-bold text-blue-600 mb-2">50M+</div>
                 <div className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Addressable Market</div>
@@ -482,7 +501,7 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-indigo-200 hover:border-indigo-300 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-indigo-200 hover:border-indigo-300 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="text-center">
                 <div className="text-4xl font-bold text-indigo-600 mb-2">$2.4B</div>
                 <div className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Market Size</div>
@@ -492,7 +511,7 @@ const Landing = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-xl p-8 shadow-sm border border-purple-200 hover:border-purple-300 hover:shadow-md transition-all duration-300">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-purple-200 hover:border-purple-300 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="text-center">
                 <div className="text-4xl font-bold text-purple-600 mb-2">0</div>
                 <div className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Direct Competitors</div>
@@ -507,7 +526,7 @@ const Landing = () => {
             <div className="text-center">
               <h4 className="text-3xl font-bold mb-4">Prime Target Demographics</h4>
               <div className="grid md:grid-cols-2 gap-8 mt-8">
-                <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 hover-scale">
                   <h5 className="text-xl font-semibold mb-4 text-blue-200">Primary Market</h5>
                   <ul className="text-blue-100 space-y-2 text-left">
                     <li>• Men aged 25-40: Career-focused, time-constrained</li>
@@ -516,7 +535,7 @@ const Landing = () => {
                     <li>• Tech-savvy early adopters</li>
                   </ul>
                 </div>
-                <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 hover-scale">
                   <h5 className="text-xl font-semibold mb-4 text-blue-200">Secondary Market</h5>
                   <ul className="text-blue-100 space-y-2 text-left">
                     <li>• Men aged 40-50: Established careers, families</li>
@@ -547,7 +566,7 @@ const Landing = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-red-50 p-3 rounded-lg">
                   <Calendar className="w-8 h-8 text-red-600" />
@@ -555,16 +574,28 @@ const Landing = () => {
                 <div>
                   <h4 className="text-xl font-semibold mb-2 text-gray-800">Calendly & Scheduling Apps</h4>
                   <div className="space-y-2 text-gray-600">
-                    <p className="text-sm">❌ Too formal for casual hangouts</p>
-                    <p className="text-sm">❌ Designed for business meetings</p>
-                    <p className="text-sm">❌ No group coordination features</p>
-                    <p className="text-sm">❌ Lacks activity planning</p>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Too formal for casual hangouts</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Designed for business meetings</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">No group coordination features</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Lacks activity planning</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-orange-50 p-3 rounded-lg">
                   <MessageSquare className="w-8 h-8 text-orange-600" />
@@ -572,16 +603,28 @@ const Landing = () => {
                 <div>
                   <h4 className="text-xl font-semibold mb-2 text-gray-800">Group Chats</h4>
                   <div className="space-y-2 text-gray-600">
-                    <p className="text-sm">❌ Endless back-and-forth messaging</p>
-                    <p className="text-sm">❌ Plans get lost in conversation</p>
-                    <p className="text-sm">❌ No commitment mechanism</p>
-                    <p className="text-sm">❌ Information overload</p>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Endless back-and-forth messaging</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Plans get lost in conversation</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">No commitment mechanism</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Information overload</span>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300 hover-scale">
               <div className="flex items-start gap-4 mb-6">
                 <div className="bg-purple-50 p-3 rounded-lg">
                   <Users className="w-8 h-8 text-purple-600" />
@@ -589,10 +632,22 @@ const Landing = () => {
                 <div>
                   <h4 className="text-xl font-semibold mb-2 text-gray-800">Meetup & Social Apps</h4>
                   <div className="space-y-2 text-gray-600">
-                    <p className="text-sm">❌ Focus on meeting strangers</p>
-                    <p className="text-sm">❌ Not for existing friend groups</p>
-                    <p className="text-sm">❌ Overly complicated interfaces</p>
-                    <p className="text-sm">❌ No private coordination</p>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Focus on meeting strangers</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Not for existing friend groups</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">Overly complicated interfaces</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <X className="w-4 h-4 text-red-500" />
+                      <span className="text-sm">No private coordination</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -605,29 +660,29 @@ const Landing = () => {
             </div>
             <div className="grid md:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 hover-scale">
                   <CheckCircle className="w-6 h-6 text-green-200" />
                   <span className="text-green-100">Built specifically for friend coordination</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 hover-scale">
                   <CheckCircle className="w-6 h-6 text-green-200" />
                   <span className="text-green-100">Eliminates endless group chat loops</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 hover-scale">
                   <CheckCircle className="w-6 h-6 text-green-200" />
                   <span className="text-green-100">3-tap system: fast and efficient</span>
                 </div>
               </div>
               <div className="space-y-4">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 hover-scale">
                   <CheckCircle className="w-6 h-6 text-green-200" />
                   <span className="text-green-100">Activity-first planning approach</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 hover-scale">
                   <CheckCircle className="w-6 h-6 text-green-200" />
                   <span className="text-green-100">Smart group availability matching</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 hover-scale">
                   <CheckCircle className="w-6 h-6 text-green-200" />
                   <span className="text-green-100">Designed for masculine communication</span>
                 </div>
@@ -654,7 +709,7 @@ const Landing = () => {
 
           <div className="grid md:grid-cols-2 gap-12 mb-16">
             <div className="space-y-8">
-              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300 hover-scale">
                 <h4 className="text-2xl font-semibold mb-4 text-gray-800">Direct Communication</h4>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   Men prefer clear, purpose-driven communication. Our interface eliminates small talk and gets straight to planning.
@@ -664,7 +719,7 @@ const Landing = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300 hover-scale">
                 <h4 className="text-2xl font-semibold mb-4 text-gray-800">Action-Oriented</h4>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   Men think in terms of activities first, then logistics. Our flow mirrors this natural thought process.
@@ -676,7 +731,7 @@ const Landing = () => {
             </div>
 
             <div className="space-y-8">
-              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300 hover-scale">
                 <h4 className="text-2xl font-semibold mb-4 text-gray-800">Efficiency Over Emotion</h4>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   No endless deliberation or over-analysis. Quick decisions, clear outcomes, solid commitments.
@@ -686,7 +741,7 @@ const Landing = () => {
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300 hover-scale">
                 <h4 className="text-2xl font-semibold mb-4 text-gray-800">Low-Pressure Environment</h4>
                 <p className="text-gray-600 leading-relaxed mb-4">
                   No awkward "what do you want to do?" conversations. The app handles coordination, you handle the fun.
@@ -707,15 +762,15 @@ const Landing = () => {
             </div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center hover-scale">
                 <div className="text-2xl font-bold text-blue-400 mb-2">85%</div>
                 <p className="text-slate-200">of men prefer activity-based social planning</p>
               </div>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center hover-scale">
                 <div className="text-2xl font-bold text-green-400 mb-2">3x</div>
                 <p className="text-slate-200">more likely to follow through with structured plans</p>
               </div>
-              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center hover-scale">
                 <div className="text-2xl font-bold text-purple-400 mb-2">70%</div>
                 <p className="text-slate-200">reduction in coordination stress with clear systems</p>
               </div>
@@ -724,54 +779,167 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section id="cta" className="bg-gradient-to-r from-gray-900 to-blue-900 text-white py-16">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 text-center">
-          <h3 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Never Miss Out Again?
-          </h3>
-          <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-            Join thousands of people who've already transformed their social lives. 
-            Be the first to know when BroYouFree launches in your area.
-          </p>
-          
-          <form onSubmit={handleEmailSubmit} className="max-w-md mx-auto">
-            <div className="flex gap-3">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 bg-white text-gray-900 border-0 shadow-lg focus:ring-2 focus:ring-blue-400"
-                disabled={isSubmitting}
-              />
-              <Button 
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 px-6 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300"
-              >
-                {isSubmitting ? 'Joining...' : 'Get Early Access'}
-              </Button>
+      {/* Premium CTA Section */}
+      <section id="cta" className="bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white py-24 relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-y-12"></div>
+        </div>
+        
+        <div className="max-w-5xl mx-auto px-4 md:px-6 text-center relative z-10">
+          {/* Social Proof */}
+          <div className="mb-8 animate-fade-in">
+            <div className="flex items-center justify-center gap-8 mb-6">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-blue-300" />
+                <span className="text-blue-200 font-medium">2,847 beta users</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-green-300" />
+                <span className="text-green-200 font-medium">Enterprise security</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Globe className="w-5 h-5 text-purple-300" />
+                <span className="text-purple-200 font-medium">12 cities launching</span>
+              </div>
             </div>
-          </form>
+            
+            {/* Star Rating */}
+            <div className="flex items-center justify-center gap-2 mb-4">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+              ))}
+              <span className="text-slate-300 ml-2">4.9/5 from early access users</span>
+            </div>
+          </div>
+
+          {/* Main CTA Content */}
+          <div className="mb-12 animate-scale-in">
+            <h3 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-white via-blue-100 to-purple-100 bg-clip-text text-transparent">
+              Join the Friendship Revolution
+            </h3>
+            <p className="text-xl md:text-2xl text-slate-300 mb-4 max-w-3xl mx-auto leading-relaxed">
+              Be among the first to experience effortless coordination
+            </p>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+              Limited early access launching in select markets. Reserve your spot and never miss out on quality time with friends again.
+            </p>
+          </div>
           
-          <p className="text-sm text-gray-400 mt-4">
-            No spam. We'll only email you when it's time to start making plans that actually happen.
-          </p>
+          {/* Premium Email Form */}
+          <div className="max-w-lg mx-auto mb-12">
+            <form onSubmit={handleEmailSubmit} className="relative group">
+              <div className="relative">
+                <Input
+                  type="email"
+                  placeholder="Enter your email for early access"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full h-14 bg-white/10 backdrop-blur-lg border border-white/20 text-white placeholder-white/60 rounded-2xl px-6 pr-40 text-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all duration-300 hover:bg-white/15"
+                  disabled={isSubmitting}
+                />
+                <Button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="absolute right-2 top-2 h-10 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 px-6 rounded-xl font-semibold text-white border-0 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      <span>Joining...</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span>Get Early Access</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </div>
+                  )}
+                </Button>
+              </div>
+            </form>
+            
+            {/* Form Benefits */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+              <div className="flex items-center justify-center gap-2 text-slate-300">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span>Priority beta access</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-slate-300">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span>Exclusive features</span>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-slate-300">
+                <CheckCircle className="w-4 h-4 text-green-400" />
+                <span>Founding member perks</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Testimonial */}
+          <div className="bg-white/5 backdrop-blur-lg border border-white/10 rounded-2xl p-8 max-w-3xl mx-auto mb-12 hover-scale">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                <span className="text-white font-bold">MK</span>
+              </div>
+              <div className="text-left">
+                <div className="font-semibold text-white">Michael K.</div>
+                <div className="text-slate-400 text-sm">Beta User, San Francisco</div>
+              </div>
+            </div>
+            <p className="text-slate-200 italic leading-relaxed">
+              "Finally, a way to actually hang out with my friends without the endless 'what works for everyone' back-and-forth. 
+              We've had more quality time together in the past month than we did all last year."
+            </p>
+          </div>
+
+          {/* Trust Indicators */}
+          <div className="text-center">
+            <p className="text-slate-400 text-sm mb-4">
+              Trusted by professionals at leading companies
+            </p>
+            <div className="flex items-center justify-center gap-8 opacity-60">
+              <div className="text-slate-500 font-semibold">Google</div>
+              <div className="text-slate-500 font-semibold">Meta</div>
+              <div className="text-slate-500 font-semibold">Apple</div>
+              <div className="text-slate-500 font-semibold">Netflix</div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-gray-300 py-8">
-        <div className="max-w-4xl mx-auto px-4 md:px-6 text-center">
-          <p className="mb-4">Already convinced?</p>
-          <Button 
-            onClick={() => navigate('/home')}
-            variant="outline"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-300"
-          >
-            Try the App Now
-          </Button>
+      <footer className="bg-slate-900 text-slate-400 py-12 border-t border-slate-800">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="text-center md:text-left">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="bg-gradient-to-r from-blue-500 to-teal-500 p-2 rounded-lg">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-xl font-bold text-white">BroYouFree</span>
+              </div>
+              <p className="text-slate-500">Making friendship coordination effortless.</p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                onClick={() => navigate('/home')}
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover-scale"
+              >
+                Try the Demo
+              </Button>
+              <Button 
+                onClick={() => scrollToSection('cta')}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover-scale"
+              >
+                Get Early Access
+              </Button>
+            </div>
+          </div>
+          
+          <div className="mt-8 pt-8 border-t border-slate-800 text-center text-slate-500 text-sm">
+            <p>&copy; 2024 BroYouFree. All rights reserved. Privacy Policy | Terms of Service</p>
+          </div>
         </div>
       </footer>
     </div>
