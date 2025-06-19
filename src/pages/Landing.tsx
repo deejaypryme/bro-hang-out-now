@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -170,41 +169,47 @@ const Landing = () => {
 
           {/* Key Statistics */}
           <div className="grid md:grid-cols-3 gap-8 mb-16">
-            <div className="bg-white rounded-2xl p-8 shadow-xl border-l-4 border-red-500 hover:shadow-2xl transition-all duration-300">
-              <div className="flex items-center mb-4">
-                <TrendingDown className="w-10 h-10 text-red-600 mr-4" />
-                <div>
-                  <div className="text-4xl font-black text-red-600">75%</div>
-                  <div className="text-sm text-gray-600 font-medium">OF MEN AGED 30-55</div>
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <TrendingDown className="w-8 h-8 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-3xl font-bold text-blue-600 mb-1">75%</div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">OF MEN AGED 30-55</div>
                 </div>
               </div>
-              <p className="text-gray-800 font-semibold text-lg leading-tight">
+              <p className="text-slate-700 font-medium text-base leading-relaxed">
                 Want to spend more time with friends but can't overcome the coordination barrier
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-xl border-l-4 border-orange-500 hover:shadow-2xl transition-all duration-300">
-              <div className="flex items-center mb-4">
-                <Users className="w-10 h-10 text-orange-600 mr-4" />
-                <div>
-                  <div className="text-4xl font-black text-orange-600">2</div>
-                  <div className="text-sm text-gray-600 font-medium">CLOSE FRIENDS</div>
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-teal-300 hover:shadow-md transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-teal-50 p-3 rounded-lg">
+                  <Users className="w-8 h-8 text-teal-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-3xl font-bold text-teal-600 mb-1">2</div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">CLOSE FRIENDS</div>
                 </div>
               </div>
-              <p className="text-gray-800 font-semibold text-lg leading-tight">
+              <p className="text-slate-700 font-medium text-base leading-relaxed">
                 Average number of close male friends (down from 6+ in 1990)
               </p>
             </div>
 
-            <div className="bg-white rounded-2xl p-8 shadow-xl border-l-4 border-red-500 hover:shadow-2xl transition-all duration-300">
-              <div className="flex items-center mb-4">
-                <AlertTriangle className="w-10 h-10 text-red-600 mr-4" />
-                <div>
-                  <div className="text-4xl font-black text-red-600">15%</div>
-                  <div className="text-sm text-gray-600 font-medium">OF MEN</div>
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:border-red-300 hover:shadow-md transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-red-50 p-3 rounded-lg">
+                  <AlertTriangle className="w-8 h-8 text-red-600" />
+                </div>
+                <div className="flex-1">
+                  <div className="text-3xl font-bold text-red-600 mb-1">15%</div>
+                  <div className="text-xs font-semibold text-slate-500 uppercase tracking-wide">OF MEN</div>
                 </div>
               </div>
-              <p className="text-gray-800 font-semibold text-lg leading-tight">
+              <p className="text-slate-700 font-medium text-base leading-relaxed">
                 Have no close friends at all (up from 3% in 1990)
               </p>
             </div>
