@@ -3,7 +3,7 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../hooks/use-toast';
-import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown, TrendingDown, Heart, AlertTriangle, Clock, Send, Activity } from 'lucide-react';
+import { Users, Calendar, MessageSquare, ArrowRight, ChevronDown, TrendingDown, Heart, AlertTriangle, Clock, Send, Activity, Target, Zap, X, CheckCircle } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -450,6 +450,274 @@ const Landing = () => {
                   <p>✓ Matt confirms with one tap</p>
                   <div className="text-green-300 font-medium mt-3">Total time: 30 seconds</div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Market Opportunity Section */}
+      <section id="market" className="bg-gradient-to-r from-blue-50 to-indigo-50 py-20">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center mb-6">
+              <Target className="w-12 h-12 text-blue-600" />
+            </div>
+            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Massive Market Opportunity
+            </h3>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              We're targeting the largest underserved demographic in social coordination
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-blue-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-blue-600 mb-2">50M+</div>
+                <div className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Addressable Market</div>
+                <p className="text-slate-700 leading-relaxed">
+                  Men aged 25-50 in the US struggling with social coordination and friendship maintenance
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-indigo-200 hover:border-indigo-300 hover:shadow-md transition-all duration-300">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-indigo-600 mb-2">$2.4B</div>
+                <div className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Market Size</div>
+                <p className="text-slate-700 leading-relaxed">
+                  Annual spending on social activities and coordination tools by our target demographic
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-xl p-8 shadow-sm border border-purple-200 hover:border-purple-300 hover:shadow-md transition-all duration-300">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-purple-600 mb-2">0</div>
+                <div className="text-sm font-semibold text-slate-500 uppercase tracking-wide mb-4">Direct Competitors</div>
+                <p className="text-slate-700 leading-relaxed">
+                  No existing solution specifically designed for male friendship coordination
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl p-10 shadow-xl">
+            <div className="text-center">
+              <h4 className="text-3xl font-bold mb-4">Prime Target Demographics</h4>
+              <div className="grid md:grid-cols-2 gap-8 mt-8">
+                <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                  <h5 className="text-xl font-semibold mb-4 text-blue-200">Primary Market</h5>
+                  <ul className="text-blue-100 space-y-2 text-left">
+                    <li>• Men aged 25-40: Career-focused, time-constrained</li>
+                    <li>• High disposable income, value efficiency</li>
+                    <li>• Active social lives but struggle with coordination</li>
+                    <li>• Tech-savvy early adopters</li>
+                  </ul>
+                </div>
+                <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20">
+                  <h5 className="text-xl font-semibold mb-4 text-blue-200">Secondary Market</h5>
+                  <ul className="text-blue-100 space-y-2 text-left">
+                    <li>• Men aged 40-50: Established careers, families</li>
+                    <li>• Want to maintain friendships despite busy lives</li>
+                    <li>• Value quality time over quantity</li>
+                    <li>• Willing to pay for premium solutions</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Why Existing Solutions Fail Section */}
+      <section id="competitive" className="bg-white py-20">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center mb-6">
+              <X className="w-12 h-12 text-red-600" />
+            </div>
+            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Why Existing Solutions Fail
+            </h3>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              Current tools weren't built for how men actually coordinate social activities
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8 mb-16">
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-red-50 p-3 rounded-lg">
+                  <Calendar className="w-8 h-8 text-red-600" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold mb-2 text-gray-800">Calendly & Scheduling Apps</h4>
+                  <div className="space-y-2 text-gray-600">
+                    <p className="text-sm">❌ Too formal for casual hangouts</p>
+                    <p className="text-sm">❌ Designed for business meetings</p>
+                    <p className="text-sm">❌ No group coordination features</p>
+                    <p className="text-sm">❌ Lacks activity planning</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-orange-50 p-3 rounded-lg">
+                  <MessageSquare className="w-8 h-8 text-orange-600" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold mb-2 text-gray-800">Group Chats</h4>
+                  <div className="space-y-2 text-gray-600">
+                    <p className="text-sm">❌ Endless back-and-forth messaging</p>
+                    <p className="text-sm">❌ Plans get lost in conversation</p>
+                    <p className="text-sm">❌ No commitment mechanism</p>
+                    <p className="text-sm">❌ Information overload</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-50 rounded-xl p-8 shadow-sm border border-gray-200 hover:shadow-md transition-all duration-300">
+              <div className="flex items-start gap-4 mb-6">
+                <div className="bg-purple-50 p-3 rounded-lg">
+                  <Users className="w-8 h-8 text-purple-600" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-semibold mb-2 text-gray-800">Meetup & Social Apps</h4>
+                  <div className="space-y-2 text-gray-600">
+                    <p className="text-sm">❌ Focus on meeting strangers</p>
+                    <p className="text-sm">❌ Not for existing friend groups</p>
+                    <p className="text-sm">❌ Overly complicated interfaces</p>
+                    <p className="text-sm">❌ No private coordination</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl p-10 shadow-xl">
+            <div className="text-center mb-8">
+              <h4 className="text-3xl font-bold mb-4">BroYouFree Solves All These Problems</h4>
+            </div>
+            <div className="grid md:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-200" />
+                  <span className="text-green-100">Built specifically for friend coordination</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-200" />
+                  <span className="text-green-100">Eliminates endless group chat loops</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-200" />
+                  <span className="text-green-100">3-tap system: fast and efficient</span>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-200" />
+                  <span className="text-green-100">Activity-first planning approach</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-200" />
+                  <span className="text-green-100">Smart group availability matching</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-6 h-6 text-green-200" />
+                  <span className="text-green-100">Designed for masculine communication</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Built for Male Psychology Section */}
+      <section id="psychology" className="bg-gradient-to-r from-slate-50 to-gray-50 py-20">
+        <div className="max-w-6xl mx-auto px-4 md:px-6">
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center mb-6">
+              <Zap className="w-12 h-12 text-slate-700" />
+            </div>
+            <h3 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+              Built for Male Psychology
+            </h3>
+            <p className="text-xl text-gray-700 max-w-3xl mx-auto leading-relaxed">
+              Understanding how men communicate and coordinate is at the core of our design
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-12 mb-16">
+            <div className="space-y-8">
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+                <h4 className="text-2xl font-semibold mb-4 text-gray-800">Direct Communication</h4>
+                <p className="text-gray-600 leading-relaxed mb-4">
+                  Men prefer clear, purpose-driven communication. Our interface eliminates small talk and gets straight to planning.
+                </p>
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <p className="text-blue-800 font-medium">"Want to grab dinner Friday?" → Instant availability check → Done.</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+                <h4 className="text-2xl font-semibold mb-4 text-gray-800">Action-Oriented</h4>
+                <p className="text-gray-600 leading-relaxed mb-4">
+                  Men think in terms of activities first, then logistics. Our flow mirrors this natural thought process.
+                </p>
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <p className="text-green-800 font-medium">Activity → Who → When → Confirmed</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8">
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+                <h4 className="text-2xl font-semibold mb-4 text-gray-800">Efficiency Over Emotion</h4>
+                <p className="text-gray-600 leading-relaxed mb-4">
+                  No endless deliberation or over-analysis. Quick decisions, clear outcomes, solid commitments.
+                </p>
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <p className="text-purple-800 font-medium">3 taps. 30 seconds. Plans made.</p>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200 hover:shadow-md transition-all duration-300">
+                <h4 className="text-2xl font-semibold mb-4 text-gray-800">Low-Pressure Environment</h4>
+                <p className="text-gray-600 leading-relaxed mb-4">
+                  No awkward "what do you want to do?" conversations. The app handles coordination, you handle the fun.
+                </p>
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <p className="text-orange-800 font-medium">Remove friction, maintain friendship.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-slate-800 to-gray-800 text-white rounded-2xl p-10 shadow-xl">
+            <div className="text-center mb-8">
+              <h4 className="text-3xl font-bold mb-4">The Science Behind Our Approach</h4>
+              <p className="text-xl text-slate-300 leading-relaxed max-w-4xl mx-auto">
+                Research shows men thrive with structured, goal-oriented social coordination
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center">
+                <div className="text-2xl font-bold text-blue-400 mb-2">85%</div>
+                <p className="text-slate-200">of men prefer activity-based social planning</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center">
+                <div className="text-2xl font-bold text-green-400 mb-2">3x</div>
+                <p className="text-slate-200">more likely to follow through with structured plans</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur rounded-xl p-6 border border-white/20 text-center">
+                <div className="text-2xl font-bold text-purple-400 mb-2">70%</div>
+                <p className="text-slate-200">reduction in coordination stress with clear systems</p>
               </div>
             </div>
           </div>
