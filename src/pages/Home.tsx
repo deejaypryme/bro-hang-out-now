@@ -1,108 +1,100 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useFriends, useHangouts } from '@/hooks/useDatabase';
 import Header from '../components/Header';
 import QuickActionsSection from '../components/QuickActionsSection';
 import DashboardGrid from '../components/DashboardGrid';
 import ActivityFeed from '../components/ActivityFeed';
-import { Button } from '../components/ui/button';
-import { mockFriends, mockUserStats, mockHangouts } from '../data/mockData';
-import { exportHangoutToCalendar } from '../lib/calendarExport';
-import { useToast } from '../components/ui/use-toast';
+import { Button } from '@/components/ui/button';
 
 const Home = () => {
-  const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   
-  // Simulate user state - change to [] to see new user experience
-  const userFriends = mockFriends; // Change to [] for new user state
-  const isNewUser = userFriends.length === 0;
+  const { data: friends = [], isLoading: friendsLoading } = useFriends();
+  const { data: hangouts = [], isLoading: hangoutsLoading } = useHangouts();
 
-  const handleTestCalendarExport = async () => {
-    // Find a confirmed hangout to test with
-    const confirmedHangout = mockHangouts.find(h => h.confirmed);
-    
-    if (!confirmedHangout) {
-      toast({
-        title: "No confirmed hangouts",
-        description: "No confirmed hangouts available to export to calendar.",
-        variant: "destructive"
-      });
-      return;
+  // Redirect to auth if not authenticated
+  React.useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
     }
+  }, [user, authLoading, navigate]);
 
-    try {
-      const result = await exportHangoutToCalendar(confirmedHangout);
-      
-      if (result.success) {
-        toast({
-          title: "Calendar Export Successful! 📅",
-          description: `Downloaded ${result.filename} - check your downloads folder and open with your calendar app.`
-        });
-      } else {
-        toast({
-          title: "Export Failed",
-          description: result.error || "Failed to export calendar event",
-          variant: "destructive"
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Export Error",
-        description: "An unexpected error occurred while exporting to calendar",
-        variant: "destructive"
-      });
-      console.error('Calendar export error:', error);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-gray-100">
-      {/* Header */}
-      <Header userStats={mockUserStats} />
-      
-      {/* Main Content with lighter theme */}
-      <div className="bg-transparent">
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-8">
-          {/* Test Calendar Export Button */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-semibold text-blue-900 mb-1">🧪 Test Calendar Export</h3>
-                <p className="text-xs text-blue-700">Test the new calendar export functionality with a confirmed hangout</p>
-              </div>
-              <Button 
-                onClick={handleTestCalendarExport}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-                size="sm"
-              >
-                📅 Test Export
-              </Button>
-            </div>
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-2xl text-white mx-auto mb-4 animate-pulse">
+            👊
           </div>
-
-          {/* Quick Actions Section */}
-          <div className="mb-8">
-            <QuickActionsSection 
-              isNewUser={isNewUser}
-              userStats={mockUserStats}
-              upcomingCount={3}
-              activeStreak={7}
-            />
-          </div>
-          
-          {/* Dashboard Content */}
-          <DashboardGrid 
-            isNewUser={isNewUser}
-            friends={userFriends}
-            hangouts={mockHangouts}
-            userStats={mockUserStats}
-          />
-          
-          <ActivityFeed 
-            isNewUser={isNewUser}
-            friends={userFriends}
-          />
+          <p className="text-gray-600">Loading...</p>
         </div>
       </div>
+    );
+  }
+
+  // Mock user stats for now - these could be calculated from real data
+  const userStats = {
+    broPoints: 485,
+    currentStreak: hangouts.filter(h => h.status === 'confirmed').length || 1,
+    totalHangouts: hangouts.length,
+  };
+
+  const isNewUser = friends.length === 0 && hangouts.length === 0;
+  const upcomingCount = hangouts.filter(h => 
+    h.status === 'confirmed' && new Date(h.scheduled_date) >= new Date()
+  ).length;
+  const activeStreak = userStats.currentStreak;
+
+  if (friendsLoading || hangoutsLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <Header userStats={userStats} />
+        <div className="flex items-center justify-center h-96">
+          <p className="text-gray-600">Loading your data...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <Header userStats={userStats} />
+      
+      <main className="max-w-6xl mx-auto py-8 space-y-8">
+        <QuickActionsSection 
+          isNewUser={isNewUser}
+          userStats={userStats}
+          upcomingCount={upcomingCount}
+          activeStreak={activeStreak}
+        />
+        
+        {!isNewUser && (
+          <DashboardGrid 
+            hangouts={hangouts}
+            friends={friends}
+            userStats={userStats}
+          />
+        )}
+        
+        <div className="px-4 md:px-6">
+          <ActivityFeed isNewUser={isNewUser} friends={friends} />
+        </div>
+
+        {!user && (
+          <div className="text-center px-4 md:px-6">
+            <Button 
+              onClick={() => navigate('/auth')}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            >
+              Sign In to Continue
+            </Button>
+          </div>
+        )}
+      </main>
     </div>
   );
 };
