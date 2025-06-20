@@ -65,7 +65,7 @@ export const friendService = {
       status: 'online', // Mock status for now
       lastSeen: new Date(),
       friendshipDate: new Date(friendship.created_at),
-      friendshipStatus: friendship.status
+      friendshipStatus: friendship.status as 'pending' | 'accepted' | 'blocked'
     }));
   },
 
@@ -81,7 +81,10 @@ export const friendService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      status: data.status as 'pending' | 'accepted' | 'blocked'
+    };
   },
 
   async acceptFriendRequest(friendshipId: string): Promise<Friendship> {
@@ -93,7 +96,10 @@ export const friendService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      status: data.status as 'pending' | 'accepted' | 'blocked'
+    };
   }
 };
 
@@ -132,6 +138,7 @@ export const hangoutService = {
       
       return {
         ...hangout,
+        status: hangout.status as 'pending' | 'confirmed' | 'completed' | 'cancelled',
         friendName,
         date: new Date(hangout.scheduled_date),
         time: hangout.scheduled_time,
@@ -151,7 +158,10 @@ export const hangoutService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      status: data.status as 'pending' | 'confirmed' | 'completed' | 'cancelled'
+    };
   },
 
   async updateHangout(hangoutId: string, updates: Partial<Hangout>): Promise<Hangout> {
@@ -163,7 +173,10 @@ export const hangoutService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      status: data.status as 'pending' | 'confirmed' | 'completed' | 'cancelled'
+    };
   }
 };
 

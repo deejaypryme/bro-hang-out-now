@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ShapeLandingHero } from '@/components/ui/shape-landing-hero';
+import { HeroGeometric } from '@/components/ui/shape-landing-hero';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -44,7 +44,11 @@ const Landing = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Hero Section */}
       <section className="relative overflow-hidden py-20 px-4">
-        <ShapeLandingHero />
+        <HeroGeometric 
+          badge="BroYouFree"
+          title1="Turn Plans Into"
+          title2="Real Hangouts"
+        />
         <div className="relative max-w-4xl mx-auto text-center">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center text-3xl text-white mx-auto mb-8 shadow-lg">
             👊

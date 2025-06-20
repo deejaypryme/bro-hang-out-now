@@ -74,6 +74,7 @@ const Home = () => {
         
         {!isNewUser && (
           <DashboardGrid 
+            isNewUser={isNewUser}
             hangouts={hangouts}
             friends={friends}
             userStats={userStats}
