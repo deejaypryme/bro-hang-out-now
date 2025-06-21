@@ -1,4 +1,5 @@
 
+
 import { supabase } from "@/integrations/supabase/client";
 import type { 
   Profile, 
@@ -145,6 +146,7 @@ export const friendsService = {
       avatar_url: friendship.friend_profile.avatar_url,
       phone: friendship.friend_profile.phone,
       preferred_times: friendship.friend_profile.preferred_times || [],
+      timezone: friendship.friend_profile.timezone,
       created_at: friendship.friend_profile.created_at,
       updated_at: friendship.friend_profile.updated_at,
       status: (friendship.friend_presence?.status as 'online' | 'offline' | 'busy' | 'away') || 'offline',
@@ -275,3 +277,4 @@ export const friendsService = {
       .subscribe();
   }
 };
+
