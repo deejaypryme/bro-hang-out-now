@@ -17,6 +17,41 @@ interface HangoutNotificationRequest {
   type: 'sms' | 'email';
 }
 
+const sendSMS = async (to: string, message: string) => {
+  const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
+  const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+  const fromNumber = Deno.env.get("TWILIO_PHONE_NUMBER");
+
+  if (!accountSid || !authToken || !fromNumber) {
+    throw new Error("Missing Twilio credentials");
+  }
+
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
+  
+  const body = new URLSearchParams({
+    To: to,
+    From: fromNumber,
+    Body: message,
+  });
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": `Basic ${btoa(`${accountSid}:${authToken}`)}`,
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body: body.toString(),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.text();
+    console.error("Twilio API error:", errorData);
+    throw new Error(`Failed to send SMS: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.json();
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -44,12 +79,14 @@ const handler = async (req: Request): Promise<Response> => {
         },
       });
     } else if (type === 'sms') {
-      // For SMS, we would integrate with a service like Twilio
-      console.log("SMS notification would be sent to:", to, "Message:", message);
+      const smsResponse = await sendSMS(to, message);
+      
+      console.log("SMS notification sent successfully:", smsResponse);
       
       return new Response(JSON.stringify({ 
         success: true, 
-        message: "SMS would be sent in production with Twilio integration" 
+        message: "SMS notification sent successfully",
+        twilioResponse: smsResponse
       }), {
         status: 200,
         headers: {
