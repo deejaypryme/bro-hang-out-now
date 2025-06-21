@@ -6,12 +6,16 @@ import { Calendar } from './ui/calendar';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Alert, AlertDescription } from './ui/alert';
+import { Badge } from './ui/badge';
 import { format, addDays, isBefore, startOfDay } from 'date-fns';
-import { CalendarIcon, Clock, Globe } from 'lucide-react';
+import { CalendarIcon, Clock, Globe, AlertTriangle, CheckCircle } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { cn } from '@/lib/utils';
 import { TimeService } from '@/services/timeService';
 import { useAuth } from '@/hooks/useAuth';
+import { useConflictDetection, useBatchConflictCheck } from '@/hooks/useConflictDetection';
+import ConflictResolution from './ConflictResolution';
 import TimezoneAwareTime from './TimezoneAwareTime';
 
 export interface TimeOption {
@@ -27,22 +31,30 @@ interface TimeSelectionProps {
   onUpdateOptions: (options: TimeOption[]) => void;
   onNext?: () => void;
   friendTimezone?: string;
+  friendId?: string;
 }
 
 const TimeSelection: React.FC<TimeSelectionProps> = ({ 
   selectedOptions,
   onUpdateOptions,
   onNext,
-  friendTimezone
+  friendTimezone,
+  friendId
 }) => {
   const { user } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [selectedTime, setSelectedTime] = useState('');
   const [customTime, setCustomTime] = useState('');
   const [showCustomTime, setShowCustomTime] = useState(false);
+  const [showConflictResolution, setShowConflictResolution] = useState(false);
+  const [currentConflicts, setCurrentConflicts] = useState<any>(null);
+  const [pendingTimeOption, setPendingTimeOption] = useState<TimeOption | null>(null);
   
   const userTimezone = user?.user_metadata?.timezone || TimeService.getBrowserTimezone();
   const isDifferentTimezone = friendTimezone && TimeService.areDifferentTimezones(userTimezone, friendTimezone);
+  
+  const { checkTimeSlotAvailability } = useConflictDetection(friendId, !!friendId);
+  const { data: batchConflictResults } = useBatchConflictCheck(friendId, selectedOptions, 120);
 
   const timeOptions = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -76,7 +88,7 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
     setSelectedTime('custom');
   };
 
-  const handleAddTimeOption = () => {
+  const handleAddTimeOption = async () => {
     if (!selectedDate) return;
     
     const finalTime = selectedTime === 'custom' ? customTime : selectedTime;
@@ -93,6 +105,28 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
       timezone: userTimezone
     };
 
+    // Check for conflicts if friend is selected
+    if (friendId && user) {
+      try {
+        const conflictResult = await checkTimeSlotAvailability.mutateAsync({
+          date: dateString,
+          startTime: finalTime,
+          duration: 120
+        });
+
+        if (conflictResult.hasConflicts) {
+          setCurrentConflicts(conflictResult);
+          setPendingTimeOption(newOption);
+          setShowConflictResolution(true);
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking conflicts:', error);
+        // Continue adding the option even if conflict check fails
+      }
+    }
+
+    // Add the option if no conflicts
     onUpdateOptions([...selectedOptions, newOption]);
     
     // Reset form
@@ -102,12 +136,67 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
     setShowCustomTime(false);
   };
 
+  const handleConflictResolution = (resolvedOption: TimeOption) => {
+    onUpdateOptions([...selectedOptions, resolvedOption]);
+    setShowConflictResolution(false);
+    setCurrentConflicts(null);
+    setPendingTimeOption(null);
+    
+    // Reset form
+    setSelectedDate(undefined);
+    setSelectedTime('');
+    setCustomTime('');
+    setShowCustomTime(false);
+  };
+
+  const handleIgnoreConflicts = () => {
+    if (pendingTimeOption) {
+      onUpdateOptions([...selectedOptions, pendingTimeOption]);
+    }
+    setShowConflictResolution(false);
+    setCurrentConflicts(null);
+    setPendingTimeOption(null);
+    
+    // Reset form
+    setSelectedDate(undefined);
+    setSelectedTime('');
+    setCustomTime('');
+    setShowCustomTime(false);
+  };
+
+  const handleCancelConflictResolution = () => {
+    setShowConflictResolution(false);
+    setCurrentConflicts(null);
+    setPendingTimeOption(null);
+  };
+
   const handleRemoveOption = (optionId: string) => {
     onUpdateOptions(selectedOptions.filter(option => option.id !== optionId));
   };
 
+  const getConflictStatus = (optionId: string) => {
+    if (!batchConflictResults) return null;
+    
+    const result = batchConflictResults.find(r => r.timeOption.id === optionId);
+    return result?.conflicts || null;
+  };
+
   const isValidTime = selectedTime && (selectedTime !== 'custom' || customTime);
   const canAddOption = selectedDate && isValidTime;
+
+  // Show conflict resolution if there are conflicts to resolve
+  if (showConflictResolution && currentConflicts && pendingTimeOption) {
+    return (
+      <ConflictResolution
+        conflicts={currentConflicts}
+        originalTime={pendingTimeOption}
+        onSelectAlternative={handleConflictResolution}
+        onIgnoreConflicts={handleIgnoreConflicts}
+        onCancel={handleCancelConflictResolution}
+        isLoading={checkTimeSlotAvailability.isPending}
+      />
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -124,6 +213,11 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
                 Times will be converted to your friend's timezone automatically
               </span>
             )}
+            {friendId && (
+              <span className="block mt-1 text-green-600">
+                ✓ Conflict detection enabled
+              </span>
+            )}
           </CardDescription>
         </CardHeader>
         
@@ -133,30 +227,70 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
             <div className="space-y-2">
               <Label>Selected Times ({selectedOptions.length}/4)</Label>
               <div className="space-y-2">
-                {selectedOptions.map((option) => (
-                  <div key={option.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                    <div>
-                      <p className="font-medium">
-                        {format(new Date(option.date), 'EEEE, MMM d')} at {format(new Date(`2024-01-01T${option.startTime}`), 'h:mm a')}
-                      </p>
-                      {isDifferentTimezone && (
-                        <p className="text-sm text-muted-foreground">
-                          In {friendTimezone}: {TimeService.getTimeWithTimezone(
-                            TimeService.createZonedDate(option.date, option.startTime, userTimezone), 
-                            friendTimezone!
+                {selectedOptions.map((option) => {
+                  const conflictStatus = getConflictStatus(option.id);
+                  
+                  return (
+                    <div key={option.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">
+                            {format(new Date(option.date), 'EEEE, MMM d')} at {format(new Date(`2024-01-01T${option.startTime}`), 'h:mm a')}
+                          </p>
+                          
+                          {/* Conflict indicator */}
+                          {conflictStatus && (
+                            <div className="flex items-center gap-1">
+                              {conflictStatus.hasConflicts ? (
+                                <Badge variant="destructive" className="text-xs">
+                                  <AlertTriangle className="w-3 h-3 mr-1" />
+                                  {conflictStatus.conflicts.length} conflict{conflictStatus.conflicts.length > 1 ? 's' : ''}
+                                </Badge>
+                              ) : (
+                                <Badge variant="outline" className="text-xs text-green-600">
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                  Available
+                                </Badge>
+                              )}
+                            </div>
                           )}
-                        </p>
-                      )}
+                        </div>
+                        
+                        {isDifferentTimezone && (
+                          <p className="text-sm text-muted-foreground">
+                            In {friendTimezone}: {TimeService.getTimeWithTimezone(
+                              TimeService.createZonedDate(option.date, option.startTime, userTimezone), 
+                              friendTimezone!
+                            )}
+                          </p>
+                        )}
+                        
+                        {/* Conflict details */}
+                        {conflictStatus?.hasConflicts && (
+                          <div className="mt-2">
+                            <Alert className="border-orange-200 bg-orange-50">
+                              <AlertTriangle className="h-4 w-4 text-orange-600" />
+                              <AlertDescription className="text-sm text-orange-700">
+                                {conflictStatus.conflicts.length === 1 
+                                  ? `Conflicts with: ${conflictStatus.conflicts[0].title}`
+                                  : `Multiple conflicts detected (${conflictStatus.conflicts.length})`
+                                }
+                              </AlertDescription>
+                            </Alert>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => handleRemoveOption(option.id)}
+                      >
+                        Remove
+                      </Button>
                     </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleRemoveOption(option.id)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -237,10 +371,10 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
 
               <Button 
                 onClick={handleAddTimeOption} 
-                disabled={!canAddOption}
+                disabled={!canAddOption || checkTimeSlotAvailability.isPending}
                 className="w-full"
               >
-                Add Time Option
+                {checkTimeSlotAvailability.isPending ? 'Checking conflicts...' : 'Add Time Option'}
               </Button>
             </>
           )}
