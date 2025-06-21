@@ -5,6 +5,7 @@ export interface Profile {
   avatar_url: string | null;
   phone: string | null;
   preferred_times: string[];
+  timezone: string | null;
   created_at: string;
   updated_at: string;
 }
