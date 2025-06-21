@@ -1,27 +1,17 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useFriends, useHangouts } from '@/hooks/useDatabase';
 import Header from '../components/Header';
 import QuickActionsSection from '../components/QuickActionsSection';
 import DashboardGrid from '../components/DashboardGrid';
 import ActivityFeed from '../components/ActivityFeed';
-import { Button } from '@/components/ui/button';
 
 const Home = () => {
   const { user, loading: authLoading } = useAuth();
-  const navigate = useNavigate();
   
   const { data: friends = [], isLoading: friendsLoading } = useFriends();
   const { data: hangouts = [], isLoading: hangoutsLoading } = useHangouts();
-
-  // Redirect to auth if not authenticated
-  React.useEffect(() => {
-    if (!authLoading && !user) {
-      navigate('/auth');
-    }
-  }, [user, authLoading, navigate]);
 
   if (authLoading || !user) {
     return (
@@ -84,17 +74,6 @@ const Home = () => {
         <div className="px-4 md:px-6">
           <ActivityFeed isNewUser={isNewUser} friends={friends} />
         </div>
-
-        {!user && (
-          <div className="text-center px-4 md:px-6">
-            <Button 
-              onClick={() => navigate('/auth')}
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-            >
-              Sign In to Continue
-            </Button>
-          </div>
-        )}
       </main>
     </div>
   );

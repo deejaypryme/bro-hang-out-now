@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -64,17 +63,17 @@ const Landing = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
             <Button 
-              onClick={() => navigate('/auth')}
+              onClick={() => navigate('/signup')}
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
             >
               Get Started Free
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => navigate('/home')}
+              onClick={() => navigate('/login')}
               className="border-gray-300 bg-white/80 backdrop-blur-sm text-gray-700 hover:bg-gray-50 font-semibold px-8 py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105"
             >
-              Try Demo
+              Sign In
             </Button>
           </div>
         </div>
@@ -140,7 +139,7 @@ const Landing = () => {
             Join thousands who've turned social plans from "maybe" to "definitely"
           </p>
           <Button 
-            onClick={() => navigate('/auth')}
+            onClick={() => navigate('/signup')}
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold px-12 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 text-lg"
           >
             Start Hanging Out
