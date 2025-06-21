@@ -1,6 +1,6 @@
-
 import { format, parseISO } from 'date-fns';
 import { toZonedTime, fromZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { MutualAvailabilityService, type AvailabilityComparison } from './mutualAvailabilityService';
 
 export interface TimeZoneInfo {
   timezone: string;
@@ -119,5 +119,37 @@ export class TimeService {
       date: convertedDate,
       timeString
     };
+  }
+
+  // New method for mutual availability detection
+  static async findMutualAvailability(
+    userId: string,
+    friendId: string,
+    startDate: string,
+    endDate: string,
+    preferredDuration: number = 120,
+    bufferMinutes: number = 15
+  ): Promise<AvailabilityComparison> {
+    return MutualAvailabilityService.findMutualAvailability(
+      userId,
+      friendId,
+      startDate,
+      endDate,
+      preferredDuration,
+      bufferMinutes
+    );
+  }
+
+  // Helper method to get optimal time slots quickly
+  static async getOptimalTimeSlots(
+    userId: string,
+    friendId: string,
+    daysAhead: number = 7,
+    duration: number = 120
+  ): Promise<AvailabilityComparison> {
+    const startDate = format(new Date(), 'yyyy-MM-dd');
+    const endDate = format(new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
+    
+    return this.findMutualAvailability(userId, friendId, startDate, endDate, duration);
   }
 }
