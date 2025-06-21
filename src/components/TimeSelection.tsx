@@ -14,38 +14,35 @@ import { TimeService } from '@/services/timeService';
 import { useAuth } from '@/hooks/useAuth';
 import TimezoneAwareTime from './TimezoneAwareTime';
 
+export interface TimeOption {
+  id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  timezone: string;
+}
+
 interface TimeSelectionProps {
-  onTimeSelected: (date: string, time: string, timezone: string) => void;
-  onBack: () => void;
+  selectedOptions: TimeOption[];
+  onUpdateOptions: (options: TimeOption[]) => void;
+  onNext?: () => void;
   friendTimezone?: string;
-  initialDate?: string;
-  initialTime?: string;
 }
 
 const TimeSelection: React.FC<TimeSelectionProps> = ({ 
-  onTimeSelected, 
-  onBack, 
-  friendTimezone,
-  initialDate,
-  initialTime 
+  selectedOptions,
+  onUpdateOptions,
+  onNext,
+  friendTimezone
 }) => {
   const { user } = useAuth();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
-    initialDate ? new Date(initialDate) : undefined
-  );
-  const [selectedTime, setSelectedTime] = useState(initialTime || '');
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState('');
   const [customTime, setCustomTime] = useState('');
   const [showCustomTime, setShowCustomTime] = useState(false);
   
   const userTimezone = user?.user_metadata?.timezone || TimeService.getBrowserTimezone();
   const isDifferentTimezone = friendTimezone && TimeService.areDifferentTimezones(userTimezone, friendTimezone);
-
-  useEffect(() => {
-    if (initialTime && !timeOptions.includes(initialTime)) {
-      setShowCustomTime(true);
-      setCustomTime(initialTime);
-    }
-  }, [initialTime]);
 
   const timeOptions = [
     '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
@@ -79,53 +76,38 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
     setSelectedTime('custom');
   };
 
-  const handleContinue = () => {
+  const handleAddTimeOption = () => {
     if (!selectedDate) return;
     
     const finalTime = selectedTime === 'custom' ? customTime : selectedTime;
     if (!finalTime) return;
 
     const dateString = format(selectedDate, 'yyyy-MM-dd');
-    onTimeSelected(dateString, finalTime, userTimezone);
+    const endTime = finalTime; // For simplicity, using same time as end time
+    
+    const newOption: TimeOption = {
+      id: `${dateString}-${finalTime}-${Date.now()}`,
+      date: dateString,
+      startTime: finalTime,
+      endTime: endTime,
+      timezone: userTimezone
+    };
+
+    onUpdateOptions([...selectedOptions, newOption]);
+    
+    // Reset form
+    setSelectedDate(undefined);
+    setSelectedTime('');
+    setCustomTime('');
+    setShowCustomTime(false);
+  };
+
+  const handleRemoveOption = (optionId: string) => {
+    onUpdateOptions(selectedOptions.filter(option => option.id !== optionId));
   };
 
   const isValidTime = selectedTime && (selectedTime !== 'custom' || customTime);
-  const canContinue = selectedDate && isValidTime;
-
-  // Generate preview of the selected time
-  const getTimePreview = () => {
-    if (!selectedDate || !isValidTime) return null;
-    
-    const finalTime = selectedTime === 'custom' ? customTime : selectedTime;
-    const dateString = format(selectedDate, 'yyyy-MM-dd');
-    const selectedDateTime = TimeService.createZonedDate(dateString, finalTime, userTimezone);
-    
-    return (
-      <div className="mt-4 p-3 bg-muted rounded-lg">
-        <p className="text-sm font-medium mb-2">Selected Time:</p>
-        <TimezoneAwareTime 
-          date={selectedDateTime}
-          userTimezone={userTimezone}
-          originalTimezone={friendTimezone}
-          showOriginal={isDifferentTimezone}
-          formatString="EEEE, MMM d 'at' h:mm a"
-          className="text-sm"
-        />
-        
-        {isDifferentTimezone && (
-          <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-            <div className="flex items-center gap-1 text-blue-700 font-medium">
-              <Globe className="w-3 h-3" />
-              Cross-timezone invitation
-            </div>
-            <p className="text-blue-600 mt-1">
-              Your friend will see this time converted to their timezone ({friendTimezone})
-            </p>
-          </div>
-        )}
-      </div>
-    );
-  };
+  const canAddOption = selectedDate && isValidTime;
 
   return (
     <div className="max-w-2xl mx-auto p-6">
@@ -136,7 +118,7 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
             <CardTitle>When works for you?</CardTitle>
           </div>
           <CardDescription>
-            Select a date and time that works best for your hangout
+            Select multiple time options for your hangout ({4 - selectedOptions.length} more needed)
             {isDifferentTimezone && (
               <span className="block mt-1 text-blue-600">
                 Times will be converted to your friend's timezone automatically
@@ -146,93 +128,135 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Timezone indicator */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Globe className="w-4 h-4" />
-            <span>Your timezone: {TimeService.getTimezoneAbbreviation(userTimezone)}</span>
-            {isDifferentTimezone && (
-              <>
-                <span>•</span>
-                <span>Friend's timezone: {TimeService.getTimezoneAbbreviation(friendTimezone!)}</span>
-              </>
-            )}
-          </div>
-
-          {/* Date Selection */}
-          <div className="space-y-2">
-            <Label>Select Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !selectedDate && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={handleDateSelect}
-                  disabled={(date) => isBefore(date, today) || date > maxDate}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Time Selection */}
-          <div className="space-y-2">
-            <Label>Select Time</Label>
-            <Select value={selectedTime} onValueChange={handleTimeSelect}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a time" />
-              </SelectTrigger>
-              <SelectContent>
-                {timeOptions.map((time) => (
-                  <SelectItem key={time} value={time}>
-                    {format(new Date(`2024-01-01T${time}`), 'h:mm a')}
-                  </SelectItem>
-                ))}
-                <SelectItem value="custom">Custom time...</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Custom Time Input */}
-          {showCustomTime && (
+          {/* Selected Options */}
+          {selectedOptions.length > 0 && (
             <div className="space-y-2">
-              <Label>Custom Time</Label>
-              <Input
-                type="time"
-                value={customTime}
-                onChange={(e) => handleCustomTimeChange(e.target.value)}
-                className="w-full"
-              />
+              <Label>Selected Times ({selectedOptions.length}/4)</Label>
+              <div className="space-y-2">
+                {selectedOptions.map((option) => (
+                  <div key={option.id} className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div>
+                      <p className="font-medium">
+                        {format(new Date(option.date), 'EEEE, MMM d')} at {format(new Date(`2024-01-01T${option.startTime}`), 'h:mm a')}
+                      </p>
+                      {isDifferentTimezone && (
+                        <p className="text-sm text-muted-foreground">
+                          In {friendTimezone}: {TimeService.getTimeWithTimezone(
+                            TimeService.createZonedDate(option.date, option.startTime, userTimezone), 
+                            friendTimezone!
+                          )}
+                        </p>
+                      )}
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleRemoveOption(option.id)}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
-          {/* Time Preview */}
-          {getTimePreview()}
+          {/* Add New Time Option */}
+          {selectedOptions.length < 4 && (
+            <>
+              {/* Timezone indicator */}
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Globe className="w-4 h-4" />
+                <span>Your timezone: {TimeService.getTimezoneAbbreviation(userTimezone)}</span>
+                {isDifferentTimezone && (
+                  <>
+                    <span>•</span>
+                    <span>Friend's timezone: {TimeService.getTimezoneAbbreviation(friendTimezone!)}</span>
+                  </>
+                )}
+              </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
-            <Button variant="outline" onClick={onBack} className="flex-1">
-              Back
-            </Button>
-            <Button 
-              onClick={handleContinue} 
-              disabled={!canContinue}
-              className="flex-1"
-            >
-              Continue
-            </Button>
-          </div>
+              {/* Date Selection */}
+              <div className="space-y-2">
+                <Label>Select Date</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !selectedDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedDate}
+                      onSelect={handleDateSelect}
+                      disabled={(date) => isBefore(date, today) || date > maxDate}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Time Selection */}
+              <div className="space-y-2">
+                <Label>Select Time</Label>
+                <Select value={selectedTime} onValueChange={handleTimeSelect}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose a time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeOptions.map((time) => (
+                      <SelectItem key={time} value={time}>
+                        {format(new Date(`2024-01-01T${time}`), 'h:mm a')}
+                      </SelectItem>
+                    ))}
+                    <SelectItem value="custom">Custom time...</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Custom Time Input */}
+              {showCustomTime && (
+                <div className="space-y-2">
+                  <Label>Custom Time</Label>
+                  <Input
+                    type="time"
+                    value={customTime}
+                    onChange={(e) => handleCustomTimeChange(e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              )}
+
+              <Button 
+                onClick={handleAddTimeOption} 
+                disabled={!canAddOption}
+                className="w-full"
+              >
+                Add Time Option
+              </Button>
+            </>
+          )}
+
+          {/* Continue Button */}
+          {selectedOptions.length >= 1 && onNext && (
+            <div className="pt-4">
+              <Button 
+                onClick={onNext} 
+                className="w-full"
+                variant={selectedOptions.length >= 4 ? "default" : "outline"}
+              >
+                {selectedOptions.length >= 4 ? "Continue" : `Continue with ${selectedOptions.length} option${selectedOptions.length > 1 ? 's' : ''}`}
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
