@@ -141,7 +141,7 @@ export const conflictDetectionService = {
       // Check if user is organizer and friend profile exists
       if (hangout.organizer_id === userId) {
         const friendProfile = hangout.friend_profile;
-        if (friendProfile && typeof friendProfile === 'object' && 'full_name' in friendProfile) {
+        if (friendProfile && typeof friendProfile === 'object' && 'full_name' in friendProfile && friendProfile !== null) {
           const profileWithName = friendProfile as { full_name: string | null };
           if (profileWithName.full_name) {
             friendName = profileWithName.full_name;
@@ -150,7 +150,7 @@ export const conflictDetectionService = {
       } else {
         // User is the friend, so get organizer name
         const organizerProfile = hangout.organizer_profile;
-        if (organizerProfile && typeof organizerProfile === 'object' && 'full_name' in organizerProfile) {
+        if (organizerProfile && typeof organizerProfile === 'object' && 'full_name' in organizerProfile && organizerProfile !== null) {
           const profileWithName = organizerProfile as { full_name: string | null };
           if (profileWithName.full_name) {
             friendName = profileWithName.full_name;
