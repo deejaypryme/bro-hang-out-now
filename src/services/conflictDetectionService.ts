@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { addMinutes, parseISO, format, isSameDay } from 'date-fns';
 import type { TimeSlot } from '@/types/database';
@@ -138,9 +137,9 @@ export const conflictDetectionService = {
       // Handle the case where profile data might not be loaded properly
       let friendName = 'Unknown';
       
-      if (hangout.organizer_id === userId && hangout.friend_profile && typeof hangout.friend_profile === 'object') {
+      if (hangout.organizer_id === userId && hangout.friend_profile && hangout.friend_profile !== null && typeof hangout.friend_profile === 'object') {
         friendName = hangout.friend_profile.full_name || 'Unknown';
-      } else if (hangout.organizer_profile && typeof hangout.organizer_profile === 'object') {
+      } else if (hangout.organizer_profile && hangout.organizer_profile !== null && typeof hangout.organizer_profile === 'object') {
         friendName = hangout.organizer_profile.full_name || 'Unknown';
       }
       
