@@ -1,6 +1,7 @@
 
 import { createEvent, EventAttributes } from 'ics';
 import { Hangout } from '../data/mockData';
+import { calendarIntegrationService } from '@/services/calendarIntegrationService';
 
 export interface CalendarExportResult {
   success: boolean;
@@ -26,33 +27,40 @@ const addMinutes = (date: Date, minutes: number): Date => {
 
 export const generateCalendarEvent = (hangout: Hangout): CalendarExportResult => {
   try {
-    if (!hangout.confirmed || !hangout.confirmedDateTime) {
+    // Handle both old mock data and new database structure
+    const isConfirmed = hangout.confirmed || hangout.status === 'confirmed';
+    const eventDate = hangout.confirmedDateTime || 
+                     (hangout.scheduled_date && hangout.scheduled_time 
+                       ? new Date(`${hangout.scheduled_date}T${hangout.scheduled_time}`) 
+                       : hangout.date);
+
+    if (!isConfirmed || !eventDate) {
       return {
         success: false,
         error: 'Hangout must be confirmed with a confirmed date/time to export to calendar'
       };
     }
 
-    const startDate = hangout.confirmedDateTime;
-    const endDate = addMinutes(startDate, hangout.duration || 60);
+    const startDate = new Date(eventDate);
+    const endDate = addMinutes(startDate, hangout.duration_minutes || hangout.duration || 60);
     
     const eventAttributes: EventAttributes = {
       start: dateToICSArray(startDate),
       end: dateToICSArray(endDate),
-      title: `${hangout.activityEmoji} ${hangout.activity} with ${hangout.friendName}`,
-      description: `BroYouFree hangout: ${hangout.activity} with ${hangout.friendName}.\n\nActivity: ${hangout.activity}\nFriend: ${hangout.friendName}\nPlanned via BroYouFree app.`,
+      title: `${hangout.activity_emoji || hangout.activityEmoji} ${hangout.activity_name || hangout.activity} with ${hangout.friend_id || hangout.friendName}`,
+      description: `BroYouFree hangout: ${hangout.activity_name || hangout.activity} with ${hangout.friend_id || hangout.friendName}.\n\nActivity: ${hangout.activity_name || hangout.activity}\nFriend: ${hangout.friend_id || hangout.friendName}\nPlanned via BroYouFree app.`,
       location: hangout.location || 'Location TBD',
       uid: `broyoufree-${hangout.id}-${Date.now()}`,
       organizer: { name: 'BroYouFree', email: 'noreply@broyoufree.com' },
       alarms: [
         {
           action: 'display',
-          description: `Reminder: ${hangout.activity} with ${hangout.friendName} in 24 hours`,
+          description: `Reminder: ${hangout.activity_name || hangout.activity} with ${hangout.friend_id || hangout.friendName} in 24 hours`,
           trigger: { hours: 24, minutes: 0, before: true }
         },
         {
           action: 'display', 
-          description: `Reminder: ${hangout.activity} with ${hangout.friendName} in 1 hour`,
+          description: `Reminder: ${hangout.activity_name || hangout.activity} with ${hangout.friend_id || hangout.friendName} in 1 hour`,
           trigger: { hours: 1, minutes: 0, before: true }
         }
       ]
@@ -77,7 +85,9 @@ export const generateCalendarEvent = (hangout: Hangout): CalendarExportResult =>
 
     // Generate filename
     const dateStr = startDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-    const filename = `BroTime-${hangout.friendName.replace(/\s+/g, '')}-${hangout.activity.replace(/\s+/g, '')}-${dateStr}.ics`;
+    const friendName = (hangout.friend_id || hangout.friendName || 'Friend').replace(/\s+/g, '');
+    const activityName = (hangout.activity_name || hangout.activity || 'Activity').replace(/\s+/g, '');
+    const filename = `BroTime-${friendName}-${activityName}-${dateStr}.ics`;
 
     // Create and download the file
     const blob = new Blob([value], { type: 'text/calendar' });
@@ -114,10 +124,33 @@ export const exportHangoutToCalendar = (hangout: Hangout): Promise<CalendarExpor
   });
 };
 
+// Export to connected calendar services
+export const exportHangoutToIntegratedCalendar = async (
+  hangoutId: string, 
+  integrationId: string
+): Promise<CalendarExportResult> => {
+  try {
+    await calendarIntegrationService.exportHangoutToCalendar(hangoutId, integrationId);
+    return {
+      success: true,
+      filename: 'Exported to connected calendar'
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to export to calendar: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+};
+
 // Export multiple hangouts as a single calendar file
 export const exportMultipleHangouts = (hangouts: Hangout[]): CalendarExportResult => {
   try {
-    const confirmedHangouts = hangouts.filter(h => h.confirmed && h.confirmedDateTime);
+    const confirmedHangouts = hangouts.filter(h => 
+      h.confirmed || h.status === 'confirmed'
+    ).filter(h => 
+      h.confirmedDateTime || (h.scheduled_date && h.scheduled_time) || h.date
+    );
     
     if (confirmedHangouts.length === 0) {
       return {
@@ -131,8 +164,7 @@ export const exportMultipleHangouts = (hangouts: Hangout[]): CalendarExportResul
     for (const hangout of confirmedHangouts) {
       const result = generateCalendarEvent(hangout);
       if (result.success) {
-        // This is a simplified approach - in production you'd want to properly combine the ICS content
-        console.log(`Successfully generated event for ${hangout.friendName}`);
+        console.log(`Successfully generated event for ${hangout.friend_id || hangout.friendName}`);
       }
     }
     
