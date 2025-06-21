@@ -3,6 +3,7 @@ import { useAuth } from './useAuth';
 import { friendService, hangoutService, activityService, timeSlotService } from '@/services/database';
 import { friendsService } from '@/services/friendsService';
 import { hangoutsService } from '@/services/hangoutsService';
+import { availabilityService, type CreateAvailabilitySlot, type CreateException } from '@/services/availabilityService';
 
 export const useFriends = () => {
   const { user } = useAuth();
@@ -202,6 +203,92 @@ export const useUpdateHangoutStatus = () => {
       hangoutsService.updateHangoutStatus(hangoutId, status, reason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['hangouts', user?.id] });
+    }
+  });
+};
+
+export const useUserAvailability = (startDate?: string, endDate?: string) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['userAvailability', user?.id, startDate, endDate],
+    queryFn: () => user ? availabilityService.getUserAvailability(user.id, startDate, endDate) : Promise.resolve([]),
+    enabled: !!user
+  });
+};
+
+export const useAvailableTimeSlots = (date: string) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['availableTimeSlots', user?.id, date],
+    queryFn: () => user ? availabilityService.getAvailableTimeSlotsForDate(user.id, date) : Promise.resolve([]),
+    enabled: !!user && !!date
+  });
+};
+
+export const useCreateAvailabilitySlot = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: (slot: CreateAvailabilitySlot) => {
+      if (!user) throw new Error('User not authenticated');
+      return availabilityService.createAvailabilitySlot(user.id, slot);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userAvailability', user?.id] });
+    }
+  });
+};
+
+export const useUpdateAvailabilitySlot = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: ({ slotId, updates }: { slotId: string; updates: Partial<CreateAvailabilitySlot> }) =>
+      availabilityService.updateAvailabilitySlot(slotId, updates),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userAvailability', user?.id] });
+    }
+  });
+};
+
+export const useDeleteAvailabilitySlot = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: (slotId: string) => availabilityService.deleteAvailabilitySlot(slotId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userAvailability', user?.id] });
+    }
+  });
+};
+
+export const useAvailabilityExceptions = (startDate?: string, endDate?: string) => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['availabilityExceptions', user?.id, startDate, endDate],
+    queryFn: () => user ? availabilityService.getAvailabilityExceptions(user.id, startDate, endDate) : Promise.resolve([]),
+    enabled: !!user
+  });
+};
+
+export const useCreateAvailabilityException = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: (exception: CreateException) => {
+      if (!user) throw new Error('User not authenticated');
+      return availabilityService.createAvailabilityException(user.id, exception);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['availabilityExceptions', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['availableTimeSlots', user?.id] });
     }
   });
 };

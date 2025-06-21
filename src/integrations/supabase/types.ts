@@ -333,6 +333,75 @@ export type Database = {
         }
         Relationships: []
       }
+      user_availability: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          is_active: boolean
+          is_recurring: boolean
+          specific_date: string | null
+          start_time: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          is_active?: boolean
+          is_recurring?: boolean
+          specific_date?: string | null
+          start_time: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          is_recurring?: boolean
+          specific_date?: string | null
+          start_time?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_availability_exceptions: {
+        Row: {
+          created_at: string
+          end_time: string
+          exception_date: string
+          id: string
+          reason: string | null
+          start_time: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          exception_date: string
+          id?: string
+          reason?: string | null
+          start_time: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          exception_date?: string
+          id?: string
+          reason?: string | null
+          start_time?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_presence: {
         Row: {
           created_at: string
