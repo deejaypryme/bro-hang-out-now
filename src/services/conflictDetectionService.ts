@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { addMinutes, parseISO, format, isSameDay } from 'date-fns';
 import type { TimeSlot } from '@/types/database';
@@ -141,14 +140,18 @@ export const conflictDetectionService = {
       // Check if user is organizer and friend profile exists
       if (hangout.organizer_id === userId) {
         const friendProfile = hangout.friend_profile;
-        if (friendProfile && typeof friendProfile === 'object' && 'full_name' in friendProfile && friendProfile.full_name) {
-          friendName = friendProfile.full_name;
+        if (friendProfile && typeof friendProfile === 'object') {
+          if ('full_name' in friendProfile && friendProfile.full_name) {
+            friendName = friendProfile.full_name;
+          }
         }
       } else {
         // User is the friend, so get organizer name
         const organizerProfile = hangout.organizer_profile;
-        if (organizerProfile && typeof organizerProfile === 'object' && 'full_name' in organizerProfile && organizerProfile.full_name) {
-          friendName = organizerProfile.full_name;
+        if (organizerProfile && typeof organizerProfile === 'object') {
+          if ('full_name' in organizerProfile && organizerProfile.full_name) {
+            friendName = organizerProfile.full_name;
+          }
         }
       }
       
