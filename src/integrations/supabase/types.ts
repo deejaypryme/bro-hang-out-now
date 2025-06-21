@@ -33,25 +33,76 @@ export type Database = {
         }
         Relationships: []
       }
-      friendships: {
+      friend_invitations: {
         Row: {
           created_at: string
+          expires_at: string
+          id: string
+          invitation_token: string
+          invitee_email: string | null
+          invitee_id: string | null
+          invitee_phone: string | null
+          inviter_id: string
+          message: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invitee_email?: string | null
+          invitee_id?: string | null
+          invitee_phone?: string | null
+          inviter_id: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invitation_token?: string
+          invitee_email?: string | null
+          invitee_id?: string | null
+          invitee_phone?: string | null
+          inviter_id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      friendships: {
+        Row: {
+          blocked_by: string | null
+          created_at: string
+          favorite: boolean | null
           friend_id: string
           id: string
+          notes: string | null
           status: string
           user_id: string
         }
         Insert: {
+          blocked_by?: string | null
           created_at?: string
+          favorite?: boolean | null
           friend_id: string
           id?: string
+          notes?: string | null
           status?: string
           user_id: string
         }
         Update: {
+          blocked_by?: string | null
           created_at?: string
+          favorite?: boolean | null
           friend_id?: string
           id?: string
+          notes?: string | null
           status?: string
           user_id?: string
         }
@@ -175,6 +226,36 @@ export type Database = {
           end_time?: string
           id?: string
           start_time?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_presence: {
+        Row: {
+          created_at: string
+          custom_message: string | null
+          id: string
+          last_seen: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_message?: string | null
+          id?: string
+          last_seen?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_message?: string | null
+          id?: string
+          last_seen?: string
+          status?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []

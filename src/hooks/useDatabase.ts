@@ -1,15 +1,118 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { friendService, hangoutService, activityService, timeSlotService } from '@/services/database';
+import { friendsService } from '@/services/friendsService';
 
 export const useFriends = () => {
   const { user } = useAuth();
   
   return useQuery({
     queryKey: ['friends', user?.id],
-    queryFn: () => user ? friendService.getFriends(user.id) : Promise.resolve([]),
+    queryFn: () => user ? friendsService.getFriends(user.id) : Promise.resolve([]),
     enabled: !!user
+  });
+};
+
+export const useFriendInvitations = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['friendInvitations', user?.id],
+    queryFn: () => user ? friendsService.getFriendInvitations(user.id) : Promise.resolve([]),
+    enabled: !!user
+  });
+};
+
+export const useUserPresence = (userId?: string) => {
+  return useQuery({
+    queryKey: ['userPresence', userId],
+    queryFn: () => userId ? friendsService.getUserPresence(userId) : Promise.resolve(null),
+    enabled: !!userId
+  });
+};
+
+export const useSearchUsers = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: (query: string) => friendsService.searchUsers(query)
+  });
+};
+
+export const useSendFriendInvitation = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: friendsService.sendFriendInvitation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendInvitations', user?.id] });
+    }
+  });
+};
+
+export const useRespondToInvitation = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: ({ invitationId, status }: { invitationId: string; status: 'accepted' | 'declined' }) =>
+      friendsService.respondToInvitation(invitationId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friendInvitations', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+    }
+  });
+};
+
+export const useUpdateUserPresence = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: ({ status, customMessage }: { status: 'online' | 'offline' | 'busy' | 'away'; customMessage?: string }) =>
+      friendsService.updateUserPresence(status, customMessage),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['userPresence', user?.id] });
+    }
+  });
+};
+
+export const useRemoveFriend = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: (friendshipId: string) => friendsService.removeFriend(friendshipId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+    }
+  });
+};
+
+export const useUpdateFriendNotes = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: ({ friendshipId, notes }: { friendshipId: string; notes: string }) =>
+      friendsService.updateFriendNotes(friendshipId, notes),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+    }
+  });
+};
+
+export const useToggleFriendFavorite = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: ({ friendshipId, favorite }: { friendshipId: string; favorite: boolean }) =>
+      friendsService.toggleFriendFavorite(friendshipId, favorite),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+    }
   });
 };
 
