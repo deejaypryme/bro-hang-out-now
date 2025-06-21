@@ -53,9 +53,7 @@ export const hangoutsService = {
       activity_id: null, // Activities don't have IDs in the current system
       activity_name: request.activity.name,
       activity_emoji: request.activity.emoji,
-      scheduled_date: typeof request.timeOptions[0]?.date === 'string' 
-        ? request.timeOptions[0].date 
-        : request.timeOptions[0]?.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
+      scheduled_date: request.timeOptions[0]?.date || new Date().toISOString().split('T')[0],
       scheduled_time: request.timeOptions[0]?.startTime || '12:00',
       status: 'pending' as const,
       emotional_signal: request.signal ? JSON.stringify(request.signal) : null
@@ -73,7 +71,7 @@ export const hangoutsService = {
     if (request.timeOptions.length > 1) {
       const timeProposals = request.timeOptions.map(option => ({
         hangout_id: hangout.id,
-        proposed_date: typeof option.date === 'string' ? option.date : option.date.toISOString().split('T')[0],
+        proposed_date: option.date,
         proposed_start_time: option.startTime,
         proposed_end_time: option.endTime || option.startTime, // Use startTime as fallback if endTime doesn't exist
         created_by: user.id
@@ -111,7 +109,8 @@ export const hangoutsService = {
       },
       invitation: {
         ...invitation,
-        status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired'
+        status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired',
+        sent_via: invitation.sent_via as 'email' | 'sms' | 'app' | null
       }
     };
   },
@@ -126,7 +125,8 @@ export const hangoutsService = {
     if (error) throw error;
     return (data || []).map(invitation => ({
       ...invitation,
-      status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired'
+      status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired',
+      sent_via: invitation.sent_via as 'email' | 'sms' | 'app' | null
     }));
   },
 
@@ -248,7 +248,8 @@ export const hangoutsService = {
       hangout: hangoutWithDetails, 
       invitation: {
         ...invitation,
-        status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired'
+        status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired',
+        sent_via: invitation.sent_via as 'email' | 'sms' | 'app' | null
       }
     };
   }
