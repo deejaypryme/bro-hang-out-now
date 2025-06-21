@@ -4,6 +4,7 @@ import { friendService, hangoutService, activityService, timeSlotService, profil
 import { friendsService } from '@/services/friendsService';
 import { hangoutsService } from '@/services/hangoutsService';
 import { availabilityService, type CreateAvailabilitySlot, type CreateException } from '@/services/availabilityService';
+import { format, addDays } from 'date-fns';
 
 export const useFriends = () => {
   const { user } = useAuth();
@@ -304,6 +305,144 @@ export const useUpdateUserTimezone = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
+    }
+  });
+};
+
+// Smart Suggestions Hooks
+export const useSmartSuggestions = (
+  friendId?: string,
+  startDate?: string,
+  endDate?: string,
+  options: {
+    duration?: number;
+    timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'any';
+    includeWeekends?: boolean;
+    maxSuggestions?: number;
+  } = {}
+) => {
+  const { user } = useAuth();
+  
+  const defaultStartDate = startDate || format(new Date(), 'yyyy-MM-dd');
+  const defaultEndDate = endDate || format(addDays(new Date(), 14), 'yyyy-MM-dd');
+
+  return useQuery({
+    queryKey: ['smartSuggestions', user?.id, friendId, defaultStartDate, defaultEndDate, options],
+    queryFn: () => {
+      if (!user || !friendId) {
+        return Promise.resolve(null);
+      }
+      return TimeService.getSmartSuggestionsWithPreferences(
+        user.id,
+        friendId,
+        defaultStartDate,
+        defaultEndDate,
+        options
+      );
+    },
+    enabled: !!user && !!friendId,
+    staleTime: 3 * 60 * 1000, // 3 minutes
+    gcTime: 8 * 60 * 1000 // 8 minutes
+  });
+};
+
+export const useQuickSmartSuggestions = (friendId?: string, daysAhead: number = 7, duration: number = 120) => {
+  const { user } = useAuth();
+
+  return useQuery({
+    queryKey: ['quickSmartSuggestions', user?.id, friendId, daysAhead, duration],
+    queryFn: () => {
+      if (!user || !friendId) {
+        return Promise.resolve(null);
+      }
+      return TimeService.getQuickSmartSuggestions(user.id, friendId, daysAhead, duration);
+    },
+    enabled: !!user && !!friendId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000
+  });
+};
+
+export const useRefreshSmartSuggestions = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ 
+      friendId, 
+      startDate, 
+      endDate, 
+      options = {} 
+    }: { 
+      friendId: string; 
+      startDate?: string; 
+      endDate?: string; 
+      options?: {
+        duration?: number;
+        timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'any';
+        includeWeekends?: boolean;
+        maxSuggestions?: number;
+      };
+    }) => {
+      if (!user) throw new Error('User not authenticated');
+      
+      const defaultStartDate = startDate || format(new Date(), 'yyyy-MM-dd');
+      const defaultEndDate = endDate || format(addDays(new Date(), 14), 'yyyy-MM-dd');
+      
+      return TimeService.getSmartSuggestionsWithPreferences(
+        user.id,
+        friendId,
+        defaultStartDate,
+        defaultEndDate,
+        options
+      );
+    },
+    onSuccess: (data, variables) => {
+      // Update relevant queries
+      queryClient.setQueryData(
+        ['smartSuggestions', user?.id, variables.friendId],
+        data
+      );
+      queryClient.invalidateQueries({ 
+        queryKey: ['smartSuggestions', user?.id, variables.friendId] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['quickSmartSuggestions', user?.id, variables.friendId] 
+      });
+    }
+  });
+};
+
+// Hook for getting suggestions based on user patterns
+export const usePatternBasedSuggestions = (friendId?: string) => {
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({ 
+      timeOfDayPreference, 
+      includeWeekends = true,
+      daysAhead = 14 
+    }: { 
+      timeOfDayPreference?: 'morning' | 'afternoon' | 'evening' | 'any';
+      includeWeekends?: boolean;
+      daysAhead?: number;
+    }) => {
+      if (!user || !friendId) throw new Error('User or friend not specified');
+      
+      const startDate = format(new Date(), 'yyyy-MM-dd');
+      const endDate = format(addDays(new Date(), daysAhead), 'yyyy-MM-dd');
+      
+      return TimeService.getSmartSuggestionsWithPreferences(
+        user.id,
+        friendId,
+        startDate,
+        endDate,
+        {
+          timeOfDay: timeOfDayPreference,
+          includeWeekends,
+          maxSuggestions: 8
+        }
+      );
     }
   });
 };

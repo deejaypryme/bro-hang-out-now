@@ -1,6 +1,8 @@
 import { format, parseISO } from 'date-fns';
 import { toZonedTime, fromZonedTime, formatInTimeZone } from 'date-fns-tz';
 import { MutualAvailabilityService, type AvailabilityComparison } from './mutualAvailabilityService';
+import { SmartSuggestionsService } from './smartSuggestionsService';
+import type { SmartSuggestionRequest, SmartSuggestionResponse } from '@/types/smartScheduling';
 
 export interface TimeZoneInfo {
   timezone: string;
@@ -151,5 +153,61 @@ export class TimeService {
     const endDate = format(new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
     
     return this.findMutualAvailability(userId, friendId, startDate, endDate, duration);
+  }
+
+  // New method for smart suggestions
+  static async generateSmartSuggestions(request: SmartSuggestionRequest): Promise<SmartSuggestionResponse> {
+    return SmartSuggestionsService.generateSmartSuggestions(request);
+  }
+
+  // Helper method for quick smart suggestions
+  static async getQuickSmartSuggestions(
+    userId: string,
+    friendId: string,
+    daysAhead: number = 7,
+    duration: number = 120
+  ): Promise<SmartSuggestionResponse> {
+    const startDate = format(new Date(), 'yyyy-MM-dd');
+    const endDate = format(new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000), 'yyyy-MM-dd');
+    
+    const request: SmartSuggestionRequest = {
+      userId,
+      friendId,
+      startDate,
+      endDate,
+      preferredDuration: duration,
+      maxSuggestions: 5,
+      includeWeekends: true,
+      timeOfDayPreference: 'any'
+    };
+
+    return this.generateSmartSuggestions(request);
+  }
+
+  // Method to get suggestions for specific time preferences
+  static async getSmartSuggestionsWithPreferences(
+    userId: string,
+    friendId: string,
+    startDate: string,
+    endDate: string,
+    options: {
+      duration?: number;
+      timeOfDay?: 'morning' | 'afternoon' | 'evening' | 'any';
+      includeWeekends?: boolean;
+      maxSuggestions?: number;
+    } = {}
+  ): Promise<SmartSuggestionResponse> {
+    const request: SmartSuggestionRequest = {
+      userId,
+      friendId,
+      startDate,
+      endDate,
+      preferredDuration: options.duration || 120,
+      maxSuggestions: options.maxSuggestions || 5,
+      includeWeekends: options.includeWeekends ?? true,
+      timeOfDayPreference: options.timeOfDay || 'any'
+    };
+
+    return this.generateSmartSuggestions(request);
   }
 }
