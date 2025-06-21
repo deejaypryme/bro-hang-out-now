@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
-import { Calendar } from '@/components/ui/calendar';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { format, addDays, startOfWeek, isSameDay, addWeeks, subWeeks } from 'date-fns';
-import { CalendarIcon, Clock, X, Calendar as CalendarViewIcon, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Button } from './ui/button';
+import { Card } from './ui/card';
+import { Clock, Calendar, Check, Plus } from 'lucide-react';
+import { format, addDays, startOfDay } from 'date-fns';
 
 export interface TimeOption {
-  id: string;
-  date: Date;
+  date: string;
   startTime: string;
-  duration: number; // in hours
+  endTime: string; // Add endTime property
 }
 
 interface TimeSelectionProps {
   selectedOptions: TimeOption[];
   onUpdateOptions: (options: TimeOption[]) => void;
-  onNext?: () => void; // Add optional onNext prop
+  onNext?: () => void;
 }
 
 const TimeSelection: React.FC<TimeSelectionProps> = ({
@@ -23,279 +21,104 @@ const TimeSelection: React.FC<TimeSelectionProps> = ({
   onUpdateOptions,
   onNext
 }) => {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
-  const [selectedStartTime, setSelectedStartTime] = useState<string>('');
-  const [selectedDuration, setSelectedDuration] = useState<number>(2);
-  const [viewMode, setViewMode] = useState<'week' | 'calendar'>('week');
-  const [currentWeekStart, setCurrentWeekStart] = useState<Date>(() => {
-    const today = new Date();
-    return startOfWeek(today, { weekStartsOn: 0 }); // Start on Sunday
-  });
+  const [availableDays, setAvailableDays] = useState<Date[]>([]);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [timeSlots, setTimeSlots] = useState<TimeOption[]>([]);
 
-  const timeSlots = [
-    '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-    '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM',
-    '5:00 PM', '6:00 PM', '7:00 PM', '8:00 PM',
-    '9:00 PM', '10:00 PM'
-  ];
-
-  const durations = [
-    { value: 1, label: '1 hour' },
-    { value: 2, label: '2 hours' },
-    { value: 3, label: '3 hours' },
-    { value: 4, label: '4+ hours' }
-  ];
-
-  // Generate week days based on current week
-  const generateWeekDays = (weekStart: Date) => {
-    return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  };
-
-  const weekDays = generateWeekDays(currentWeekStart);
-
-  const goToPreviousWeek = () => {
-    setCurrentWeekStart(prev => subWeeks(prev, 1));
-  };
-
-  const goToNextWeek = () => {
-    setCurrentWeekStart(prev => addWeeks(prev, 1));
-  };
-
-  const canGoToPreviousWeek = () => {
-    const today = new Date();
-    const todayWeekStart = startOfWeek(today, { weekStartsOn: 0 });
-    return currentWeekStart.getTime() > todayWeekStart.getTime();
-  };
-
-  const addTimeOption = () => {
-    if (!selectedDate || !selectedStartTime) return;
+  useEffect(() => {
+    const today = startOfDay(new Date());
+    const nextFourDays = Array.from({ length: 4 }, (_, i) => addDays(today, i));
+    setAvailableDays(nextFourDays);
     
-    const newOption: TimeOption = {
-      id: `${selectedDate.getTime()}-${selectedStartTime}`,
-      date: selectedDate,
-      startTime: selectedStartTime,
-      duration: selectedDuration
-    };
+    // Pre-populate time slots for the first day if no day is selected
+    if (!selectedDay && nextFourDays.length > 0) {
+      setSelectedDay(nextFourDays[0]);
+    }
+  }, []);
 
-    if (selectedOptions.length < 4) {
-      onUpdateOptions([...selectedOptions, newOption]);
-      setSelectedStartTime('');
+  useEffect(() => {
+    if (selectedDay) {
+      const dateString = format(selectedDay, 'yyyy-MM-dd');
+      const newTimeSlots: TimeOption[] = [
+        { date: dateString, startTime: '10:00', endTime: '11:00' },
+        { date: dateString, startTime: '12:00', endTime: '13:00' },
+        { date: dateString, startTime: '14:00', endTime: '15:00' },
+        { date: dateString, startTime: '16:00', endTime: '17:00' },
+      ];
+      setTimeSlots(newTimeSlots);
+    }
+  }, [selectedDay]);
+
+  const toggleTimeSlot = (slot: TimeOption) => {
+    const isSelected = selectedOptions.some(
+      (option) => option.date === slot.date && option.startTime === slot.startTime
+    );
+
+    if (isSelected) {
+      const updatedOptions = selectedOptions.filter(
+        (option) => !(option.date === slot.date && option.startTime === slot.startTime)
+      );
+      onUpdateOptions(updatedOptions);
+    } else {
+      const updatedOptions = [...selectedOptions, slot];
+      onUpdateOptions(updatedOptions);
     }
   };
 
-  const removeTimeOption = (id: string) => {
-    onUpdateOptions(selectedOptions.filter(option => option.id !== id));
+  const isTimeSlotSelected = (slot: TimeOption) => {
+    return selectedOptions.some(
+      (option) => option.date === slot.date && option.startTime === slot.startTime
+    );
   };
 
-  const canAddOption = selectedDate && selectedStartTime && selectedOptions.length < 4;
-
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h3 className="text-xl font-semibold text-gray-900">When are you free?</h3>
-        <p className="text-sm text-gray-600">Choose up to 4 time options to give your friend</p>
-      </div>
-      
-      {/* View Mode Toggle */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant={viewMode === 'week' ? 'default' : 'outline'}
-          onClick={() => setViewMode('week')}
-          className="text-sm"
-        >
-          This Week
-        </Button>
-        <Button
-          variant={viewMode === 'calendar' ? 'default' : 'outline'}
-          onClick={() => setViewMode('calendar')}
-          className="text-sm flex items-center gap-2"
-        >
-          <CalendarViewIcon className="w-4 h-4" />
-          Full Calendar
-        </Button>
-      </div>
-
-      {/* Date Selection */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <label className="text-sm font-medium text-gray-700">Pick a date</label>
-          {viewMode === 'week' && (
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToPreviousWeek}
-                disabled={!canGoToPreviousWeek()}
-                className="flex items-center gap-1"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={goToNextWeek}
-                className="flex items-center gap-1"
-              >
-                Next
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          )}
-        </div>
-        
-        {viewMode === 'week' ? (
-          // Week View - Calendly Style
-          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            {/* Week Header */}
-            <div className="grid grid-cols-7 border-b border-gray-200">
-              {weekDays.map((day) => (
-                <div key={`header-${day.toISOString()}`} className="p-3 text-center border-r border-gray-200 last:border-r-0">
-                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
-                    {format(day, 'EEE')}
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Week Days */}
-            <div className="grid grid-cols-7">
-              {weekDays.map((day) => {
-                const isToday = isSameDay(day, new Date());
-                const isPast = day < new Date() && !isToday;
-                const isSelected = selectedDate && isSameDay(day, selectedDate);
-                
-                return (
-                  <button
-                    key={day.toISOString()}
-                    onClick={() => !isPast && setSelectedDate(day)}
-                    disabled={isPast}
-                    className={`
-                      p-4 text-center border-r border-gray-200 last:border-r-0 transition-all duration-200 min-h-[70px] flex items-center justify-center relative
-                      ${isPast 
-                        ? 'bg-gray-50 text-gray-300 cursor-not-allowed' 
-                        : isSelected
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-white text-gray-900 hover:bg-gray-50'
-                      }
-                    `}
-                  >
-                    <div className={`
-                      text-2xl font-semibold
-                      ${isToday && !isSelected ? 'text-blue-600' : ''}
-                    `}>
-                      {format(day, 'd')}
-                    </div>
-                    
-                    {/* Today indicator */}
-                    {isToday && !isSelected && (
-                      <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-blue-600 rounded-full"></div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          // Calendar View
-          <div className="border rounded-lg p-3 bg-white">
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              disabled={(date) => date < new Date()}
-              className="rounded-md"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Time and Duration Selection */}
-      {selectedDate && (
-        <div className="space-y-4 relative z-10">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Start time</label>
-              <Select value={selectedStartTime} onValueChange={setSelectedStartTime}>
-                <SelectTrigger className="bg-white border border-gray-300">
-                  <SelectValue placeholder="Select time" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                  {timeSlots.map((time) => (
-                    <SelectItem key={time} value={time} className="bg-white hover:bg-gray-100">
-                      {time}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Duration</label>
-              <Select value={selectedDuration.toString()} onValueChange={(value) => setSelectedDuration(Number(value))}>
-                <SelectTrigger className="bg-white border border-gray-300">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white border border-gray-200 shadow-lg z-50">
-                  {durations.map((duration) => (
-                    <SelectItem key={duration.value} value={duration.value.toString()} className="bg-white hover:bg-gray-100">
-                      {duration.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <Button 
-            onClick={addTimeOption}
-            disabled={!canAddOption}
-            className="w-full"
-          >
-            Add Time Option ({selectedOptions.length}/4)
-          </Button>
-
-          {/* Next Button - Show when at least one option is selected */}
-          {selectedOptions.length > 0 && onNext && (
-            <Button 
-              onClick={onNext}
-              className="w-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+    <div>
+      {/* Calendar Day Selection */}
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3">Select a Day</h3>
+        <div className="flex space-x-2 overflow-x-auto">
+          {availableDays.map((day) => (
+            <Button
+              key={day.toISOString()}
+              variant="outline"
+              className={`flex flex-col items-center justify-center w-20 h-20 rounded-lg ${
+                selectedDay?.toISOString() === day.toISOString() ? 'bg-blue-500 text-white' : 'text-gray-700'
+              }`}
+              onClick={() => setSelectedDay(day)}
             >
-              Continue with {selectedOptions.length} option{selectedOptions.length > 1 ? 's' : ''}
-              <ArrowRight className="w-4 h-4" />
+              <Calendar className="w-6 h-6 mb-1" />
+              <span>{format(day, 'EEE')}</span>
+              <span>{format(day, 'd')}</span>
             </Button>
-          )}
+          ))}
         </div>
-      )}
+      </div>
 
-      {/* Selected Options */}
-      {selectedOptions.length > 0 && (
-        <div className="space-y-3">
-          <h4 className="text-lg font-medium text-gray-900">Your time options:</h4>
-          <div className="space-y-2">
-            {selectedOptions.map((option) => (
-              <div key={option.id} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <CalendarIcon className="w-4 h-4 text-blue-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">
-                      {format(option.date, 'EEEE, MMM d')}
-                    </div>
-                    <div className="text-sm text-gray-600 flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {option.startTime} • {option.duration} hour{option.duration > 1 ? 's' : ''}
-                    </div>
-                  </div>
+      {/* Time Slot Selection */}
+      {selectedDay && (
+        <div>
+          <h3 className="text-lg font-semibold mb-3">Select Time Slots</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {timeSlots.map((slot) => (
+              <Card
+                key={`${slot.date}-${slot.startTime}`}
+                className={`flex items-center justify-center p-3 rounded-lg cursor-pointer transition-colors duration-200 ${
+                  isTimeSlotSelected(slot)
+                    ? 'bg-green-100 border-green-500 hover:bg-green-200'
+                    : 'border-gray-200 hover:bg-gray-50'
+                }`}
+                onClick={() => toggleTimeSlot(slot)}
+              >
+                {isTimeSlotSelected(slot) ? (
+                  <Check className="w-4 h-4 text-green-600 absolute top-2 right-2" />
+                ) : (
+                  <Plus className="w-4 h-4 text-gray-400 absolute top-2 right-2" />
+                )}
+                <div className="flex flex-col items-center">
+                  <Clock className="w-5 h-5 mb-1 text-gray-600" />
+                  <span className="text-sm">{slot.startTime} - {slot.endTime}</span>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => removeTimeOption(option.id)}
-                  className="text-red-500 hover:text-red-700"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
+              </Card>
             ))}
           </div>
         </div>

@@ -83,7 +83,7 @@ const Invite = () => {
         timeOptions: selectedTimeOptions,
         activity: selectedActivity,
         signal: selectedSignal || undefined,
-        message: selectedSignal?.message
+        message: selectedSignal?.description || undefined // Use description instead of message
       });
 
       console.log('Created hangout:', hangout);

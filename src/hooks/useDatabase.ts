@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { friendService, hangoutService, activityService, timeSlotService } from '@/services/database';
 import { friendsService } from '@/services/friendsService';
+import { hangoutsService } from '@/services/hangoutsService';
 
 export const useFriends = () => {
   const { user } = useAuth();

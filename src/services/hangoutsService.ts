@@ -50,10 +50,12 @@ export const hangoutsService = {
     const hangoutData = {
       organizer_id: user.id,
       friend_id: request.friend.id,
-      activity_id: request.activity.id,
+      activity_id: null, // Activities don't have IDs in the current system
       activity_name: request.activity.name,
       activity_emoji: request.activity.emoji,
-      scheduled_date: request.timeOptions[0]?.date || new Date().toISOString().split('T')[0],
+      scheduled_date: typeof request.timeOptions[0]?.date === 'string' 
+        ? request.timeOptions[0].date 
+        : request.timeOptions[0]?.date?.toISOString().split('T')[0] || new Date().toISOString().split('T')[0],
       scheduled_time: request.timeOptions[0]?.startTime || '12:00',
       status: 'pending' as const,
       emotional_signal: request.signal ? JSON.stringify(request.signal) : null
@@ -71,9 +73,9 @@ export const hangoutsService = {
     if (request.timeOptions.length > 1) {
       const timeProposals = request.timeOptions.map(option => ({
         hangout_id: hangout.id,
-        proposed_date: option.date,
+        proposed_date: typeof option.date === 'string' ? option.date : option.date.toISOString().split('T')[0],
         proposed_start_time: option.startTime,
-        proposed_end_time: option.endTime,
+        proposed_end_time: option.endTime || option.startTime, // Use startTime as fallback if endTime doesn't exist
         created_by: user.id
       }));
 
@@ -107,7 +109,10 @@ export const hangoutsService = {
         ...hangout,
         status: hangout.status as 'draft' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled'
       },
-      invitation
+      invitation: {
+        ...invitation,
+        status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired'
+      }
     };
   },
 
@@ -119,7 +124,10 @@ export const hangoutsService = {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(invitation => ({
+      ...invitation,
+      status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired'
+    }));
   },
 
   async respondToInvitation(invitationId: string, response: 'accepted' | 'declined'): Promise<void> {
@@ -197,21 +205,32 @@ export const hangoutsService = {
 
     if (invitationError || !invitation) return null;
 
+    // Get hangout with profiles using separate queries to avoid relation errors
     const { data: hangout, error: hangoutError } = await supabase
       .from('hangouts')
-      .select(`
-        *,
-        friend_profile:profiles!hangouts_friend_id_fkey(full_name),
-        organizer_profile:profiles!hangouts_organizer_id_fkey(full_name)
-      `)
+      .select('*')
       .eq('id', invitation.hangout_id)
       .single();
 
     if (hangoutError || !hangout) return null;
 
+    // Get friend profile
+    const { data: friendProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', hangout.friend_id)
+      .single();
+
+    // Get organizer profile  
+    const { data: organizerProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', hangout.organizer_id)
+      .single();
+
     const friendName = hangout.organizer_id === invitation.invitee_id 
-      ? hangout.friend_profile?.full_name || 'Unknown'
-      : hangout.organizer_profile?.full_name || 'Unknown';
+      ? friendProfile?.full_name || 'Unknown'
+      : organizerProfile?.full_name || 'Unknown';
 
     const hangoutWithDetails: HangoutWithDetails = {
       ...hangout,
@@ -225,6 +244,12 @@ export const hangoutsService = {
         : undefined
     };
 
-    return { hangout: hangoutWithDetails, invitation };
+    return { 
+      hangout: hangoutWithDetails, 
+      invitation: {
+        ...invitation,
+        status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired'
+      }
+    };
   }
 };
