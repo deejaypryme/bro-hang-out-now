@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { addMinutes, parseISO, format, isSameDay } from 'date-fns';
-import type { CalendarEvent, TimeSlot } from '@/types/database';
+import type { TimeSlot } from '@/types/database';
 import type { TimeOption } from '@/components/TimeSelection';
 
 export interface ConflictDetails {
@@ -135,9 +135,14 @@ export const conflictDetectionService = {
       
       return (hangoutStart < endTime && hangoutEnd > startTime);
     }).map(hangout => {
-      const friendName = hangout.organizer_id === userId 
-        ? hangout.friend_profile?.full_name || 'Unknown'
-        : hangout.organizer_profile?.full_name || 'Unknown';
+      // Handle the case where profile data might not be loaded properly
+      let friendName = 'Unknown';
+      
+      if (hangout.organizer_id === userId && hangout.friend_profile && typeof hangout.friend_profile === 'object') {
+        friendName = hangout.friend_profile.full_name || 'Unknown';
+      } else if (hangout.organizer_profile && typeof hangout.organizer_profile === 'object') {
+        friendName = hangout.organizer_profile.full_name || 'Unknown';
+      }
       
       return {
         id: `hangout-${hangout.id}`,
