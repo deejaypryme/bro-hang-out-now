@@ -167,3 +167,40 @@ export const useUpdateHangout = () => {
     }
   });
 };
+
+export const useHangoutInvitations = () => {
+  const { user } = useAuth();
+  
+  return useQuery({
+    queryKey: ['hangoutInvitations', user?.id],
+    queryFn: () => user ? hangoutsService.getHangoutInvitations(user.id) : Promise.resolve([]),
+    enabled: !!user
+  });
+};
+
+export const useRespondToHangoutInvitation = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: ({ invitationId, response }: { invitationId: string; response: 'accepted' | 'declined' }) =>
+      hangoutsService.respondToInvitation(invitationId, response),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hangoutInvitations', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['hangouts', user?.id] });
+    }
+  });
+};
+
+export const useUpdateHangoutStatus = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: ({ hangoutId, status, reason }: { hangoutId: string; status: 'confirmed' | 'completed' | 'cancelled' | 'rescheduled'; reason?: string }) =>
+      hangoutsService.updateHangoutStatus(hangoutId, status, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['hangouts', user?.id] });
+    }
+  });
+};

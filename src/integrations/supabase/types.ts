@@ -108,13 +108,108 @@ export type Database = {
         }
         Relationships: []
       }
+      hangout_invitations: {
+        Row: {
+          created_at: string
+          expires_at: string
+          hangout_id: string
+          id: string
+          invitation_token: string
+          invitee_id: string
+          inviter_id: string
+          message: string | null
+          responded_at: string | null
+          sent_via: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          hangout_id: string
+          id?: string
+          invitation_token?: string
+          invitee_id: string
+          inviter_id: string
+          message?: string | null
+          responded_at?: string | null
+          sent_via?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          hangout_id?: string
+          id?: string
+          invitation_token?: string
+          invitee_id?: string
+          inviter_id?: string
+          message?: string | null
+          responded_at?: string | null
+          sent_via?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hangout_invitations_hangout_id_fkey"
+            columns: ["hangout_id"]
+            isOneToOne: false
+            referencedRelation: "hangouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hangout_time_proposals: {
+        Row: {
+          created_at: string
+          created_by: string
+          hangout_id: string
+          id: string
+          proposed_date: string
+          proposed_end_time: string
+          proposed_start_time: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          hangout_id: string
+          id?: string
+          proposed_date: string
+          proposed_end_time: string
+          proposed_start_time: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          hangout_id?: string
+          id?: string
+          proposed_date?: string
+          proposed_end_time?: string
+          proposed_start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hangout_time_proposals_hangout_id_fkey"
+            columns: ["hangout_id"]
+            isOneToOne: false
+            referencedRelation: "hangouts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hangouts: {
         Row: {
           activity_emoji: string
           activity_id: string | null
           activity_name: string
+          cancellation_reason: string | null
+          cancelled_at: string | null
+          cancelled_by: string | null
           created_at: string
           duration_minutes: number | null
+          emotional_signal: Json | null
           friend_id: string
           id: string
           location: string | null
@@ -128,8 +223,12 @@ export type Database = {
           activity_emoji?: string
           activity_id?: string | null
           activity_name: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           duration_minutes?: number | null
+          emotional_signal?: Json | null
           friend_id: string
           id?: string
           location?: string | null
@@ -143,8 +242,12 @@ export type Database = {
           activity_emoji?: string
           activity_id?: string | null
           activity_name?: string
+          cancellation_reason?: string | null
+          cancelled_at?: string | null
+          cancelled_by?: string | null
           created_at?: string
           duration_minutes?: number | null
+          emotional_signal?: Json | null
           friend_id?: string
           id?: string
           location?: string | null

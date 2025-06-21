@@ -1,4 +1,3 @@
-
 export interface Profile {
   id: string;
   username: string | null;
@@ -63,8 +62,12 @@ export interface Hangout {
   scheduled_date: string;
   scheduled_time: string;
   location: string | null;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: 'draft' | 'pending' | 'confirmed' | 'completed' | 'cancelled' | 'rescheduled';
   duration_minutes: number | null;
+  emotional_signal: any | null;
+  cancellation_reason: string | null;
+  cancelled_by: string | null;
+  cancelled_at: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -103,4 +106,29 @@ export interface HangoutWithDetails extends Hangout {
 export interface FriendInvitationWithProfile extends FriendInvitation {
   inviterProfile?: Profile;
   inviteeProfile?: Profile;
+}
+
+export interface HangoutInvitation {
+  id: string;
+  hangout_id: string;
+  inviter_id: string;
+  invitee_id: string;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  invitation_token: string;
+  message: string | null;
+  sent_via: 'email' | 'sms' | 'app' | null;
+  expires_at: string;
+  responded_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HangoutTimeProposal {
+  id: string;
+  hangout_id: string;
+  proposed_date: string;
+  proposed_start_time: string;
+  proposed_end_time: string;
+  created_by: string;
+  created_at: string;
 }

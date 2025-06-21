@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '../components/ui/button';
 import InviteFlow from '../components/InviteFlow';
+import { hangoutsService } from '@/services/hangoutsService';
+import { notificationService } from '@/services/notificationService';
 import { type FriendWithProfile } from '@/types/database';
 import { type Activity, type EmotionalSignal } from '../data/activities';
 import { type TimeOption } from '../components/TimeSelection';
@@ -19,6 +21,7 @@ const Invite = () => {
   const [selectedTimeOptions, setSelectedTimeOptions] = useState<TimeOption[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<EmotionalSignal | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   // Auto-advance when friend is selected
   useEffect(() => {
@@ -61,14 +64,80 @@ const Invite = () => {
     }
   };
 
-  const handleSend = () => {
-    if (selectedFriend && selectedTimeOptions.length > 0 && selectedActivity) {
+  const handleSend = async () => {
+    if (!selectedFriend || selectedTimeOptions.length === 0 || !selectedActivity) {
       toast({
-        title: "BYF Invite Sent! 🎉",
-        description: `Your invite to ${selectedFriend.full_name || selectedFriend.username} has been sent. They'll get a notification to respond.`,
+        title: "Incomplete Information",
+        description: "Please select a friend, time options, and activity.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      // Create hangout and invitation
+      const { hangout, invitation } = await hangoutsService.createHangoutWithInvitation({
+        friend: selectedFriend,
+        timeOptions: selectedTimeOptions,
+        activity: selectedActivity,
+        signal: selectedSignal || undefined,
+        message: selectedSignal?.message
       });
 
+      console.log('Created hangout:', hangout);
+      console.log('Created invitation:', invitation);
+
+      // Send notification
+      const contactType = selectedFriend.phone ? 'sms' : 'email';
+      const contact = selectedFriend.phone || selectedFriend.username || '';
+      
+      if (contact) {
+        const notificationSent = await notificationService.sendHangoutInvitation(
+          selectedFriend.full_name || selectedFriend.username,
+          contact,
+          selectedActivity.name,
+          selectedActivity.emoji,
+          selectedTimeOptions[0].date,
+          selectedTimeOptions[0].startTime,
+          invitation.invitation_token,
+          'You', // For now, using "You" as organizer name
+          contactType
+        );
+
+        if (notificationSent) {
+          toast({
+            title: "BYF Invite Sent! 🎉",
+            description: `Your invite to ${selectedFriend.full_name || selectedFriend.username} has been sent via ${contactType}. They'll get a notification to respond.`,
+          });
+        } else {
+          toast({
+            title: "Invite Created! ⚠️",
+            description: `Your invite to ${selectedFriend.full_name || selectedFriend.username} has been created, but we couldn't send the notification. You can share the link manually.`,
+            variant: "destructive"
+          });
+        }
+      } else {
+        toast({
+          title: "Invite Created! ⚠️",
+          description: `Your invite has been created, but no contact information is available for ${selectedFriend.full_name || selectedFriend.username}.`,
+          variant: "destructive"
+        });
+      }
+
+      // Navigate back to home
       navigate('/home');
+
+    } catch (error) {
+      console.error('Error creating hangout invitation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create hangout invitation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -82,6 +151,7 @@ const Invite = () => {
               variant="ghost"
               onClick={() => navigate('/home')}
               className="flex items-center gap-2"
+              disabled={isCreating}
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -117,6 +187,7 @@ const Invite = () => {
               variant="outline"
               onClick={handleBack}
               className="flex items-center gap-2"
+              disabled={isCreating}
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -125,7 +196,7 @@ const Invite = () => {
             {currentStep === 'time' ? (
               <Button
                 onClick={handleNext}
-                disabled={selectedTimeOptions.length === 0}
+                disabled={selectedTimeOptions.length === 0 || isCreating}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
               >
                 Next
@@ -134,10 +205,10 @@ const Invite = () => {
             ) : (
               <Button
                 onClick={handleSend}
-                disabled={!selectedActivity}
+                disabled={!selectedActivity || isCreating}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
               >
-                Send Invite
+                {isCreating ? 'Sending...' : 'Send Invite'}
               </Button>
             )}
           </div>
