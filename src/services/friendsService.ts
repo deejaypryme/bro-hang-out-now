@@ -241,7 +241,7 @@ export const friendsService = {
           table: 'user_presence'
         },
         (payload) => {
-          if (payload.new) {
+          if (payload.new && typeof payload.new === 'object' && 'status' in payload.new) {
             callback({
               ...payload.new,
               status: payload.new.status as 'online' | 'offline' | 'busy' | 'away'
@@ -264,7 +264,7 @@ export const friendsService = {
           filter: `invitee_id=eq.${userId}`
         },
         (payload) => {
-          if (payload.new) {
+          if (payload.new && typeof payload.new === 'object' && 'status' in payload.new) {
             callback({
               ...payload.new,
               status: payload.new.status as 'pending' | 'accepted' | 'declined' | 'expired'

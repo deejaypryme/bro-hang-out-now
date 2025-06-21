@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '../components/ui/button';
 import InviteFlow from '../components/InviteFlow';
-import { useFriends } from '@/hooks/useDatabase';
 import { type FriendWithProfile } from '@/types/database';
 import { type Activity, type EmotionalSignal } from '../data/activities';
 import { type TimeOption } from '../components/TimeSelection';
@@ -14,7 +13,6 @@ type Step = 'friend' | 'time' | 'activity';
 
 const Invite = () => {
   const navigate = useNavigate();
-  const { data: friends = [], isLoading } = useFriends();
   const [currentStep, setCurrentStep] = useState<Step>('friend');
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<FriendWithProfile | null>(null);
@@ -74,14 +72,6 @@ const Invite = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <p className="text-gray-600">Loading friends...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -104,7 +94,6 @@ const Invite = () => {
       {/* Main Content */}
       <div className="pb-6">
         <InviteFlow 
-          friends={friends}
           currentStep={currentStep}
           completedSteps={completedSteps}
           selectedFriend={selectedFriend}

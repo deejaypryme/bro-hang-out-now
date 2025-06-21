@@ -9,7 +9,6 @@ import { type FriendWithProfile } from '@/types/database';
 import { type Activity, type EmotionalSignal } from '../data/activities';
 
 interface InviteFlowProps {
-  friends: FriendWithProfile[];
   currentStep: 'friend' | 'time' | 'activity';
   completedSteps: string[];
   selectedFriend: FriendWithProfile | null;
@@ -25,7 +24,6 @@ interface InviteFlowProps {
 }
 
 const InviteFlow: React.FC<InviteFlowProps> = ({
-  friends,
   currentStep,
   completedSteps,
   selectedFriend,
@@ -88,7 +86,6 @@ const InviteFlow: React.FC<InviteFlowProps> = ({
           {currentStep === 'friend' && (
             <div className="animate-fade-in">
               <FriendSelection
-                friends={friends}
                 selectedFriend={selectedFriend}
                 onSelectFriend={onSelectFriend}
               />
