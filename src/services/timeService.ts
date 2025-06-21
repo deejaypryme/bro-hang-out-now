@@ -1,6 +1,6 @@
 
 import { format, parseISO } from 'date-fns';
-import { zonedTimeToUtc, utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { toZonedTime, fromZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 export interface TimeZoneInfo {
   timezone: string;
@@ -36,8 +36,8 @@ export class TimeService {
 
   // Convert time from one timezone to another
   static convertTime(date: Date, fromTimezone: string, toTimezone: string): Date {
-    const utcDate = zonedTimeToUtc(date, fromTimezone);
-    return utcToZonedTime(utcDate, toTimezone);
+    const utcDate = fromZonedTime(date, fromTimezone);
+    return toZonedTime(utcDate, toTimezone);
   }
 
   // Format time in specific timezone
@@ -48,7 +48,7 @@ export class TimeService {
   // Create a date with timezone awareness
   static createZonedDate(dateString: string, timeString: string, timezone: string): Date {
     const combined = `${dateString}T${timeString}`;
-    return zonedTimeToUtc(new Date(combined), timezone);
+    return fromZonedTime(new Date(combined), timezone);
   }
 
   // Get common timezone options for selection
@@ -81,7 +81,8 @@ export class TimeService {
     }));
   }
 
-  private static getTimezoneAbbreviation(timezone: string): string {
+  // Make this method public so it can be used by components
+  static getTimezoneAbbreviation(timezone: string): string {
     const now = new Date();
     return now.toLocaleString('en-US', { 
       timeZone: timezone, 
@@ -111,7 +112,7 @@ export class TimeService {
   // Convert hangout time to user's timezone
   static convertHangoutTime(hangoutDate: string, hangoutTime: string, fromTimezone: string, toTimezone: string): { date: Date; timeString: string } {
     const originalDate = this.createZonedDate(hangoutDate, hangoutTime, fromTimezone);
-    const convertedDate = utcToZonedTime(originalDate, toTimezone);
+    const convertedDate = toZonedTime(originalDate, toTimezone);
     const timeString = this.getTimeWithTimezone(convertedDate, toTimezone);
     
     return {
