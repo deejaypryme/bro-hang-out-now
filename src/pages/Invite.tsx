@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '../components/ui/button';
 import InviteFlow from '../components/InviteFlow';
-import { mockFriends } from '../data/mockData';
-import { type Friend } from '../data/mockData';
+import { useFriends } from '@/hooks/useDatabase';
+import { type FriendWithProfile } from '@/types/database';
 import { type Activity, type EmotionalSignal } from '../data/activities';
 import { type TimeOption } from '../components/TimeSelection';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
@@ -13,9 +14,10 @@ type Step = 'friend' | 'time' | 'activity';
 
 const Invite = () => {
   const navigate = useNavigate();
+  const { data: friends = [], isLoading } = useFriends();
   const [currentStep, setCurrentStep] = useState<Step>('friend');
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
+  const [selectedFriend, setSelectedFriend] = useState<FriendWithProfile | null>(null);
   const [selectedTimeOptions, setSelectedTimeOptions] = useState<TimeOption[]>([]);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<EmotionalSignal | null>(null);
@@ -26,7 +28,7 @@ const Invite = () => {
       const timer = setTimeout(() => {
         setCompletedSteps(prev => [...prev, 'friend']);
         setCurrentStep('time');
-      }, 500); // Small delay for smooth UX
+      }, 500);
       
       return () => clearTimeout(timer);
     }
@@ -38,7 +40,7 @@ const Invite = () => {
       const timer = setTimeout(() => {
         setCompletedSteps(prev => [...prev, 'time']);
         setCurrentStep('activity');
-      }, 800); // Slightly longer delay to let user see their selection
+      }, 800);
       
       return () => clearTimeout(timer);
     }
@@ -65,13 +67,20 @@ const Invite = () => {
     if (selectedFriend && selectedTimeOptions.length > 0 && selectedActivity) {
       toast({
         title: "BYF Invite Sent! 🎉",
-        description: `Your invite to ${selectedFriend.name} has been sent. They'll get a notification to respond.`,
+        description: `Your invite to ${selectedFriend.full_name || selectedFriend.username} has been sent. They'll get a notification to respond.`,
       });
 
-      // Navigate back to home instead of resetting form
       navigate('/home');
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading friends...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -95,7 +104,7 @@ const Invite = () => {
       {/* Main Content */}
       <div className="pb-6">
         <InviteFlow 
-          friends={mockFriends}
+          friends={friends}
           currentStep={currentStep}
           completedSteps={completedSteps}
           selectedFriend={selectedFriend}

@@ -5,23 +5,23 @@ import ProgressIndicator from './ProgressIndicator';
 import FriendSelection from './FriendSelection';
 import TimeSelection, { type TimeOption } from './TimeSelection';
 import ActivitySelection from './ActivitySelection';
-import { type Friend } from '../data/mockData';
+import { type FriendWithProfile } from '@/types/database';
 import { type Activity, type EmotionalSignal } from '../data/activities';
 
 interface InviteFlowProps {
-  friends: Friend[];
+  friends: FriendWithProfile[];
   currentStep: 'friend' | 'time' | 'activity';
   completedSteps: string[];
-  selectedFriend: Friend | null;
+  selectedFriend: FriendWithProfile | null;
   selectedTimeOptions: TimeOption[];
   selectedActivity: Activity | null;
   selectedSignal: EmotionalSignal | null;
-  onSelectFriend: (friend: Friend) => void;
+  onSelectFriend: (friend: FriendWithProfile) => void;
   onUpdateTimeOptions: (options: TimeOption[]) => void;
   onSelectActivity: (activity: Activity) => void;
   onSelectSignal: (signal: EmotionalSignal | null) => void;
   onNext?: () => void;
-  onSendInvite?: () => void; // Add onSendInvite prop
+  onSendInvite?: () => void;
 }
 
 const InviteFlow: React.FC<InviteFlowProps> = ({

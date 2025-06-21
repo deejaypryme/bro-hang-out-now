@@ -45,15 +45,23 @@ export const friendService = {
     const { data, error } = await supabase
       .from('friendships')
       .select(`
-        *,
-        friend_profile:profiles!friendships_friend_id_fkey(*)
+        id,
+        friend_id,
+        status,
+        notes,
+        favorite,
+        blocked_by,
+        created_at,
+        friend_profile:profiles!friendships_friend_id_fkey(*),
+        friend_presence:user_presence!user_presence_user_id_fkey(*)
       `)
       .eq('user_id', userId)
-      .eq('status', 'accepted');
+      .eq('status', 'accepted')
+      .is('blocked_by', null);
     
     if (error) throw error;
     
-    return data.map((friendship: any): FriendWithProfile => ({
+    return (data || []).map((friendship: any): FriendWithProfile => ({
       id: friendship.friend_profile.id,
       username: friendship.friend_profile.username,
       full_name: friendship.friend_profile.full_name,
@@ -62,10 +70,14 @@ export const friendService = {
       preferred_times: friendship.friend_profile.preferred_times || [],
       created_at: friendship.friend_profile.created_at,
       updated_at: friendship.friend_profile.updated_at,
-      status: 'online', // Mock status for now
-      lastSeen: new Date(),
+      status: friendship.friend_presence?.status || 'offline',
+      lastSeen: new Date(friendship.friend_presence?.last_seen || friendship.friend_profile.updated_at),
       friendshipDate: new Date(friendship.created_at),
-      friendshipStatus: friendship.status as 'pending' | 'accepted' | 'blocked'
+      friendshipStatus: friendship.status,
+      friendshipId: friendship.id,
+      notes: friendship.notes,
+      favorite: friendship.favorite || false,
+      customMessage: friendship.friend_presence?.custom_message
     }));
   },
 

@@ -54,7 +54,10 @@ export const friendsService = {
       .single();
     
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      status: data.status as 'pending' | 'accepted' | 'declined' | 'expired'
+    };
   },
 
   async getFriendInvitations(userId: string): Promise<FriendInvitationWithProfile[]> {
@@ -72,6 +75,7 @@ export const friendsService = {
     
     return (data || []).map((invitation: any): FriendInvitationWithProfile => ({
       ...invitation,
+      status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired',
       inviterProfile: invitation.inviter_profile,
       inviteeProfile: invitation.invitee_profile
     }));
@@ -143,10 +147,10 @@ export const friendsService = {
       preferred_times: friendship.friend_profile.preferred_times || [],
       created_at: friendship.friend_profile.created_at,
       updated_at: friendship.friend_profile.updated_at,
-      status: friendship.friend_presence?.status || 'offline',
+      status: (friendship.friend_presence?.status as 'online' | 'offline' | 'busy' | 'away') || 'offline',
       lastSeen: new Date(friendship.friend_presence?.last_seen || friendship.friend_profile.updated_at),
       friendshipDate: new Date(friendship.created_at),
-      friendshipStatus: friendship.status,
+      friendshipStatus: friendship.status as 'pending' | 'accepted' | 'blocked',
       friendshipId: friendship.id,
       notes: friendship.notes,
       favorite: friendship.favorite || false,
@@ -219,7 +223,10 @@ export const friendsService = {
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
-    return data;
+    return data ? {
+      ...data,
+      status: data.status as 'online' | 'offline' | 'busy' | 'away'
+    } : null;
   },
 
   // Real-time subscriptions
@@ -235,7 +242,10 @@ export const friendsService = {
         },
         (payload) => {
           if (payload.new) {
-            callback(payload.new as UserPresence);
+            callback({
+              ...payload.new,
+              status: payload.new.status as 'online' | 'offline' | 'busy' | 'away'
+            } as UserPresence);
           }
         }
       )
@@ -255,7 +265,10 @@ export const friendsService = {
         },
         (payload) => {
           if (payload.new) {
-            callback(payload.new as FriendInvitation);
+            callback({
+              ...payload.new,
+              status: payload.new.status as 'pending' | 'accepted' | 'declined' | 'expired'
+            } as FriendInvitation);
           }
         }
       )
