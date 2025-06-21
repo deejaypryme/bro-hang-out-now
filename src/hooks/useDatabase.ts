@@ -4,6 +4,7 @@ import { friendService, hangoutService, activityService, timeSlotService } from 
 import { friendsService } from '@/services/friendsService';
 import { hangoutsService } from '@/services/hangoutsService';
 import { availabilityService, type CreateAvailabilitySlot, type CreateException } from '@/services/availabilityService';
+import { profileService } from '@/services/profileService';
 
 export const useFriends = () => {
   const { user } = useAuth();
@@ -289,6 +290,21 @@ export const useCreateAvailabilityException = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['availabilityExceptions', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['availableTimeSlots', user?.id] });
+    }
+  });
+};
+
+export const useUpdateUserTimezone = () => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  return useMutation({
+    mutationFn: (timezone: string) => {
+      if (!user) throw new Error('User not authenticated');
+      return profileService.updateTimezone(user.id, timezone);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['profile', user?.id] });
     }
   });
 };

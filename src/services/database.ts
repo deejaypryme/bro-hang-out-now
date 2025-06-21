@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { Profile, Friendship, Activity, Hangout, TimeSlot, FriendWithProfile, HangoutWithDetails } from "@/types/database";
 
@@ -31,6 +30,18 @@ export const profileService = {
     const { data, error } = await supabase
       .from('profiles')
       .insert(profile)
+      .select()
+      .single();
+    
+    if (error) throw error;
+    return data;
+  },
+
+  async updateTimezone(userId: string, timezone: string): Promise<Profile> {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ timezone, updated_at: new Date().toISOString() })
+      .eq('id', userId)
       .select()
       .single();
     

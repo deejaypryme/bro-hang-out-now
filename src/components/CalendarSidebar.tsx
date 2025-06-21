@@ -1,11 +1,14 @@
 
 import React, { useState } from 'react';
 import { format, startOfWeek, addDays, isSameDay, isToday, startOfDay, endOfDay } from 'date-fns';
-import { Calendar, Settings, RefreshCw, Plus } from 'lucide-react';
+import { Calendar, Settings, RefreshCw, Plus, Globe } from 'lucide-react';
 import { Button } from './ui/button';
 import { useCalendarEvents, useCalendarIntegrations } from '@/hooks/useCalendarEvents';
 import { useHangouts } from '@/hooks/useDatabase';
+import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
+import TimezoneAwareTime from './TimezoneAwareTime';
+import { TimeService } from '@/services/timeService';
 import type { Hangout } from '../data/mockData';
 
 interface CalendarSidebarProps {
@@ -14,9 +17,13 @@ interface CalendarSidebarProps {
 
 const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const { user } = useAuth();
   const today = new Date();
   const startWeek = startOfWeek(today, { weekStartsOn: 0 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(startWeek, i));
+  
+  // Get user's timezone from profile or default to browser timezone
+  const userTimezone = user?.user_metadata?.timezone || TimeService.getBrowserTimezone();
   
   // Get real calendar events
   const { data: calendarEvents = [], isLoading: eventsLoading } = useCalendarEvents(
@@ -72,11 +79,17 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-primary">Your Calendar</h3>
-          <Link to="/settings/calendar">
-            <Button variant="ghost" size="sm">
-              <Settings className="w-4 h-4" />
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Globe className="w-3 h-3 mr-1" />
+              {TimeService.getTimezoneAbbreviation(userTimezone)}
+            </div>
+            <Link to="/settings/calendar">
+              <Button variant="ghost" size="sm">
+                <Settings className="w-4 h-4" />
+              </Button>
+            </Link>
+          </div>
         </div>
         
         {/* Calendar Integration Status */}
@@ -142,7 +155,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
           <h4 className="text-md font-semibold text-primary mb-3">
             {format(selectedDate, 'MMM d, yyyy')}
           </h4>
-          <SelectedDateEvents date={selectedDate} />
+          <SelectedDateEvents date={selectedDate} userTimezone={userTimezone} />
         </div>
       )}
 
@@ -172,47 +185,56 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
         ) : (
           <div className="space-y-3">
             {/* Upcoming Hangouts */}
-            {upcomingHangouts.map((hangout) => (
-              <div
-                key={hangout.id}
-                className="bg-bg-secondary rounded-lg p-4 border border-custom hover:border-primary/30 transition-colors"
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div className="flex items-center space-x-2">
-                    <span className="text-lg">{hangout.activity_emoji || hangout.activityEmoji}</span>
-                    <div>
-                      <div className="font-medium text-sm text-primary">
-                        {hangout.friend_id || hangout.friendName}
-                      </div>
-                      <div className="text-xs text-text-secondary">
-                        {hangout.activity_name || hangout.activity}
+            {upcomingHangouts.map((hangout) => {
+              const hangoutDate = hangout.scheduled_date 
+                ? TimeService.createZonedDate(hangout.scheduled_date, hangout.scheduled_time || '12:00', 'UTC')
+                : new Date(hangout.date);
+                
+              return (
+                <div
+                  key={hangout.id}
+                  className="bg-bg-secondary rounded-lg p-4 border border-custom hover:border-primary/30 transition-colors"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-lg">{hangout.activity_emoji || hangout.activityEmoji}</span>
+                      <div>
+                        <div className="font-medium text-sm text-primary">
+                          {hangout.friend_id || hangout.friendName}
+                        </div>
+                        <div className="text-xs text-text-secondary">
+                          {hangout.activity_name || hangout.activity}
+                        </div>
                       </div>
                     </div>
+                    <div className={`
+                      text-xs px-2 py-1 rounded-full
+                      ${hangout.status === 'confirmed' 
+                        ? 'bg-success/20 text-success' 
+                        : 'bg-accent/20 text-accent'
+                      }
+                    `}>
+                      {hangout.status}
+                    </div>
                   </div>
-                  <div className={`
-                    text-xs px-2 py-1 rounded-full
-                    ${hangout.status === 'confirmed' 
-                      ? 'bg-success/20 text-success' 
-                      : 'bg-accent/20 text-accent'
-                    }
-                  `}>
-                    {hangout.status}
+                  
+                  <div className="text-xs text-text-muted">
+                    <TimezoneAwareTime 
+                      date={hangoutDate}
+                      userTimezone={userTimezone}
+                      formatString="MMM d, h:mm a"
+                      showTimezone={true}
+                    />
+                    {hangout.location && (
+                      <>
+                        <span className="mx-2">•</span>
+                        <span>{hangout.location}</span>
+                      </>
+                    )}
                   </div>
                 </div>
-                
-                <div className="flex items-center text-xs text-text-muted">
-                  <span>{format(new Date(hangout.scheduled_date || hangout.date), 'MMM d')}</span>
-                  <span className="mx-2">•</span>
-                  <span>{hangout.scheduled_time || hangout.time}</span>
-                  {hangout.location && (
-                    <>
-                      <span className="mx-2">•</span>
-                      <span>{hangout.location}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Upcoming Calendar Events */}
             {upcomingCalendarEvents.map((event) => (
@@ -239,10 +261,13 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
                   </div>
                 </div>
                 
-                <div className="flex items-center text-xs text-text-muted">
-                  <span>{format(event.startTime, 'MMM d')}</span>
-                  <span className="mx-2">•</span>
-                  <span>{format(event.startTime, 'h:mm a')}</span>
+                <div className="text-xs text-text-muted">
+                  <TimezoneAwareTime 
+                    date={event.startTime}
+                    userTimezone={userTimezone}
+                    formatString="MMM d, h:mm a"
+                    showTimezone={true}
+                  />
                   {event.location && (
                     <>
                       <span className="mx-2">•</span>
@@ -260,7 +285,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
 };
 
 // Helper component for selected date events
-const SelectedDateEvents: React.FC<{ date: Date }> = ({ date }) => {
+const SelectedDateEvents: React.FC<{ date: Date; userTimezone: string }> = ({ date, userTimezone }) => {
   const { data: calendarEvents = [] } = useCalendarEvents(date, date);
   const { data: hangouts = [] } = useHangouts();
   
@@ -297,20 +322,32 @@ const SelectedDateEvents: React.FC<{ date: Date }> = ({ date }) => {
       {allEvents.map((item, index) => (
         <div key={index} className="text-sm p-2 bg-bg-tertiary rounded">
           {item.type === 'hangout' ? (
-            <div className="flex items-center space-x-2">
-              <span>{item.data.activity_emoji || item.data.activityEmoji}</span>
-              <span>{item.data.activity_name || item.data.activity}</span>
-              <span className="text-xs text-text-muted">
-                {item.data.scheduled_time || item.data.time}
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span>{item.data.activity_emoji || item.data.activityEmoji}</span>
+                <span>{item.data.activity_name || item.data.activity}</span>
+              </div>
+              <TimezoneAwareTime 
+                date={new Date(`${date.toDateString()} ${item.data.scheduled_time || item.data.time}`)}
+                userTimezone={userTimezone}
+                formatString="h:mm a"
+                showTimezone={false}
+                className="text-xs text-text-muted"
+              />
             </div>
           ) : (
-            <div className="flex items-center space-x-2">
-              <span>📅</span>
-              <span>{item.data.title}</span>
-              <span className="text-xs text-text-muted">
-                {format(item.data.startTime, 'h:mm a')}
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span>📅</span>
+                <span>{item.data.title}</span>
+              </div>
+              <TimezoneAwareTime 
+                date={item.data.startTime}
+                userTimezone={userTimezone}
+                formatString="h:mm a"
+                showTimezone={false}
+                className="text-xs text-text-muted"
+              />
             </div>
           )}
         </div>

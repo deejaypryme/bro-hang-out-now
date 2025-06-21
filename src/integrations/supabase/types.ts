@@ -368,6 +368,7 @@ export type Database = {
           id: string
           phone: string | null
           preferred_times: string[] | null
+          timezone: string | null
           updated_at: string
           username: string | null
         }
@@ -378,6 +379,7 @@ export type Database = {
           id: string
           phone?: string | null
           preferred_times?: string[] | null
+          timezone?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -388,6 +390,7 @@ export type Database = {
           id?: string
           phone?: string | null
           preferred_times?: string[] | null
+          timezone?: string | null
           updated_at?: string
           username?: string | null
         }

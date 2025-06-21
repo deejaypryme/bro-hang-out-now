@@ -1,194 +1,240 @@
 
 import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Clock, Calendar, Check, Plus, Settings } from 'lucide-react';
-import { format, addDays, startOfDay } from 'date-fns';
-import { useAvailableTimeSlots } from '@/hooks/useDatabase';
+import { Calendar } from './ui/calendar';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { format, addDays, isBefore, startOfDay } from 'date-fns';
+import { CalendarIcon, Clock, Globe } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
+import { cn } from '@/lib/utils';
+import { TimeService } from '@/services/timeService';
 import { useAuth } from '@/hooks/useAuth';
-import { Link } from 'react-router-dom';
-
-export interface TimeOption {
-  date: string;
-  startTime: string;
-  endTime: string;
-}
+import TimezoneAwareTime from './TimezoneAwareTime';
 
 interface TimeSelectionProps {
-  selectedOptions: TimeOption[];
-  onUpdateOptions: (options: TimeOption[]) => void;
-  onNext?: () => void;
+  onTimeSelected: (date: string, time: string, timezone: string) => void;
+  onBack: () => void;
+  friendTimezone?: string;
+  initialDate?: string;
+  initialTime?: string;
 }
 
-const TimeSelection: React.FC<TimeSelectionProps> = ({
-  selectedOptions,
-  onUpdateOptions,
-  onNext
+const TimeSelection: React.FC<TimeSelectionProps> = ({ 
+  onTimeSelected, 
+  onBack, 
+  friendTimezone,
+  initialDate,
+  initialTime 
 }) => {
   const { user } = useAuth();
-  const [availableDays, setAvailableDays] = useState<Date[]>([]);
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
-  const [selectedDateString, setSelectedDateString] = useState<string>('');
-
-  // Fetch available time slots for the selected date
-  const { data: availableTimeSlots = [], isLoading } = useAvailableTimeSlots(selectedDateString);
-
-  useEffect(() => {
-    const today = startOfDay(new Date());
-    const nextSevenDays = Array.from({ length: 7 }, (_, i) => addDays(today, i));
-    setAvailableDays(nextSevenDays);
-    
-    // Pre-select the first day if no day is selected
-    if (!selectedDay && nextSevenDays.length > 0) {
-      setSelectedDay(nextSevenDays[0]);
-      setSelectedDateString(format(nextSevenDays[0], 'yyyy-MM-dd'));
-    }
-  }, []);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    initialDate ? new Date(initialDate) : undefined
+  );
+  const [selectedTime, setSelectedTime] = useState(initialTime || '');
+  const [customTime, setCustomTime] = useState('');
+  const [showCustomTime, setShowCustomTime] = useState(false);
+  
+  const userTimezone = user?.user_metadata?.timezone || TimeService.getBrowserTimezone();
+  const isDifferentTimezone = friendTimezone && TimeService.areDifferentTimezones(userTimezone, friendTimezone);
 
   useEffect(() => {
-    if (selectedDay) {
-      setSelectedDateString(format(selectedDay, 'yyyy-MM-dd'));
+    if (initialTime && !timeOptions.includes(initialTime)) {
+      setShowCustomTime(true);
+      setCustomTime(initialTime);
     }
-  }, [selectedDay]);
+  }, [initialTime]);
 
-  const toggleTimeSlot = (slot: TimeOption) => {
-    const isSelected = selectedOptions.some(
-      (option) => option.date === slot.date && option.startTime === slot.startTime
-    );
+  const timeOptions = [
+    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+    '12:00', '12:30', '13:00', '13:30', '14:00', '14:30',
+    '15:00', '15:30', '16:00', '16:30', '17:00', '17:30',
+    '18:00', '18:30', '19:00', '19:30', '20:00', '20:30',
+    '21:00', '21:30', '22:00'
+  ];
 
-    if (isSelected) {
-      const updatedOptions = selectedOptions.filter(
-        (option) => !(option.date === slot.date && option.startTime === slot.startTime)
-      );
-      onUpdateOptions(updatedOptions);
+  const today = startOfDay(new Date());
+  const maxDate = addDays(today, 30);
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (date && !isBefore(date, today)) {
+      setSelectedDate(date);
+    }
+  };
+
+  const handleTimeSelect = (time: string) => {
+    setSelectedTime(time);
+    if (time !== 'custom') {
+      setShowCustomTime(false);
+      setCustomTime('');
     } else {
-      const updatedOptions = [...selectedOptions, slot];
-      onUpdateOptions(updatedOptions);
+      setShowCustomTime(true);
     }
   };
 
-  const isTimeSlotSelected = (slot: TimeOption) => {
-    return selectedOptions.some(
-      (option) => option.date === slot.date && option.startTime === slot.startTime
-    );
+  const handleCustomTimeChange = (time: string) => {
+    setCustomTime(time);
+    setSelectedTime('custom');
   };
 
-  const getDayDisplayName = (date: Date) => {
-    const today = startOfDay(new Date());
-    const tomorrow = addDays(today, 1);
+  const handleContinue = () => {
+    if (!selectedDate) return;
     
-    if (format(date, 'yyyy-MM-dd') === format(today, 'yyyy-MM-dd')) {
-      return 'Today';
-    } else if (format(date, 'yyyy-MM-dd') === format(tomorrow, 'yyyy-MM-dd')) {
-      return 'Tomorrow';
-    } else {
-      return format(date, 'EEE');
-    }
+    const finalTime = selectedTime === 'custom' ? customTime : selectedTime;
+    if (!finalTime) return;
+
+    const dateString = format(selectedDate, 'yyyy-MM-dd');
+    onTimeSelected(dateString, finalTime, userTimezone);
   };
 
-  if (!user) {
+  const isValidTime = selectedTime && (selectedTime !== 'custom' || customTime);
+  const canContinue = selectedDate && isValidTime;
+
+  // Generate preview of the selected time
+  const getTimePreview = () => {
+    if (!selectedDate || !isValidTime) return null;
+    
+    const finalTime = selectedTime === 'custom' ? customTime : selectedTime;
+    const dateString = format(selectedDate, 'yyyy-MM-dd');
+    const selectedDateTime = TimeService.createZonedDate(dateString, finalTime, userTimezone);
+    
     return (
-      <div className="text-center py-8">
-        <p className="text-gray-600 mb-4">Please log in to view your availability</p>
+      <div className="mt-4 p-3 bg-muted rounded-lg">
+        <p className="text-sm font-medium mb-2">Selected Time:</p>
+        <TimezoneAwareTime 
+          date={selectedDateTime}
+          userTimezone={userTimezone}
+          originalTimezone={friendTimezone}
+          showOriginal={isDifferentTimezone}
+          formatString="EEEE, MMM d 'at' h:mm a"
+          className="text-sm"
+        />
+        
+        {isDifferentTimezone && (
+          <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+            <div className="flex items-center gap-1 text-blue-700 font-medium">
+              <Globe className="w-3 h-3" />
+              Cross-timezone invitation
+            </div>
+            <p className="text-blue-600 mt-1">
+              Your friend will see this time converted to their timezone ({friendTimezone})
+            </p>
+          </div>
+        )}
       </div>
     );
-  }
+  };
 
   return (
-    <div>
-      {/* Calendar Day Selection */}
-      <div className="mb-6">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-semibold">Select a Day</h3>
-          <Link to="/settings/availability">
-            <Button variant="outline" size="sm" className="flex items-center gap-2">
-              <Settings className="w-4 h-4" />
-              Availability Settings
-            </Button>
-          </Link>
-        </div>
-        <div className="flex space-x-2 overflow-x-auto pb-2">
-          {availableDays.map((day) => (
-            <Button
-              key={day.toISOString()}
-              variant="outline"
-              className={`flex flex-col items-center justify-center min-w-20 h-20 rounded-lg ${
-                selectedDay?.toISOString() === day.toISOString() ? 'bg-blue-500 text-white' : 'text-gray-700'
-              }`}
-              onClick={() => setSelectedDay(day)}
-            >
-              <Calendar className="w-6 h-6 mb-1" />
-              <span className="text-xs">{getDayDisplayName(day)}</span>
-              <span className="font-semibold">{format(day, 'd')}</span>
-            </Button>
-          ))}
-        </div>
-      </div>
+    <div className="max-w-2xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5" />
+            <CardTitle>When works for you?</CardTitle>
+          </div>
+          <CardDescription>
+            Select a date and time that works best for your hangout
+            {isDifferentTimezone && (
+              <span className="block mt-1 text-blue-600">
+                Times will be converted to your friend's timezone automatically
+              </span>
+            )}
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          {/* Timezone indicator */}
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Globe className="w-4 h-4" />
+            <span>Your timezone: {TimeService.getTimezoneAbbreviation(userTimezone)}</span>
+            {isDifferentTimezone && (
+              <>
+                <span>•</span>
+                <span>Friend's timezone: {TimeService.getTimezoneAbbreviation(friendTimezone!)}</span>
+              </>
+            )}
+          </div>
 
-      {/* Time Slot Selection */}
-      {selectedDay && (
-        <div>
-          <h3 className="text-lg font-semibold mb-3">Available Time Slots</h3>
-          
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Clock className="w-6 h-6 mr-2 animate-spin" />
-              <span>Loading available times...</span>
-            </div>
-          ) : availableTimeSlots.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-              {availableTimeSlots.map((slot, index) => (
-                <Card
-                  key={`${slot.date}-${slot.startTime}-${index}`}
-                  className={`flex items-center justify-center p-3 rounded-lg cursor-pointer transition-colors duration-200 relative ${
-                    isTimeSlotSelected(slot)
-                      ? 'bg-green-100 border-green-500 hover:bg-green-200'
-                      : 'border-gray-200 hover:bg-gray-50'
-                  }`}
-                  onClick={() => toggleTimeSlot(slot)}
-                >
-                  {isTimeSlotSelected(slot) ? (
-                    <Check className="w-4 h-4 text-green-600 absolute top-2 right-2" />
-                  ) : (
-                    <Plus className="w-4 h-4 text-gray-400 absolute top-2 right-2" />
+          {/* Date Selection */}
+          <div className="space-y-2">
+            <Label>Select Date</Label>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={cn(
+                    "w-full justify-start text-left font-normal",
+                    !selectedDate && "text-muted-foreground"
                   )}
-                  <div className="flex flex-col items-center">
-                    <Clock className="w-5 h-5 mb-1 text-gray-600" />
-                    <span className="text-sm font-medium">{slot.startTime} - {slot.endTime}</span>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Clock className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-              <p className="text-gray-600 mb-2">No availability set for {format(selectedDay, 'EEEE, MMMM d')}</p>
-              <p className="text-sm text-gray-500 mb-4">
-                Set your availability to see available time slots for hangouts.
-              </p>
-              <Link to="/settings/availability">
-                <Button className="bg-blue-500 hover:bg-blue-600">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Set Availability
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                 </Button>
-              </Link>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateSelect}
+                  disabled={(date) => isBefore(date, today) || date > maxDate}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          {/* Time Selection */}
+          <div className="space-y-2">
+            <Label>Select Time</Label>
+            <Select value={selectedTime} onValueChange={handleTimeSelect}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a time" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeOptions.map((time) => (
+                  <SelectItem key={time} value={time}>
+                    {format(new Date(`2024-01-01T${time}`), 'h:mm a')}
+                  </SelectItem>
+                ))}
+                <SelectItem value="custom">Custom time...</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Custom Time Input */}
+          {showCustomTime && (
+            <div className="space-y-2">
+              <Label>Custom Time</Label>
+              <Input
+                type="time"
+                value={customTime}
+                onChange={(e) => handleCustomTimeChange(e.target.value)}
+                className="w-full"
+              />
             </div>
           )}
-        </div>
-      )}
 
-      {selectedOptions.length > 0 && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h4 className="font-semibold text-blue-900 mb-2">Selected Time Options:</h4>
-          <div className="space-y-1">
-            {selectedOptions.map((option, index) => (
-              <div key={index} className="text-sm text-blue-800">
-                {format(new Date(option.date), 'EEEE, MMMM d')} at {option.startTime} - {option.endTime}
-              </div>
-            ))}
+          {/* Time Preview */}
+          {getTimePreview()}
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button variant="outline" onClick={onBack} className="flex-1">
+              Back
+            </Button>
+            <Button 
+              onClick={handleContinue} 
+              disabled={!canContinue}
+              className="flex-1"
+            >
+              Continue
+            </Button>
           </div>
-        </div>
-      )}
+        </CardContent>
+      </Card>
     </div>
   );
 };
