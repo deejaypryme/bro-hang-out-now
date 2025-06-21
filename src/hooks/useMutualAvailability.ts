@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { TimeService } from '@/services/timeService';
@@ -34,7 +33,7 @@ export const useMutualAvailability = (
     },
     enabled: !!user && !!friendId,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000 // 10 minutes
+    gcTime: 10 * 60 * 1000 // 10 minutes (renamed from cacheTime)
   });
 };
 
@@ -51,7 +50,7 @@ export const useOptimalTimeSlots = (friendId?: string, daysAhead: number = 7, du
     },
     enabled: !!user && !!friendId,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000
+    gcTime: 10 * 60 * 1000 // 10 minutes (renamed from cacheTime)
   });
 };
 
