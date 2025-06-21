@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { format, startOfWeek, addDays, isSameDay, isToday, startOfDay, endOfDay } from 'date-fns';
-import { Calendar, Settings, Sync, Plus } from 'lucide-react';
+import { Calendar, Settings, RefreshCw, Plus } from 'lucide-react';
 import { Button } from './ui/button';
 import { useCalendarEvents, useCalendarIntegrations } from '@/hooks/useCalendarEvents';
 import { useHangouts } from '@/hooks/useDatabase';
@@ -86,7 +86,7 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
               <span className="text-text-secondary">
                 {integrations.length} calendar{integrations.length > 1 ? 's' : ''} connected
               </span>
-              <Sync className="w-4 h-4 text-success" />
+              <RefreshCw className="w-4 h-4 text-success" />
             </div>
           </div>
         )}

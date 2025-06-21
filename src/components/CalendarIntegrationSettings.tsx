@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Calendar, Settings, Sync, Trash2, ExternalLink } from 'lucide-react';
+import { Calendar, Settings, RefreshCw, Trash2, ExternalLink } from 'lucide-react';
 import { calendarIntegrationService, CalendarIntegration } from '@/services/calendarIntegrationService';
 import { useToast } from '@/hooks/use-toast';
 
@@ -205,7 +205,7 @@ const CalendarIntegrationSettings: React.FC = () => {
                       onClick={() => handleSync(integration.id)}
                       disabled={isSyncing === integration.id}
                     >
-                      <Sync className={`w-4 h-4 ${isSyncing === integration.id ? 'animate-spin' : ''}`} />
+                      <RefreshCw className={`w-4 h-4 ${isSyncing === integration.id ? 'animate-spin' : ''}`} />
                     </Button>
                     
                     <Button

@@ -47,20 +47,20 @@ export const generateCalendarEvent = (hangout: Hangout): CalendarExportResult =>
     const eventAttributes: EventAttributes = {
       start: dateToICSArray(startDate),
       end: dateToICSArray(endDate),
-      title: `${hangout.activity_emoji || hangout.activityEmoji} ${hangout.activity_name || hangout.activity} with ${hangout.friend_id || hangout.friendName}`,
-      description: `BroYouFree hangout: ${hangout.activity_name || hangout.activity} with ${hangout.friend_id || hangout.friendName}.\n\nActivity: ${hangout.activity_name || hangout.activity}\nFriend: ${hangout.friend_id || hangout.friendName}\nPlanned via BroYouFree app.`,
+      title: `${hangout.activityEmoji || hangout.activity_emoji || '🤝'} ${hangout.activity || hangout.activity_name || 'Hangout'} with ${hangout.friendName || hangout.friend_id}`,
+      description: `BroYouFree hangout: ${hangout.activity || hangout.activity_name || 'Hangout'} with ${hangout.friendName || hangout.friend_id}.\n\nActivity: ${hangout.activity || hangout.activity_name || 'Hangout'}\nFriend: ${hangout.friendName || hangout.friend_id}\nPlanned via BroYouFree app.`,
       location: hangout.location || 'Location TBD',
       uid: `broyoufree-${hangout.id}-${Date.now()}`,
       organizer: { name: 'BroYouFree', email: 'noreply@broyoufree.com' },
       alarms: [
         {
           action: 'display',
-          description: `Reminder: ${hangout.activity_name || hangout.activity} with ${hangout.friend_id || hangout.friendName} in 24 hours`,
+          description: `Reminder: ${hangout.activity || hangout.activity_name || 'Hangout'} with ${hangout.friendName || hangout.friend_id} in 24 hours`,
           trigger: { hours: 24, minutes: 0, before: true }
         },
         {
           action: 'display', 
-          description: `Reminder: ${hangout.activity_name || hangout.activity} with ${hangout.friend_id || hangout.friendName} in 1 hour`,
+          description: `Reminder: ${hangout.activity || hangout.activity_name || 'Hangout'} with ${hangout.friendName || hangout.friend_id} in 1 hour`,
           trigger: { hours: 1, minutes: 0, before: true }
         }
       ]
@@ -85,8 +85,8 @@ export const generateCalendarEvent = (hangout: Hangout): CalendarExportResult =>
 
     // Generate filename
     const dateStr = startDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-    const friendName = (hangout.friend_id || hangout.friendName || 'Friend').replace(/\s+/g, '');
-    const activityName = (hangout.activity_name || hangout.activity || 'Activity').replace(/\s+/g, '');
+    const friendName = (hangout.friendName || hangout.friend_id || 'Friend').replace(/\s+/g, '');
+    const activityName = (hangout.activity || hangout.activity_name || 'Activity').replace(/\s+/g, '');
     const filename = `BroTime-${friendName}-${activityName}-${dateStr}.ics`;
 
     // Create and download the file
@@ -164,7 +164,7 @@ export const exportMultipleHangouts = (hangouts: Hangout[]): CalendarExportResul
     for (const hangout of confirmedHangouts) {
       const result = generateCalendarEvent(hangout);
       if (result.success) {
-        console.log(`Successfully generated event for ${hangout.friend_id || hangout.friendName}`);
+        console.log(`Successfully generated event for ${hangout.friendName || hangout.friend_id}`);
       }
     }
     
