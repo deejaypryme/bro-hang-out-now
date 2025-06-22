@@ -53,4 +53,3 @@ const BroButton = React.forwardRef<HTMLButtonElement, BroButtonProps>(
 BroButton.displayName = "BroButton"
 
 export { BroButton, broButtonVariants }
-export type { BroButtonProps }
