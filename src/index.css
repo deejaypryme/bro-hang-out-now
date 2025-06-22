@@ -1,254 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  @property --pos-x {
-    syntax: '<percentage>';
-    initial-value: 11.14%;
-    inherits: false;
-  }
-
-  @property --pos-y {
-    syntax: '<percentage>';
-    initial-value: 140%;
-    inherits: false;
-  }
-
-  @property --spread-x {
-    syntax: '<percentage>';
-    initial-value: 150%;
-    inherits: false;
-  }
-
-  @property --spread-y {
-    syntax: '<percentage>';
-    initial-value: 180.06%;
-    inherits: false;
-  }
-
-  @property --color-1 {
-    syntax: '<color>';
-    initial-value: #4C63D2;
-    inherits: false;
-  }
-
-  @property --color-2 {
-    syntax: '<color>';
-    initial-value: #3A4BB2;
-    inherits: false;
-  }
-
-  @property --color-3 {
-    syntax: '<color>';
-    initial-value: #4054B4;
-    inherits: false;
-  }
-
-  @property --color-4 {
-    syntax: '<color>';
-    initial-value: #7C88E6;
-    inherits: false;
-  }
-
-  @property --color-5 {
-    syntax: '<color>';
-    initial-value: #4C63D2;
-    inherits: false;
-  }
-
-  @property --border-angle {
-    syntax: '<angle>';
-    initial-value: 20deg;
-    inherits: true;
-  }
-
-  @property --border-color-1 {
-    syntax: '<color>';
-    initial-value: hsla(229, 66%, 70%, 0.2);
-    inherits: true;
-  }
-
-  @property --border-color-2 {
-    syntax: '<color>';
-    initial-value: hsla(229, 66%, 50%, 0.75);
-    inherits: true;
-  }
-
-  @property --stop-1 {
-    syntax: '<percentage>';
-    initial-value: 37.35%;
-    inherits: false;
-  }
-
-  @property --stop-2 {
-    syntax: '<percentage>';
-    initial-value: 61.36%;
-    inherits: false;
-  }
-
-  @property --stop-3 {
-    syntax: '<percentage>';
-    initial-value: 78.42%;
-    inherits: false;
-  }
-
-  @property --stop-4 {
-    syntax: '<percentage>';
-    initial-value: 89.52%;
-    inherits: false;
-  }
-
-  @property --stop-5 {
-    syntax: '<percentage>';
-    initial-value: 100%;
-    inherits: false;
-  }
-
   :root {
-    /* Premium Color Scheme - Professional Blues/Teals */
-    --background: 255 255 255; /* #FFFFFF */
-    --foreground: 15 23 42; /* #0F172A - Darker for better contrast */
+    /* BroYouFree Brand Color Variables */
+    --primary-navy: 240 15% 8%;
+    --primary-variant: 240 15% 12%;
+    --accent-orange: 25 85% 55%;
+    --accent-light: 25 85% 65%;
+    --surface-light: 240 8% 98%;
+    --surface-dark: 240 12% 6%;
+    --glass-surface: 240 15% 99%;
     
-    /* Primary Brand Colors - Sophisticated Blue/Teal System */
-    --primary: 30 58 138; /* #1E3A8A - Deep Professional Blue */
-    --primary-foreground: 255 255 255; /* #FFFFFF */
-    --primary-hover: 29 78 216; /* #1D4ED8 - Bright Blue Hover */
-    --primary-light: 59 130 246; /* #3B82F6 - Light Blue Accent */
-    --primary-dark: 15 23 42; /* #0F172A - Very Dark Blue */
+    /* Text Color Variables */
+    --text-primary: 240 15% 8%;
+    --text-secondary: 240 10% 45%;
+    --text-muted: 240 8% 65%;
     
-    /* Secondary Teal Accents */
-    --secondary: 20 184 166; /* #14B8A6 - Teal */
-    --secondary-light: 45 212 191; /* #2DD4BF - Light Teal */
-    --secondary-dark: 15 118 110; /* #0F766E - Dark Teal */
+    /* Legacy Radix UI Variables (maintained for compatibility) */
+    --background: 240 8% 98%; /* Surface Light */
+    --foreground: 240 15% 8%; /* Primary Navy */
     
-    /* Accent Colors */
-    --accent: 30 58 138; /* Using primary blue */
-    --accent-light: 59 130 246; /* Light blue */
-    --success: 34 197 94; /* #22C55E - Green */
-    --warning: 245 158 11; /* #F59E0B - Amber */
-    --error: 239 68 68; /* #EF4444 - Red */
-    --muted: 100 116 139; /* #64748B - Slate */
+    --primary: 240 15% 8%; /* Primary Navy */
+    --primary-foreground: 240 8% 98%; /* Surface Light */
     
-    /* Background and Surface Colors */
-    --bg-primary: 255 255 255; /* #FFFFFF */
-    --bg-secondary: 248 250 252; /* #F8FAFC - Very Light Blue */
-    --bg-tertiary: 241 245 249; /* #F1F5F9 - Light Blue Gray */
-    --bg-hero: 15 23 42; /* #0F172A - Dark Blue for Hero */
+    --secondary: 25 85% 55%; /* Accent Orange */
+    --secondary-foreground: 240 8% 98%; /* Surface Light */
     
-    /* Border Colors */
-    --border: 226 232 240; /* #E2E8F0 */
-    --border-hover: 203 213 225; /* #CBD5E1 */
+    --accent: 25 85% 55%; /* Accent Orange */
+    --accent-foreground: 240 8% 98%; /* Surface Light */
     
-    /* Input Colors */
-    --input: 226 232 240; /* #E2E8F0 */
-    --ring: 30 58 138; /* #1E3A8A */
+    --muted: 240 8% 65%;
+    --muted-foreground: 240 15% 8%;
     
-    /* Radix UI Variables */
-    --radius: 0.75rem; /* Increased for more modern look */
+    --card: 240 8% 98%; /* Surface Light */
+    --card-foreground: 240 15% 8%; /* Primary Navy */
+    
+    --popover: 240 8% 98%; /* Surface Light */
+    --popover-foreground: 240 15% 8%; /* Primary Navy */
+    
+    --border: 240 8% 90%;
+    --input: 240 8% 90%;
+    --ring: 25 85% 55%; /* Accent Orange */
+    
+    --success: 142 76% 36%;
+    --success-light: 142 69% 58%;
+    --warning: 45 93% 47%;
+    --error: 0 84% 60%;
+    
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 240 8% 98%;
+    
+    --sidebar-background: 240 8% 98%;
+    --sidebar-foreground: 240 15% 8%;
+    --sidebar-primary: 240 15% 8%;
+    --sidebar-primary-foreground: 240 8% 98%;
+    --sidebar-accent: 25 85% 55%;
+    --sidebar-accent-foreground: 240 8% 98%;
+    --sidebar-border: 240 8% 90%;
+    --sidebar-ring: 25 85% 55%;
+    
+    --radius: 0.75rem;
   }
 
   .dark {
-    --background: 15 23 42; /* #0F172A */
-    --foreground: 255 255 255; /* #FFFFFF */
+    --background: 240 12% 6%; /* Surface Dark */
+    --foreground: 240 8% 98%; /* Surface Light */
+    
+    --card: 240 15% 12%; /* Primary Variant */
+    --card-foreground: 240 8% 98%; /* Surface Light */
+    
+    --popover: 240 15% 12%; /* Primary Variant */
+    --popover-foreground: 240 8% 98%; /* Surface Light */
+    
+    --primary: 25 85% 55%; /* Accent Orange */
+    --primary-foreground: 240 15% 8%; /* Primary Navy */
+    
+    --muted: 240 10% 45%;
+    --muted-foreground: 240 8% 65%;
+    
+    --border: 240 15% 15%;
+    --input: 240 15% 15%;
+  }
+
+  /* Global Font Family */
+  * {
+    font-family: 'Inter', 'sohne', system-ui, sans-serif;
+  }
+  
+  /* Base Body Styles */
+  body {
+    @apply bg-surface-light text-text-primary antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-light;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent-orange rounded;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent-light;
+  }
+
+  /* Selection Color */
+  ::selection {
+    @apply bg-accent-orange/20 text-primary-navy;
   }
 }
 
 @layer components {
-  .gradient-button {
-    @apply relative appearance-none cursor-pointer;
-    background: radial-gradient(
-      var(--spread-x) var(--spread-y) at var(--pos-x) var(--pos-y),
-      var(--color-1) var(--stop-1),
-      var(--color-2) var(--stop-2),
-      var(--color-3) var(--stop-3),
-      var(--color-4) var(--stop-4),
-      var(--color-5) var(--stop-5)
-    );
-    transition:
-      --pos-x 0.5s,
-      --pos-y 0.5s,
-      --spread-x 0.5s,
-      --spread-y 0.5s,
-      --color-1 0.5s,
-      --color-2 0.5s,
-      --color-3 0.5s,
-      --color-4 0.5s,
-      --color-5 0.5s,
-      --border-angle 0.5s,
-      --border-color-1 0.5s,
-      --border-color-2 0.5s,
-      --stop-1 0.5s,
-      --stop-2 0.5s,
-      --stop-3 0.5s,
-      --stop-4 0.5s,
-      --stop-5 0.5s;
+  /* BroYouFree Typography Classes */
+  .text-display {
+    @apply text-display font-sohne font-extrabold leading-tight tracking-tight text-primary-navy;
+  }
+  
+  .text-display-md {
+    @apply text-display-md font-sohne font-extrabold leading-tight tracking-tight text-primary-navy;
+  }
+  
+  .text-display-sm {
+    @apply text-display-sm font-sohne font-extrabold leading-tight tracking-tight text-primary-navy;
+  }
+  
+  .text-headline-lg {
+    @apply text-headline-lg font-sohne font-bold text-primary-navy;
+  }
+  
+  .text-headline-md {
+    @apply text-headline-md font-sohne font-bold text-primary-navy;
+  }
+  
+  .text-headline-sm {
+    @apply text-headline-sm font-sohne font-bold text-primary-navy;
+  }
+  
+  .text-title-lg {
+    @apply text-title-lg font-sohne font-semibold text-primary-navy;
+  }
+  
+  .text-title-md {
+    @apply text-title-md font-sohne font-semibold text-primary-navy;
+  }
+  
+  .text-title-sm {
+    @apply text-title-sm font-sohne font-semibold text-primary-navy;
+  }
+  
+  .text-body-large {
+    @apply text-body-large font-sohne text-text-primary;
+  }
+  
+  .text-body {
+    @apply text-body font-sohne text-text-primary;
+  }
+  
+  .text-mono {
+    @apply text-mono font-mono font-medium text-text-secondary;
   }
 
-  .gradient-button::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      var(--border-angle),
-      var(--border-color-1),
-      var(--border-color-2)
-    );
-    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    mask-composite: exclude;
-    pointer-events: none;
+  /* Glass Effects */
+  .glass-surface {
+    background: hsla(240, 15%, 99%, 0.85);
+    backdrop-filter: blur(24px);
+    border: 1px solid hsla(240, 8%, 90%, 0.3);
+    box-shadow: 0 8px 32px hsla(240, 15%, 8%, 0.1);
+  }
+  
+  .glass-card {
+    background: hsla(240, 8%, 98%, 0.9);
+    backdrop-filter: blur(16px);
+    border: 1px solid hsla(240, 8%, 90%, 0.2);
+    box-shadow: 0 4px 16px hsla(240, 15%, 8%, 0.05);
   }
 
-  .gradient-button:hover {
-    --pos-x: 0%;
-    --pos-y: 91.51%;
-    --spread-x: 120.24%;
-    --spread-y: 103.18%;
-    --color-1: #7C88E6;
-    --color-2: #4C63D2;
-    --color-3: #3A4BB2;
-    --color-4: #4054B4;
-    --color-5: #2A3B8F;
-    --border-angle: 190deg;
-    --border-color-1: hsla(229, 66%, 80%, 0.1);
-    --border-color-2: hsla(229, 66%, 60%, 0.6);
-    --stop-1: 0%;
-    --stop-2: 8.8%;
-    --stop-3: 21.44%;
-    --stop-4: 71.34%;
-    --stop-5: 85.76%;
+  /* Enhanced Animation Classes */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .animate-slide-in {
+    animation: slide-in 0.5s ease-out forwards;
   }
 
-  .gradient-button-variant {
-    --color-1: #4054B4;
-    --color-2: #3A4BB2;
-    --color-3: #4C63D2;
-    --color-4: #7C88E6;
-    --border-angle: 200deg;
-    --border-color-1: hsla(229, 66%, 70%, 0.6);
-    --border-color-2: hsla(229, 66%, 50%, 0.15);
+  /* Container Max Width */
+  .container-6xl {
+    @apply max-w-6xl mx-auto px-bro-lg md:px-bro-xl;
   }
 
-  .gradient-button-variant:hover {
-    --pos-x: 0%;
-    --pos-y: 95.51%;
-    --spread-x: 110.24%;
-    --spread-y: 110.2%;
-    --color-1: #2A3B8F;
-    --color-2: #7C88E6;
-    --color-3: #4C63D2;
-    --color-4: #3A4BB2;
-    --color-5: #4054B4;
-    --stop-1: 0%;
-    --stop-2: 10%;
-    --stop-3: 35.44%;
-    --stop-4: 71.34%;
-    --stop-5: 90.76%;
-    --border-angle: 210deg;
-    --border-color-1: hsla(229, 66%, 70%, 0.2);
-    --border-color-2: hsla(229, 66%, 50%, 0.75);
+  /* Section Spacing */
+  .section-spacing {
+    @apply py-bro-4xl md:py-bro-5xl;
   }
 
   /* Button Styles */
@@ -494,4 +448,106 @@
       radial-gradient(circle at 75% 75%, rgba(20, 184, 166, 0.1) 0%, transparent 50%);
     pointer-events: none;
   }
+}
+
+@property --pos-x {
+  syntax: '<percentage>';
+  initial-value: 11.14%;
+  inherits: false;
+}
+
+@property --pos-y {
+  syntax: '<percentage>';
+  initial-value: 140%;
+  inherits: false;
+}
+
+@property --spread-x {
+  syntax: '<percentage>';
+  initial-value: 150%;
+  inherits: false;
+}
+
+@property --spread-y {
+  syntax: '<percentage>';
+  initial-value: 180.06%;
+  inherits: false;
+}
+
+@property --color-1 {
+  syntax: '<color>';
+  initial-value: #4C63D2;
+  inherits: false;
+}
+
+@property --color-2 {
+  syntax: '<color>';
+  initial-value: #3A4BB2;
+  inherits: false;
+}
+
+@property --color-3 {
+  syntax: '<color>';
+  initial-value: #4054B4;
+  inherits: false;
+}
+
+@property --color-4 {
+  syntax: '<color>';
+  initial-value: #7C88E6;
+  inherits: false;
+}
+
+@property --color-5 {
+  syntax: '<color>';
+  initial-value: #4C63D2;
+  inherits: false;
+}
+
+@property --border-angle {
+  syntax: '<angle>';
+  initial-value: 20deg;
+  inherits: true;
+}
+
+@property --border-color-1 {
+  syntax: '<color>';
+  initial-value: hsla(229, 66%, 70%, 0.2);
+  inherits: true;
+}
+
+@property --border-color-2 {
+  syntax: '<color>';
+  initial-value: hsla(229, 66%, 50%, 0.75);
+  inherits: true;
+}
+
+@property --stop-1 {
+  syntax: '<percentage>';
+  initial-value: 37.35%;
+  inherits: false;
+}
+
+@property --stop-2 {
+  syntax: '<percentage>';
+  initial-value: 61.36%;
+  inherits: false;
+}
+
+@property --stop-3 {
+  syntax: '<percentage>';
+  initial-value: 78.42%;
+  inherits: false;
+}
+
+@property --stop-4 {
+  syntax: '<percentage>';
+  initial-value: 89.52%;
+  inherits: false;
+}
+
+@property --stop-5 {
+  syntax: '<percentage>';
+  initial-value: 100%;
+  inherits: false;
 }
