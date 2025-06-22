@@ -9,7 +9,8 @@ const broButtonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "btn-primary",
+        primary: "btn-accent", // Orange as primary brand CTA
+        secondary: "btn-primary", // Navy as secondary
         accent: "btn-accent", 
         glass: "btn-glass",
         ghost: "btn-ghost",
@@ -23,7 +24,7 @@ const broButtonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "primary",
+      variant: "primary", // Orange by default
       size: "default",
     },
   }
