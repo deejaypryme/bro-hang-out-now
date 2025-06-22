@@ -2,24 +2,40 @@
 import React from 'react';
 import Header from '../components/Header';
 import BroModePanel from '../components/BroModePanel';
-import { mockUserStats } from '../data/mockData';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
 const BroMode = () => {
+  const userStats = {
+    broPoints: 485,
+    currentStreak: 3,
+    totalHangouts: 12,
+  };
+
   return (
-    <div className="min-h-screen bg-bg-secondary">
-      <Header userStats={mockUserStats} />
+    <div className="min-h-screen hero-background">
+      <Header userStats={userStats} />
       
       {/* Mobile-first bro mode layout */}
-      <div className="p-4">
+      <div className="p-bro-lg">
         <div className="max-w-md mx-auto md:max-w-2xl">
-          <h2 className="text-xl font-bold text-primary mb-4">
-            Bro Mode Dashboard 👊
-          </h2>
+          <div className="text-center mb-bro-2xl">
+            <div className="w-16 h-16 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-3xl text-white mx-auto mb-bro-lg shadow-lg">
+              ⚡
+            </div>
+            <h2 className="typo-headline-lg text-white mb-bro-sm">
+              Bro Mode Dashboard
+            </h2>
+            <p className="typo-body text-white/80">
+              Your availability and hangout coordination hub
+            </p>
+          </div>
           
           {/* Full-width bro mode panel on mobile */}
-          <div className="bg-bg-primary rounded-2xl shadow-lg border border-custom">
-            <BroModePanel userStats={mockUserStats} />
-          </div>
+          <Card variant="glass" className="shadow-2xl border-white/20">
+            <CardContent className="pt-bro-lg">
+              <BroModePanel userStats={userStats} />
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

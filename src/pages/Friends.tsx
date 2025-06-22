@@ -107,223 +107,232 @@ const Friends = () => {
 
   if (friendsLoading || invitationsLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen hero-background">
         <Header userStats={userStats} />
         <div className="flex items-center justify-center h-96">
-          <p className="text-gray-600">Loading your friends...</p>
+          <div className="text-center">
+            <div className="w-12 h-12 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-2xl text-white mx-auto mb-bro-lg animate-pulse shadow-lg">
+              👊
+            </div>
+            <p className="typo-body text-white/80">Loading your friends...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen hero-background">
       <Header userStats={userStats} />
       
-      <main className="max-w-4xl mx-auto py-8 px-4">
-        <div className="flex items-center justify-between mb-8">
+      <main className="max-w-4xl mx-auto py-bro-2xl px-bro-lg space-y-bro-2xl">
+        <div className="flex items-center justify-between mb-bro-2xl">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Friends</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="typo-headline-lg text-white mb-bro-sm">Friends</h1>
+            <p className="typo-body text-white/80">
               {friends.length} friends • {onlineFriends.length + filteredFriends.filter(f => f.favorite && f.status === 'online').length} online
             </p>
           </div>
           <AddFriendModal onFriendAdded={() => refetchInvitations()} />
         </div>
 
-        <Tabs defaultValue="friends" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="friends" className="flex items-center gap-2">
-              <Users className="w-4 h-4" />
-              Friends
-              {friends.length > 0 && (
-                <Badge variant="secondary" className="ml-1">
-                  {friends.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="invitations" className="flex items-center gap-2">
-              <Bell className="w-4 h-4" />
-              Invitations
-              {pendingInvitations.length > 0 && (
-                <Badge variant="destructive" className="ml-1">
-                  {pendingInvitations.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-          </TabsList>
+        <Card variant="glass" className="shadow-2xl border-white/20">
+          <CardContent className="pt-bro-lg">
+            <Tabs defaultValue="friends" className="space-y-bro-xl">
+              <TabsList className="grid w-full grid-cols-2 glass-surface rounded-bro-lg border border-white/20">
+                <TabsTrigger value="friends" className="flex items-center gap-bro-sm text-primary-navy data-[state=active]:bg-accent-orange data-[state=active]:text-white">
+                  <Users className="w-4 h-4" />
+                  Friends
+                  {friends.length > 0 && (
+                    <Badge variant="secondary" className="ml-bro-xs bg-white/20 text-primary-navy">
+                      {friends.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+                <TabsTrigger value="invitations" className="flex items-center gap-bro-sm text-primary-navy data-[state=active]:bg-accent-orange data-[state=active]:text-white">
+                  <Bell className="w-4 h-4" />
+                  Invitations
+                  {pendingInvitations.length > 0 && (
+                    <Badge variant="destructive" className="ml-bro-xs">
+                      {pendingInvitations.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
 
-          <TabsContent value="friends" className="space-y-6">
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Search friends..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
+              <TabsContent value="friends" className="space-y-bro-xl">
+                {/* Search Bar */}
+                <div className="relative">
+                  <Search className="absolute left-bro-md top-1/2 transform -translate-y-1/2 text-text-secondary w-4 h-4" />
+                  <Input
+                    placeholder="Search friends..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-12 h-12 glass-surface border-white/20 focus:border-accent-orange focus:ring-accent-orange/20 text-primary-navy placeholder:text-text-secondary"
+                  />
+                </div>
 
-            {friends.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-12">
-                  <Users className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Friends Yet</h3>
-                  <p className="text-gray-500 mb-6">Start building your network by adding friends!</p>
-                  <AddFriendModal onFriendAdded={() => refetchInvitations()} />
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-6">
-                {/* Favorite Friends */}
-                {favoriteFriends.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Star className="w-5 h-5 text-yellow-500" />
-                        Favorites
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {favoriteFriends.map((friend) => (
-                        <div
-                          key={friend.id}
-                          onClick={() => handleFriendClick(friend)}
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                        >
-                          <div className="relative">
-                            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                              {getAvatarFallback(friend.full_name || friend.username || '')}
-                            </div>
-                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold text-gray-900 truncate">
-                                {friend.full_name || friend.username}
-                              </h3>
-                              <Star className="w-4 h-4 text-yellow-500 fill-current flex-shrink-0" />
-                            </div>
-                            <p className="text-sm text-gray-600">{getStatusText(friend)}</p>
-                            {friend.customMessage && (
-                              <p className="text-xs text-gray-500 italic truncate">"{friend.customMessage}"</p>
-                            )}
-                          </div>
-                          
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                              <MessageSquare className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
+                {friends.length === 0 ? (
+                  <Card variant="glass" className="shadow-xl border-white/20">
+                    <CardContent className="text-center py-bro-4xl">
+                      <Users className="w-16 h-16 text-accent-orange mx-auto mb-bro-lg" />
+                      <h3 className="typo-title-lg text-primary-navy mb-bro-sm">No Friends Yet</h3>
+                      <p className="typo-body text-text-secondary mb-bro-xl">Start building your network by adding friends!</p>
+                      <AddFriendModal onFriendAdded={() => refetchInvitations()} />
                     </CardContent>
                   </Card>
-                )}
-
-                {/* Online Friends */}
-                {onlineFriends.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                        Online ({onlineFriends.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {onlineFriends.map((friend) => (
-                        <div
-                          key={friend.id}
-                          onClick={() => handleFriendClick(friend)}
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                        >
-                          <div className="relative">
-                            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                              {getAvatarFallback(friend.full_name || friend.username || '')}
+                ) : (
+                  <div className="space-y-bro-xl">
+                    {/* Favorite Friends */}
+                    {favoriteFriends.length > 0 && (
+                      <Card variant="glass" className="shadow-xl border-white/20">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-bro-sm typo-title-md text-primary-navy">
+                            <Star className="w-5 h-5 text-yellow-500" />
+                            Favorites
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-bro-md">
+                          {favoriteFriends.map((friend) => (
+                            <div
+                              key={friend.id}
+                              onClick={() => handleFriendClick(friend)}
+                              className="flex items-center gap-bro-md p-bro-md rounded-bro-lg hover:bg-white/10 cursor-pointer transition-all duration-300 hover:scale-102"
+                            >
+                              <div className="relative">
+                                <div className="w-12 h-12 bg-gradient-to-r from-accent-orange to-accent-light rounded-full flex items-center justify-center text-white typo-body font-semibold shadow-lg">
+                                  {getAvatarFallback(friend.full_name || friend.username || '')}
+                                </div>
+                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-bro-sm">
+                                  <h3 className="typo-body font-semibold text-primary-navy truncate">
+                                    {friend.full_name || friend.username}
+                                  </h3>
+                                  <Star className="w-4 h-4 text-yellow-500 fill-current flex-shrink-0" />
+                                </div>
+                                <p className="typo-mono text-text-secondary">{getStatusText(friend)}</p>
+                                {friend.customMessage && (
+                                  <p className="typo-mono text-text-muted italic truncate">"{friend.customMessage}"</p>
+                                )}
+                              </div>
+                              
+                              <div className="flex gap-bro-xs">
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-accent-orange hover:bg-accent-orange/10">
+                                  <MessageSquare className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-900 truncate">
-                              {friend.full_name || friend.username}
-                            </h3>
-                            <p className="text-sm text-gray-600">{getStatusText(friend)}</p>
-                            {friend.customMessage && (
-                              <p className="text-xs text-gray-500 italic truncate">"{friend.customMessage}"</p>
-                            )}
-                          </div>
-                          
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                              <MessageSquare className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
 
-                {/* Offline Friends */}
-                {offlineFriends.length > 0 && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                        Offline ({offlineFriends.length})
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {offlineFriends.map((friend) => (
-                        <div
-                          key={friend.id}
-                          onClick={() => handleFriendClick(friend)}
-                          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition-colors"
-                        >
-                          <div className="relative">
-                            <div className="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center text-white font-semibold">
-                              {getAvatarFallback(friend.full_name || friend.username || '')}
+                    {/* Online Friends */}
+                    {onlineFriends.length > 0 && (
+                      <Card variant="glass" className="shadow-xl border-white/20">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-bro-sm typo-title-md text-primary-navy">
+                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                            Online ({onlineFriends.length})
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-bro-md">
+                          {onlineFriends.map((friend) => (
+                            <div
+                              key={friend.id}
+                              onClick={() => handleFriendClick(friend)}
+                              className="flex items-center gap-bro-md p-bro-md rounded-bro-lg hover:bg-white/10 cursor-pointer transition-all duration-300 hover:scale-102"
+                            >
+                              <div className="relative">
+                                <div className="w-12 h-12 bg-gradient-to-r from-accent-orange to-accent-light rounded-full flex items-center justify-center text-white typo-body font-semibold shadow-lg">
+                                  {getAvatarFallback(friend.full_name || friend.username || '')}
+                                </div>
+                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <h3 className="typo-body font-semibold text-primary-navy truncate">
+                                  {friend.full_name || friend.username}
+                                </h3>
+                                <p className="typo-mono text-text-secondary">{getStatusText(friend)}</p>
+                                {friend.customMessage && (
+                                  <p className="typo-mono text-text-muted italic truncate">"{friend.customMessage}"</p>
+                                )}
+                              </div>
+                              
+                              <div className="flex gap-bro-xs">
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-accent-orange hover:bg-accent-orange/10">
+                                  <MessageSquare className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <h3 className="font-semibold text-gray-700 truncate">
-                              {friend.full_name || friend.username}
-                            </h3>
-                            <p className="text-sm text-gray-500">{getStatusText(friend)}</p>
-                            {friend.notes && (
-                              <p className="text-xs text-gray-400 italic truncate">Note: {friend.notes}</p>
-                            )}
-                          </div>
-                          
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                              <MessageSquare className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-            )}
-          </TabsContent>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
 
-          <TabsContent value="invitations">
-            <FriendInvitations 
-              invitations={invitations} 
-              onInvitationUpdated={() => {
-                refetchInvitations();
-                refetchFriends();
-              }}
-            />
-          </TabsContent>
-        </Tabs>
+                    {/* Offline Friends */}
+                    {offlineFriends.length > 0 && (
+                      <Card variant="glass" className="shadow-xl border-white/20">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-bro-sm typo-title-md text-primary-navy">
+                            <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
+                            Offline ({offlineFriends.length})
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-bro-md">
+                          {offlineFriends.map((friend) => (
+                            <div
+                              key={friend.id}
+                              onClick={() => handleFriendClick(friend)}
+                              className="flex items-center gap-bro-md p-bro-md rounded-bro-lg hover:bg-white/10 cursor-pointer transition-all duration-300 hover:scale-102"
+                            >
+                              <div className="relative">
+                                <div className="w-12 h-12 bg-gray-500 rounded-full flex items-center justify-center text-white typo-body font-semibold shadow-lg">
+                                  {getAvatarFallback(friend.full_name || friend.username || '')}
+                                </div>
+                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
+                              </div>
+                              
+                              <div className="flex-1 min-w-0">
+                                <h3 className="typo-body font-semibold text-text-secondary truncate">
+                                  {friend.full_name || friend.username}
+                                </h3>
+                                <p className="typo-mono text-text-muted">{getStatusText(friend)}</p>
+                                {friend.notes && (
+                                  <p className="typo-mono text-text-muted italic truncate">Note: {friend.notes}</p>
+                                )}
+                              </div>
+                              
+                              <div className="flex gap-bro-xs">
+                                <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-text-secondary hover:bg-white/10">
+                                  <MessageSquare className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="invitations">
+                <FriendInvitations 
+                  invitations={invitations} 
+                  onInvitationUpdated={() => {
+                    refetchInvitations();
+                    refetchFriends();
+                  }}
+                />
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
 
         <FriendProfile
           friend={selectedFriend}

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
 import InviteFlow from '../components/InviteFlow';
 import { hangoutsService } from '@/services/hangoutsService';
 import { notificationService } from '@/services/notificationService';
@@ -142,51 +143,63 @@ const Invite = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen hero-background">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-20">
-        <div className="max-w-2xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+      <header className="glass-surface border-b border-white/20 sticky top-0 z-20 shadow-xl">
+        <div className="max-w-2xl mx-auto px-bro-lg py-bro-lg">
+          <div className="flex items-center gap-bro-lg">
             <Button
               variant="ghost"
               onClick={() => navigate('/home')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-bro-sm text-primary-navy hover:bg-white/10"
               disabled={isCreating}
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </Button>
-            <h1 className="text-lg font-semibold text-gray-900">Schedule Bro Time</h1>
+            <div className="flex items-center gap-bro-md">
+              <div className="w-10 h-10 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-xl text-white shadow-lg">
+                📅
+              </div>
+              <div>
+                <h1 className="typo-title-lg text-primary-navy">Schedule Bro Time</h1>
+                <p className="typo-mono text-text-secondary">Plan your next hangout</p>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="pb-6">
-        <InviteFlow 
-          currentStep={currentStep}
-          completedSteps={completedSteps}
-          selectedFriend={selectedFriend}
-          selectedTimeOptions={selectedTimeOptions}
-          selectedActivity={selectedActivity}
-          selectedSignal={selectedSignal}
-          onSelectFriend={setSelectedFriend}
-          onUpdateTimeOptions={setSelectedTimeOptions}
-          onSelectActivity={setSelectedActivity}
-          onSelectSignal={setSelectedSignal}
-          onNext={handleNext}
-          onSendInvite={handleSend}
-        />
+      <div className="pb-bro-xl">
+        <Card variant="glass" className="max-w-2xl mx-auto mt-bro-xl shadow-2xl border-white/20">
+          <CardContent className="pt-bro-lg">
+            <InviteFlow 
+              currentStep={currentStep}
+              completedSteps={completedSteps}
+              selectedFriend={selectedFriend}
+              selectedTimeOptions={selectedTimeOptions}
+              selectedActivity={selectedActivity}
+              selectedSignal={selectedSignal}
+              onSelectFriend={setSelectedFriend}
+              onUpdateTimeOptions={setSelectedTimeOptions}
+              onSelectActivity={setSelectedActivity}
+              onSelectSignal={setSelectedSignal}
+              onNext={handleNext}
+              onSendInvite={handleSend}
+            />
+          </CardContent>
+        </Card>
       </div>
 
       {/* Bottom Navigation - Show on time and activity steps */}
       {(currentStep === 'time' || currentStep === 'activity') && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 p-4">
+        <div className="fixed bottom-0 left-0 right-0 z-50 glass-surface border-t border-white/20 p-bro-lg shadow-2xl">
           <div className="max-w-2xl mx-auto flex items-center justify-between">
             <Button
               variant="outline"
               onClick={handleBack}
-              className="flex items-center gap-2"
+              className="flex items-center gap-bro-sm"
               disabled={isCreating}
             >
               <ArrowLeft className="w-4 h-4" />
@@ -197,7 +210,9 @@ const Invite = () => {
               <Button
                 onClick={handleNext}
                 disabled={selectedTimeOptions.length === 0 || isCreating}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+                variant="primary"
+                size="lg"
+                className="flex items-center gap-bro-sm"
               >
                 Next
                 <ArrowRight className="w-4 h-4" />
@@ -206,7 +221,9 @@ const Invite = () => {
               <Button
                 onClick={handleSend}
                 disabled={!selectedActivity || isCreating}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2"
+                variant="primary"
+                size="lg"
+                className="flex items-center gap-bro-sm"
               >
                 {isCreating ? 'Sending...' : 'Send Invite'}
               </Button>
