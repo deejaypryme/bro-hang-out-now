@@ -14,8 +14,8 @@ const MobileNavigation = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-bg-primary border-t border-default z-50 md:hidden shadow-custom-lg">
-      <div className="flex items-center justify-around h-16 px-sm">
+    <nav className="fixed bottom-0 left-0 right-0 glass-surface border-t border-white/20 z-50 md:hidden shadow-2xl">
+      <div className="flex items-center justify-around h-16 px-bro-md">
         {navItems.map(({ path, icon: Icon, label }) => {
           const isActive = location.pathname === path;
           return (
@@ -23,15 +23,15 @@ const MobileNavigation = () => {
               key={path}
               to={path}
               className={`
-                touch-target flex flex-col items-center justify-center min-w-0 flex-1 py-xs px-xs rounded-lg transition-all duration-200
+                touch-target flex flex-col items-center justify-center min-w-0 flex-1 py-bro-xs px-bro-xs rounded-bro-lg transition-all duration-300
                 ${isActive 
-                  ? 'text-primary bg-primary/10 scale-105' 
-                  : 'text-muted hover:text-primary hover:bg-bg-secondary'
+                  ? 'text-accent-orange bg-accent-orange/10 scale-105 shadow-lg' 
+                  : 'text-text-secondary hover:text-accent-orange hover:bg-white/10 hover:scale-102'
                 }
               `}
             >
-              <Icon className="w-5 h-5 mb-xs" />
-              <span className="caption font-medium truncate">{label}</span>
+              <Icon className="w-5 h-5 mb-bro-xs" />
+              <span className="typo-mono text-xs font-medium truncate">{label}</span>
             </Link>
           );
         })}

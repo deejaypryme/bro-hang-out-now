@@ -48,74 +48,74 @@ const Header: React.FC<HeaderProps> = ({ userStats }) => {
   };
 
   return (
-    <header className="bg-white/90 backdrop-blur-sm text-gray-800 border-b border-gray-200/50 shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 md:px-6 py-4">
+    <header className="glass-surface border-b border-white/20 shadow-xl">
+      <div className="max-w-6xl mx-auto px-bro-lg md:px-bro-xl py-bro-lg">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-lg text-white">
+          <div className="flex items-center gap-bro-md">
+            <div className="w-10 h-10 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-xl text-white shadow-lg">
               👊
             </div>
-            <h1 className="text-lg md:text-xl font-semibold text-gray-800">BroYouFree</h1>
+            <h1 className="typo-title-lg text-primary-navy">BroYouFree</h1>
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-bro-lg">
             {!user ? (
               <Button 
                 variant="ghost"
                 onClick={() => navigate('/landing')}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-text-secondary hover:text-primary-navy"
               >
                 About App
               </Button>
             ) : (
               <>
-                <div className="hidden sm:flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-bro-sm">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm text-gray-600 font-medium">Ready to hang</span>
+                  <span className="typo-body text-text-secondary font-medium">Ready to hang</span>
                 </div>
                 
-                <div className="flex items-center gap-3 md:gap-4 bg-gray-100/80 backdrop-blur-sm rounded-lg px-3 md:px-4 py-2 border border-gray-200">
+                <div className="flex items-center gap-bro-md bg-white/10 backdrop-blur-md rounded-bro-lg px-bro-lg py-bro-md border border-white/20 shadow-lg">
                   <div className="text-center">
-                    <div className="text-sm md:text-lg font-semibold text-gray-800">{userStats.broPoints}</div>
-                    <div className="text-xs text-gray-600 hidden md:block">Bro Points</div>
+                    <div className="typo-title-sm text-primary-navy">{userStats.broPoints}</div>
+                    <div className="typo-mono text-text-muted hidden md:block">Bro Points</div>
                   </div>
-                  <div className="w-px h-6 md:h-8 bg-gray-300"></div>
+                  <div className="w-px h-6 md:h-8 bg-white/30"></div>
                   <div className="text-center">
-                    <div className="text-sm md:text-lg font-semibold text-gray-800">{userStats.currentStreak}</div>
-                    <div className="text-xs text-gray-600 hidden md:block">Day Streak</div>
+                    <div className="typo-title-sm text-primary-navy">{userStats.currentStreak}</div>
+                    <div className="typo-mono text-text-muted hidden md:block">Day Streak</div>
                   </div>
                 </div>
 
                 <div className="relative">
                   <button
                     onClick={() => setShowUserMenu(!showUserMenu)}
-                    className="flex items-center gap-2 hover:bg-gray-100 rounded-lg p-2 transition-colors"
+                    className="flex items-center gap-bro-sm hover:bg-white/10 rounded-bro-lg p-bro-sm transition-all duration-300 backdrop-blur-sm"
                   >
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-10 w-10 border-2 border-white/20">
                       <AvatarImage src={profile?.avatar_url} />
-                      <AvatarFallback className="bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm">
+                      <AvatarFallback className="bg-gradient-to-r from-accent-orange to-accent-light text-white typo-body font-semibold">
                         {getUserInitials()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="hidden md:block text-left">
-                      <div className="text-sm font-medium text-gray-800">
+                      <div className="typo-body font-semibold text-primary-navy">
                         {profile?.full_name || 'User'}
                       </div>
-                      <div className="text-xs text-gray-600">{user?.email}</div>
+                      <div className="typo-mono text-text-secondary">{user?.email}</div>
                     </div>
                   </button>
 
                   {showUserMenu && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                      <div className="px-4 py-2 border-b border-gray-200">
-                        <div className="text-sm font-medium text-gray-800">
+                    <div className="absolute right-0 mt-bro-sm w-48 glass-surface rounded-bro-lg shadow-2xl border border-white/20 py-bro-sm z-50">
+                      <div className="px-bro-lg py-bro-sm border-b border-white/20">
+                        <div className="typo-body font-semibold text-primary-navy">
                           {profile?.full_name || 'User'}
                         </div>
-                        <div className="text-xs text-gray-600">{user?.email}</div>
+                        <div className="typo-mono text-text-secondary">{user?.email}</div>
                       </div>
                       <button
                         onClick={handleLogout}
-                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                        className="w-full text-left px-bro-lg py-bro-sm typo-body text-red-600 hover:bg-red-50/80 transition-colors duration-200"
                       >
                         Sign Out
                       </button>

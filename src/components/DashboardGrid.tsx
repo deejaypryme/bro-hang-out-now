@@ -33,50 +33,50 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6 md:mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-bro-lg md:gap-bro-xl mb-bro-2xl px-bro-lg md:px-bro-xl">
       {isNewUser ? (
         <>
           {/* New User Sample Cards */}
-          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center gap-3 pb-4">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+          <Card variant="glass" className="shadow-2xl border-white/20 hover:scale-105 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center gap-bro-md pb-bro-lg">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-bro-lg flex items-center justify-center shadow-lg">
                 📅
               </div>
-              <CardTitle className="text-base font-semibold text-gray-800">Upcoming Hangouts</CardTitle>
+              <CardTitle className="typo-title-md text-primary-navy">Upcoming Hangouts</CardTitle>
             </CardHeader>
-            <CardContent className="text-center py-6">
-              <div className="text-4xl mb-2">📭</div>
-              <p className="text-gray-600 mb-1 font-medium">Your hangouts will appear here</p>
-              <p className="text-sm text-gray-500">Add friends to start coordinating!</p>
+            <CardContent className="text-center py-bro-xl">
+              <div className="text-5xl mb-bro-md">📭</div>
+              <p className="typo-body text-primary-navy mb-bro-sm font-semibold">Your hangouts will appear here</p>
+              <p className="typo-mono text-text-muted">Add friends to start coordinating!</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center gap-3 pb-4">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+          <Card variant="glass" className="shadow-2xl border-white/20 hover:scale-105 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center gap-bro-md pb-bro-lg">
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-bro-lg flex items-center justify-center shadow-lg">
                 👥
               </div>
-              <CardTitle className="text-base font-semibold text-gray-800">Your Squad</CardTitle>
+              <CardTitle className="typo-title-md text-primary-navy">Your Squad</CardTitle>
             </CardHeader>
-            <CardContent className="text-center py-6">
-              <div className="text-4xl mb-2">👤</div>
-              <p className="text-gray-600 mb-3 font-medium">No friends added yet</p>
-              <Button onClick={handleAddFriends} className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow-md hover:shadow-lg transition-all duration-300">
+            <CardContent className="text-center py-bro-xl">
+              <div className="text-5xl mb-bro-md">👤</div>
+              <p className="typo-body text-primary-navy mb-bro-lg font-semibold">No friends added yet</p>
+              <Button onClick={handleAddFriends} variant="primary" size="lg" className="shadow-xl">
                 Add Friends
               </Button>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center gap-3 pb-4">
-              <div className="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
+          <Card variant="glass" className="shadow-2xl border-white/20 hover:scale-105 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center gap-bro-md pb-bro-lg">
+              <div className="w-10 h-10 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center shadow-lg">
                 ⚡
               </div>
-              <CardTitle className="text-base font-semibold text-gray-800">Bro Points</CardTitle>
+              <CardTitle className="typo-title-md text-primary-navy">Bro Points</CardTitle>
             </CardHeader>
-            <CardContent className="text-center py-4">
-              <div className="text-3xl font-bold text-gray-800 mb-2">0</div>
-              <p className="text-sm text-gray-600 font-medium">
+            <CardContent className="text-center py-bro-lg">
+              <div className="typo-display-sm text-accent-orange mb-bro-sm">0</div>
+              <p className="typo-mono text-text-muted">
                 Earn points by coordinating hangouts!
               </p>
             </CardContent>
@@ -85,39 +85,39 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
       ) : (
         <>
           {/* Existing User Cards */}
-          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-base font-semibold flex items-center gap-2 text-gray-800">
+          <Card variant="glass" className="shadow-2xl border-white/20 hover:scale-105 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between pb-bro-lg">
+              <CardTitle className="typo-title-md flex items-center gap-bro-sm text-primary-navy">
                 <span>📅</span>
                 Next Hangout
               </CardTitle>
-              <Button variant="ghost" className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 text-sm p-0 h-auto font-medium">
+              <Button variant="ghost" className="text-text-secondary hover:text-accent-orange typo-mono p-0 h-auto">
                 View All
               </Button>
             </CardHeader>
             <CardContent>
               {nextHangout ? (
                 <div>
-                  <div className="text-lg font-semibold mb-1 text-gray-800">
+                  <div className="typo-title-sm mb-bro-sm text-primary-navy">
                     {nextHangout.time}
                   </div>
-                  <div className="text-gray-600 mb-3 font-medium">
+                  <div className="typo-body text-text-secondary mb-bro-lg font-medium">
                     {nextHangout.activity} with {nextHangout.friendName}
                   </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="text-xs border-gray-300 text-gray-700 hover:bg-gray-50 font-medium">
+                  <div className="flex gap-bro-sm">
+                    <Button variant="outline" size="sm" className="typo-mono border-primary-navy/20 text-primary-navy hover:bg-primary-navy hover:text-white">
                       Reschedule
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-xs text-gray-600 hover:text-gray-800 hover:bg-gray-100 font-medium">
+                    <Button variant="ghost" size="sm" className="typo-mono text-text-secondary hover:text-accent-orange">
                       Details
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="text-center py-4">
-                  <div className="text-2xl mb-2">📭</div>
-                  <p className="text-gray-600 mb-2 font-medium">No hangouts scheduled</p>
-                  <Button variant="ghost" onClick={handleScheduleBroTime} className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 text-sm p-0 h-auto font-medium">
+                <div className="text-center py-bro-lg">
+                  <div className="text-4xl mb-bro-md">📭</div>
+                  <p className="typo-body text-primary-navy mb-bro-sm font-semibold">No hangouts scheduled</p>
+                  <Button variant="ghost" onClick={handleScheduleBroTime} className="typo-mono text-accent-orange hover:text-accent-light p-0 h-auto">
                     Send invite?
                   </Button>
                 </div>
@@ -125,35 +125,35 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center justify-between pb-4">
-              <CardTitle className="text-base font-semibold flex items-center gap-2 text-gray-800">
+          <Card variant="glass" className="shadow-2xl border-white/20 hover:scale-105 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center justify-between pb-bro-lg">
+              <CardTitle className="typo-title-md flex items-center gap-bro-sm text-primary-navy">
                 <span>👥</span>
                 Active Friends ({friends.length})
               </CardTitle>
-              <Button variant="ghost" onClick={handleAddFriends} className="text-gray-600 hover:text-gray-800 hover:bg-gray-100 text-sm p-0 h-auto font-medium">
+              <Button variant="ghost" onClick={handleAddFriends} className="typo-mono text-accent-orange hover:text-accent-light p-0 h-auto">
                 + Add
               </Button>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-bro-md">
                 {activeFriends.map(friend => (
-                  <div key={friend.id} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-sm font-semibold">
+                  <div key={friend.id} className="flex items-center gap-bro-md">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-orange to-accent-light flex items-center justify-center text-white typo-body font-semibold shadow-lg">
                       {friend.avatar}
                     </div>
                     <div className="flex-1">
-                      <div className="font-medium text-sm text-gray-800">{friend.name}</div>
-                      <div className="text-xs">
+                      <div className="typo-body font-semibold text-primary-navy">{friend.name}</div>
+                      <div className="mt-bro-xs">
                         <Badge 
                           variant={friend.status === 'online' ? 'default' : 'secondary'}
-                          className="text-xs bg-green-100 text-green-800 border-green-200 font-medium"
+                          className="typo-mono bg-green-100 text-green-800 border-green-200"
                         >
                           {friend.status}
                         </Badge>
                       </div>
                     </div>
-                    <Button variant="outline" onClick={handleScheduleBroTime} size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50 text-xs px-2 py-1 font-medium">
+                    <Button variant="outline" onClick={handleScheduleBroTime} size="sm" className="typo-mono text-primary-navy border-primary-navy/20 hover:bg-accent-orange hover:text-white hover:border-accent-orange">
                       BYF?
                     </Button>
                   </div>
@@ -162,24 +162,24 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
             </CardContent>
           </Card>
 
-          <Card className="bg-white/80 backdrop-blur-lg border-gray-200/50 shadow-lg hover:shadow-xl transition-all duration-300">
-            <CardHeader className="flex flex-row items-center gap-2 pb-4">
+          <Card variant="glass" className="shadow-2xl border-white/20 hover:scale-105 transition-all duration-300">
+            <CardHeader className="flex flex-row items-center gap-bro-sm pb-bro-lg">
               <span>📊</span>
-              <CardTitle className="text-base font-semibold text-gray-800">This Month</CardTitle>
+              <CardTitle className="typo-title-md text-primary-navy">This Month</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
+              <div className="space-y-bro-md">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Hangouts</span>
-                  <span className="font-semibold text-gray-800">8</span>
+                  <span className="typo-body text-text-secondary font-medium">Hangouts</span>
+                  <span className="typo-title-sm text-primary-navy">8</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Response Rate</span>
-                  <span className="font-semibold text-gray-800">85%</span>
+                  <span className="typo-body text-text-secondary font-medium">Response Rate</span>
+                  <span className="typo-title-sm text-primary-navy">85%</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Current Streak</span>
-                  <span className="font-semibold text-green-600">{userStats.currentStreak} days</span>
+                  <span className="typo-body text-text-secondary font-medium">Current Streak</span>
+                  <span className="typo-title-sm text-green-600">{userStats.currentStreak} days</span>
                 </div>
               </div>
             </CardContent>
