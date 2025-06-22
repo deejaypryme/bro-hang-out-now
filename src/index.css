@@ -122,53 +122,70 @@
 }
 
 @layer components {
-  /* BroYouFree Typography Classes */
-  .text-display {
+  /* BroYouFree Typography Utility Classes */
+  .typo-display {
     @apply text-display font-sohne font-extrabold leading-tight tracking-tight text-primary-navy;
   }
   
-  .text-display-md {
+  .typo-display-md {
     @apply text-display-md font-sohne font-extrabold leading-tight tracking-tight text-primary-navy;
   }
   
-  .text-display-sm {
+  .typo-display-sm {
     @apply text-display-sm font-sohne font-extrabold leading-tight tracking-tight text-primary-navy;
   }
   
-  .text-headline-lg {
+  .typo-headline-lg {
     @apply text-headline-lg font-sohne font-bold text-primary-navy;
   }
   
-  .text-headline-md {
+  .typo-headline-md {
     @apply text-headline-md font-sohne font-bold text-primary-navy;
   }
   
-  .text-headline-sm {
+  .typo-headline-sm {
     @apply text-headline-sm font-sohne font-bold text-primary-navy;
   }
   
-  .text-title-lg {
+  .typo-title-lg {
     @apply text-title-lg font-sohne font-semibold text-primary-navy;
   }
   
-  .text-title-md {
+  .typo-title-md {
     @apply text-title-md font-sohne font-semibold text-primary-navy;
   }
   
-  .text-title-sm {
+  .typo-title-sm {
     @apply text-title-sm font-sohne font-semibold text-primary-navy;
   }
   
-  .text-body-large {
+  .typo-body-large {
     @apply text-body-large font-sohne text-text-primary;
   }
   
-  .text-body {
+  .typo-body {
     @apply text-body font-sohne text-text-primary;
   }
   
-  .text-mono {
-    @apply text-mono font-mono font-medium text-text-secondary;
+  .typo-mono {
+    @apply text-mono font-mono font-medium text-text-secondary uppercase tracking-wider;
+  }
+
+  /* Text Color Utilities */
+  .text-brand-primary {
+    @apply text-primary-navy;
+  }
+  
+  .text-brand-secondary {
+    @apply text-text-secondary;
+  }
+  
+  .text-brand-muted {
+    @apply text-text-muted;
+  }
+  
+  .text-brand-accent {
+    @apply text-accent-orange;
   }
 
   /* Glass Effects */
@@ -184,6 +201,14 @@
     backdrop-filter: blur(16px);
     border: 1px solid hsla(240, 8%, 90%, 0.2);
     box-shadow: 0 4px 16px hsla(240, 15%, 8%, 0.05);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+  }
+
+  .glass-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 40px hsla(240, 15%, 8%, 0.15);
+    backdrop-filter: blur(20px);
   }
 
   /* Enhanced Animation Classes */
@@ -356,7 +381,12 @@
   }
   
   .card-elevated {
-    @apply bg-surface-light rounded-bro-lg border border-gray-200 shadow-md;
+    @apply bg-surface-light rounded-bro-lg border border-gray-200 shadow-md transition-all duration-300;
+  }
+
+  .card-elevated:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px hsla(240, 15%, 8%, 0.15);
   }
 
   /* Progress Step Styles */
