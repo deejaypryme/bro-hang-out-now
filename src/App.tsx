@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +12,6 @@ import Calendar from "./pages/Calendar";
 import BroMode from "./pages/BroMode";
 import Friends from "./pages/Friends";
 import Invite from "./pages/Invite";
-import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
@@ -28,8 +28,7 @@ function App() {
           <Router>
             <Layout>
               <Routes>
-                <Route path="/" element={<Navigate to="/landing" replace />} />
-                <Route path="/landing" element={<Landing />} />
+                <Route path="/" element={<Navigate to="/login" replace />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/auth" element={<Auth />} />
