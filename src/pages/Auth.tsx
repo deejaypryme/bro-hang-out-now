@@ -52,77 +52,81 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-light via-white to-accent-orange/10 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-accent-orange to-accent-light rounded-lg flex items-center justify-center text-2xl text-white mx-auto mb-4">
-            👊
-          </div>
-          <CardTitle className="text-2xl font-bold text-primary-navy">
-            {isSignUp ? 'Join BroYouFree' : 'Welcome Back'}
-          </CardTitle>
-          <p className="text-text-secondary">
-            {isSignUp 
-              ? 'Create your account to start hanging with friends' 
-              : 'Sign in to your account'
-            }
-          </p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
-              <div>
+    <div className="min-h-screen hero-background flex items-center justify-center p-bro-lg">
+      <div className="w-full max-w-md">
+        <Card variant="glass" className="shadow-2xl border-white/20">
+          <CardHeader className="text-center pb-bro-lg">
+            <div className="w-16 h-16 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-3xl text-white mx-auto mb-bro-lg shadow-lg">
+              👊
+            </div>
+            <CardTitle className="typo-headline-lg text-primary-navy">
+              {isSignUp ? 'Join BroYouFree' : 'Welcome Back'}
+            </CardTitle>
+            <p className="typo-body text-brand-secondary mt-bro-sm">
+              {isSignUp 
+                ? 'Create your account to start hanging with friends' 
+                : 'Sign in to your BroYouFree account'
+              }
+            </p>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <form onSubmit={handleSubmit} className="space-y-bro-lg">
+              <div className="space-y-bro-md">
+                {isSignUp && (
+                  <Input
+                    type="text"
+                    placeholder="Full Name"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    required
+                    className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
+                  />
+                )}
                 <Input
-                  type="text"
-                  placeholder="Full Name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
+                />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
                 />
               </div>
-            )}
-            <div>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+              
+              <Button 
+                type="submit" 
+                variant="primary"
+                size="lg"
+                className="w-full"
+                disabled={loading}
+              >
+                {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
+              </Button>
+            </form>
+            
+            <div className="mt-bro-xl text-center">
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="typo-body text-brand-accent hover:text-accent-light font-semibold transition-colors duration-200"
+              >
+                {isSignUp 
+                  ? 'Already have an account? Sign in' 
+                  : "Don't have an account? Sign up"
+                }
+              </button>
             </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? 'Loading...' : (isSignUp ? 'Sign Up' : 'Sign In')}
-            </Button>
-          </form>
-          
-          <div className="mt-6 text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-accent-orange hover:text-accent-light font-medium"
-            >
-              {isSignUp 
-                ? 'Already have an account? Sign in' 
-                : "Don't have an account? Sign up"
-              }
-            </button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

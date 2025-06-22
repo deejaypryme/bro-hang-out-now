@@ -65,82 +65,93 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-light via-white to-accent-orange/10 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-accent-orange to-accent-light rounded-lg flex items-center justify-center text-2xl text-white mx-auto mb-4">
-            👊
-          </div>
-          <CardTitle className="text-2xl font-bold text-primary-navy">Join BroYouFree</CardTitle>
-          <p className="text-text-secondary">Create your account to start hanging with friends</p>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Input
-                type="text"
-                placeholder="Full Name"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                required
-                autoComplete="name"
-              />
+    <div className="min-h-screen hero-background flex items-center justify-center p-bro-lg">
+      <div className="w-full max-w-md">
+        <Card variant="glass" className="shadow-2xl border-white/20">
+          <CardHeader className="text-center pb-bro-lg">
+            <div className="w-16 h-16 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-3xl text-white mx-auto mb-bro-lg shadow-lg">
+              👊
             </div>
-            <div>
-              <Input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-              <p className="text-xs text-text-muted mt-1">Must be at least 6 characters</p>
-            </div>
-            <div>
-              <Input
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                minLength={6}
-                autoComplete="new-password"
-              />
-            </div>
-            <Button 
-              type="submit" 
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? 'Creating Account...' : 'Sign Up'}
-            </Button>
-          </form>
-          
-          <div className="mt-6 text-center">
-            <p className="text-text-secondary">
-              Already have an account?{' '}
-              <Link 
-                to="/login" 
-                className="text-accent-orange hover:text-accent-light font-medium"
-              >
-                Sign in
-              </Link>
+            <CardTitle className="typo-headline-lg text-primary-navy">
+              Join BroYouFree
+            </CardTitle>
+            <p className="typo-body text-brand-secondary mt-bro-sm">
+              Create your account to start hanging with friends
             </p>
-          </div>
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <form onSubmit={handleSubmit} className="space-y-bro-lg">
+              <div className="space-y-bro-md">
+                <Input
+                  type="text"
+                  placeholder="Full Name"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  required
+                  autoComplete="name"
+                  className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
+                />
+                <Input
+                  type="email"
+                  placeholder="Email address"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  autoComplete="email"
+                  className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
+                />
+                <div>
+                  <Input
+                    type="password"
+                    placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    autoComplete="new-password"
+                    className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
+                  />
+                  <p className="typo-mono text-brand-muted mt-bro-xs text-xs">
+                    Min 6 characters
+                  </p>
+                </div>
+                <Input
+                  type="password"
+                  placeholder="Confirm Password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                  autoComplete="new-password"
+                  className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
+                />
+              </div>
+              
+              <Button 
+                type="submit" 
+                variant="primary"
+                size="lg"
+                className="w-full"
+                disabled={loading}
+              >
+                {loading ? 'Creating Account...' : 'Sign Up'}
+              </Button>
+            </form>
+            
+            <div className="mt-bro-xl text-center">
+              <p className="typo-body text-brand-secondary">
+                Already have an account?{' '}
+                <Link 
+                  to="/login" 
+                  className="text-brand-accent hover:text-accent-light font-semibold transition-colors duration-200"
+                />
+                  Sign in
+                </Link>
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
