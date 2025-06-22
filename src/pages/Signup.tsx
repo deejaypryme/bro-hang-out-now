@@ -65,14 +65,14 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-surface-light via-white to-accent-orange/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-2xl text-white mx-auto mb-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-accent-orange to-accent-light rounded-lg flex items-center justify-center text-2xl text-white mx-auto mb-4">
             👊
           </div>
-          <CardTitle className="text-2xl font-bold">Join BroYouFree</CardTitle>
-          <p className="text-gray-600">Create your account to start hanging with friends</p>
+          <CardTitle className="text-2xl font-bold text-primary-navy">Join BroYouFree</CardTitle>
+          <p className="text-text-secondary">Create your account to start hanging with friends</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,7 +106,7 @@ const Signup = () => {
                 minLength={6}
                 autoComplete="new-password"
               />
-              <p className="text-xs text-gray-500 mt-1">Must be at least 6 characters</p>
+              <p className="text-xs text-text-muted mt-1">Must be at least 6 characters</p>
             </div>
             <div>
               <Input
@@ -121,7 +121,7 @@ const Signup = () => {
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-full"
               disabled={loading}
             >
               {loading ? 'Creating Account...' : 'Sign Up'}
@@ -129,11 +129,11 @@ const Signup = () => {
           </form>
           
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-text-secondary">
               Already have an account?{' '}
               <Link 
                 to="/login" 
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                className="text-accent-orange hover:text-accent-light font-medium"
               >
                 Sign in
               </Link>

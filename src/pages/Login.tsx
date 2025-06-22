@@ -50,14 +50,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-surface-light via-white to-accent-orange/10 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center text-2xl text-white mx-auto mb-4">
+          <div className="w-12 h-12 bg-gradient-to-r from-accent-orange to-accent-light rounded-lg flex items-center justify-center text-2xl text-white mx-auto mb-4">
             👊
           </div>
-          <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
-          <p className="text-gray-600">Sign in to your BroYouFree account</p>
+          <CardTitle className="text-2xl font-bold text-primary-navy">Welcome Back</CardTitle>
+          <p className="text-text-secondary">Sign in to your BroYouFree account</p>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -84,7 +84,7 @@ const Login = () => {
             </div>
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-full"
               disabled={loading}
             >
               {loading ? 'Signing In...' : 'Sign In'}
@@ -92,11 +92,11 @@ const Login = () => {
           </form>
           
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-text-secondary">
               Don't have an account?{' '}
               <Link 
                 to="/signup" 
-                className="text-blue-600 hover:text-blue-700 font-medium"
+                className="text-accent-orange hover:text-accent-light font-medium"
               >
                 Sign up
               </Link>
