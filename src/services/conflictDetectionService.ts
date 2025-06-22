@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { addMinutes, parseISO, format, isSameDay } from 'date-fns';
 import type { TimeSlot } from '@/types/database';
@@ -28,6 +27,16 @@ export interface ConflictCheckRequest {
   proposedTime: string;
   duration: number;
 }
+
+// Helper function to safely extract profile name
+const getProfileName = (profile: any): string => {
+  if (!profile || typeof profile !== 'object') {
+    return 'Unknown';
+  }
+  
+  const fullName = profile?.full_name;
+  return typeof fullName === 'string' && fullName ? fullName : 'Unknown';
+};
 
 export const conflictDetectionService = {
   // Main conflict detection function
@@ -135,27 +144,15 @@ export const conflictDetectionService = {
       
       return (hangoutStart < endTime && hangoutEnd > startTime);
     }).map(hangout => {
-      // Handle the case where profile data might not be loaded properly
+      // Use helper function to safely get profile names
       let friendName = 'Unknown';
       
-      // Check if user is organizer and friend profile exists
       if (hangout.organizer_id === userId) {
-        const friendProfile = hangout.friend_profile;
-        if (friendProfile && typeof friendProfile === 'object' && 'full_name' in friendProfile && friendProfile !== null) {
-          const profileWithName = friendProfile as { full_name: string | null };
-          if (profileWithName.full_name) {
-            friendName = profileWithName.full_name;
-          }
-        }
+        // User is organizer, get friend name
+        friendName = getProfileName(hangout.friend_profile);
       } else {
-        // User is the friend, so get organizer name
-        const organizerProfile = hangout.organizer_profile;
-        if (organizerProfile && typeof organizerProfile === 'object' && 'full_name' in organizerProfile && organizerProfile !== null) {
-          const profileWithName = organizerProfile as { full_name: string | null };
-          if (profileWithName.full_name) {
-            friendName = profileWithName.full_name;
-          }
-        }
+        // User is the friend, get organizer name
+        friendName = getProfileName(hangout.organizer_profile);
       }
       
       return {
