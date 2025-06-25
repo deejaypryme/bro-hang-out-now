@@ -3,12 +3,14 @@ import React from 'react';
 import Header from '../components/Header';
 import BroModePanel from '../components/BroModePanel';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { mockUserStats } from '../data/mockData';
 
 const BroMode = () => {
   const userStats = {
     broPoints: 485,
     currentStreak: 3,
     totalHangouts: 12,
+    achievements: mockUserStats.achievements
   };
 
   return (
