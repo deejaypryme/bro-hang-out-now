@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
@@ -23,6 +22,12 @@ const Invite = () => {
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [selectedSignal, setSelectedSignal] = useState<EmotionalSignal | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [notificationStatus, setNotificationStatus] = useState<{
+    success: boolean;
+    error?: string;
+    retryable?: boolean;
+    attempts?: number;
+  } | null>(null);
 
   // Auto-advance when friend is selected
   useEffect(() => {
@@ -76,6 +81,7 @@ const Invite = () => {
     }
 
     setIsCreating(true);
+    setNotificationStatus(null);
 
     try {
       // Create hangout and invitation
@@ -84,7 +90,7 @@ const Invite = () => {
         timeOptions: selectedTimeOptions,
         activity: selectedActivity,
         signal: selectedSignal || undefined,
-        message: selectedSignal?.description || undefined // Use description instead of message
+        message: selectedSignal?.description || undefined
       });
 
       console.log('Created hangout:', hangout);
@@ -95,7 +101,7 @@ const Invite = () => {
       const contact = selectedFriend.phone || selectedFriend.username || '';
       
       if (contact) {
-        const notificationSent = await notificationService.sendHangoutInvitation(
+        const notificationResult = await notificationService.sendHangoutInvitation(
           selectedFriend.full_name || selectedFriend.username,
           contact,
           selectedActivity.name,
@@ -107,17 +113,33 @@ const Invite = () => {
           contactType
         );
 
-        if (notificationSent) {
+        setNotificationStatus(notificationResult);
+
+        if (notificationResult.success) {
           toast({
             title: "BYF Invite Sent! 🎉",
-            description: `Your invite to ${selectedFriend.full_name || selectedFriend.username} has been sent via ${contactType}. They'll get a notification to respond.`,
+            description: `Your invite to ${selectedFriend.full_name || selectedFriend.username} has been sent via ${contactType}${notificationResult.attempts && notificationResult.attempts > 1 ? ` (after ${notificationResult.attempts} attempts)` : ''}. They'll get a notification to respond.`,
           });
+          
+          // Navigate back to home on success
+          navigate('/home');
         } else {
+          // Show error with specific feedback
+          const errorTitle = notificationResult.retryable 
+            ? "Invite Created - Notification Delayed ⚠️"
+            : "Invite Created - Notification Failed ❌";
+          
+          const errorDescription = notificationResult.retryable
+            ? `Your invite has been created, but we couldn't send the notification right now. ${notificationResult.error} We'll keep trying to send it.`
+            : `Your invite has been created, but we couldn't send the notification. ${notificationResult.error} You can share the link manually.`;
+
           toast({
-            title: "Invite Created! ⚠️",
-            description: `Your invite to ${selectedFriend.full_name || selectedFriend.username} has been created, but we couldn't send the notification. You can share the link manually.`,
-            variant: "destructive"
+            title: errorTitle,
+            description: errorDescription,
+            variant: notificationResult.retryable ? "default" : "destructive"
           });
+
+          // Don't navigate away if notification failed, let user see the error and potentially retry
         }
       } else {
         toast({
@@ -127,14 +149,44 @@ const Invite = () => {
         });
       }
 
-      // Navigate back to home
-      navigate('/home');
-
     } catch (error) {
       console.error('Error creating hangout invitation:', error);
       toast({
         title: "Error",
         description: "Failed to create hangout invitation. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleRetryNotification = async () => {
+    if (!selectedFriend || !selectedActivity || !selectedTimeOptions.length || !notificationStatus || notificationStatus.success) {
+      return;
+    }
+
+    setIsCreating(true);
+
+    try {
+      const contactType = selectedFriend.phone ? 'sms' : 'email';
+      const contact = selectedFriend.phone || selectedFriend.username || '';
+
+      if (contact) {
+        // We need the invitation token - this would need to be stored or retrieved
+        // For now, we'll show a message that they need to go back to home
+        toast({
+          title: "Retry from Home",
+          description: "Please go back to the home page to retry sending the notification.",
+          variant: "default"
+        });
+        navigate('/home');
+      }
+    } catch (error) {
+      console.error('Error retrying notification:', error);
+      toast({
+        title: "Retry Failed",
+        description: "Failed to retry sending the notification. Please try again later.",
         variant: "destructive"
       });
     } finally {
@@ -188,6 +240,38 @@ const Invite = () => {
               onNext={handleNext}
               onSendInvite={handleSend}
             />
+
+            {/* Notification Status Display */}
+            {notificationStatus && !notificationStatus.success && (
+              <div className="mt-bro-lg p-bro-md rounded-lg border-l-4 border-amber-500 bg-amber-50">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <span className="text-amber-500 text-xl">⚠️</span>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-amber-800">
+                      Notification Issue
+                    </p>
+                    <p className="text-sm text-amber-700 mt-1">
+                      {notificationStatus.error}
+                    </p>
+                    {notificationStatus.retryable && (
+                      <div className="mt-3">
+                        <Button
+                          onClick={handleRetryNotification}
+                          disabled={isCreating}
+                          variant="outline"
+                          size="sm"
+                          className="text-amber-800 border-amber-300 hover:bg-amber-100"
+                        >
+                          {isCreating ? 'Retrying...' : 'Retry Notification'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

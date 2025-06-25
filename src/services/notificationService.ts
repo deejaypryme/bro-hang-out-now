@@ -1,4 +1,7 @@
+
 import { supabase } from "@/integrations/supabase/client";
+import { NotificationServiceError, NotificationErrorType, parseErrorResponse, createUserFriendlyErrorMessage } from './notificationErrors';
+import { withRetry } from './retryUtils';
 
 export interface NotificationRequest {
   to: string;
@@ -6,6 +9,14 @@ export interface NotificationRequest {
   subject?: string;
   type: 'sms' | 'email';
   invitationToken?: string;
+}
+
+export interface NotificationResult {
+  success: boolean;
+  error?: string;
+  errorType?: NotificationErrorType;
+  retryable?: boolean;
+  attempts?: number;
 }
 
 // Email validation function
@@ -161,20 +172,27 @@ export const notificationService = {
     invitationToken: string,
     organizerName: string,
     contactType: 'sms' | 'email'
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<NotificationResult> {
+    let attempts = 0;
+    
     try {
       // Validate contact information based on type
       if (contactType === 'email' && !isValidEmail(friendContact)) {
-        const errorMsg = `Invalid email address: ${friendContact}`;
-        console.error(errorMsg);
-        return { success: false, error: errorMsg };
+        throw new NotificationServiceError(
+          NotificationErrorType.INVALID_CONTACT,
+          `Invalid email address: ${friendContact}`,
+          false
+        );
       }
       
       if (contactType === 'sms') {
         const phoneValidation = isValidPhoneNumber(friendContact);
         if (!phoneValidation.valid) {
-          console.error('Phone validation failed:', phoneValidation.error);
-          return { success: false, error: phoneValidation.error };
+          throw new NotificationServiceError(
+            NotificationErrorType.INVALID_CONTACT,
+            phoneValidation.error || 'Invalid phone number',
+            false
+          );
         }
         friendContact = phoneValidation.formatted!;
       }
@@ -202,10 +220,6 @@ export const notificationService = {
             scheduledTime,
             responseUrl
           );
-          
-          // Re-analyze fallback message
-          const fallbackAnalysis = analyzeSMSLength(message);
-          console.log('Fallback SMS Analysis:', fallbackAnalysis);
         }
       } else {
         message = `
@@ -240,28 +254,59 @@ export const notificationService = {
 
       console.log(`Sending ${contactType} invitation to ${friendContact}`);
 
-      const { data, error } = await supabase.functions.invoke('send-hangout-invitation', {
-        body: {
-          to: friendContact,
-          message,
-          subject: `${organizerName} wants to hang out! ${activityEmoji} ${activityName}`,
-          type: contactType,
-          invitationToken
-        }
-      });
+      // Send notification with retry logic
+      const result = await withRetry(
+        async () => {
+          attempts++;
+          const { data, error } = await supabase.functions.invoke('send-hangout-invitation', {
+            body: {
+              to: friendContact,
+              message,
+              subject: `${organizerName} wants to hang out! ${activityEmoji} ${activityName}`,
+              type: contactType,
+              invitationToken
+            }
+          });
 
-      if (error) {
-        const errorMessage = handleNotificationError(error, contactType, friendContact);
-        console.error('Error sending notification:', error);
-        return { success: false, error: errorMessage };
+          if (error) {
+            throw error;
+          }
+
+          return data;
+        },
+        (error: any) => {
+          const parsedError = parseErrorResponse(error, contactType);
+          return parsedError.retryable;
+        },
+        {
+          maxAttempts: 3,
+          baseDelay: 1000,
+          maxDelay: 5000
+        }
+      );
+
+      console.log('Notification sent successfully:', result);
+      return { success: true, attempts };
+
+    } catch (error: any) {
+      console.error('Error in notification service:', error);
+      
+      let notificationError: NotificationServiceError;
+      if (error instanceof NotificationServiceError) {
+        notificationError = error;
+      } else {
+        notificationError = parseErrorResponse(error, contactType);
       }
 
-      console.log('Notification sent successfully:', data);
-      return { success: true };
-    } catch (error: any) {
-      const errorMessage = handleNotificationError(error, contactType, friendContact);
-      console.error('Error in notification service:', error);
-      return { success: false, error: errorMessage };
+      const userFriendlyMessage = createUserFriendlyErrorMessage(notificationError, contactType);
+      
+      return { 
+        success: false, 
+        error: userFriendlyMessage,
+        errorType: notificationError.type,
+        retryable: notificationError.retryable,
+        attempts
+      };
     }
   },
 
@@ -272,20 +317,27 @@ export const notificationService = {
     activityName: string,
     organizerName: string,
     details?: string
-  ): Promise<{ success: boolean; error?: string }> {
+  ): Promise<NotificationResult> {
+    let attempts = 0;
+
     try {
       // Validate contact information
       if (contactType === 'email' && !isValidEmail(friendContact)) {
-        const errorMsg = `Invalid email address: ${friendContact}`;
-        console.error(errorMsg);
-        return { success: false, error: errorMsg };
+        throw new NotificationServiceError(
+          NotificationErrorType.INVALID_CONTACT,
+          `Invalid email address: ${friendContact}`,
+          false
+        );
       }
       
       if (contactType === 'sms') {
         const phoneValidation = isValidPhoneNumber(friendContact);
         if (!phoneValidation.valid) {
-          console.error('Phone validation failed:', phoneValidation.error);
-          return { success: false, error: phoneValidation.error };
+          throw new NotificationServiceError(
+            NotificationErrorType.INVALID_CONTACT,
+            phoneValidation.error || 'Invalid phone number',
+            false
+          );
         }
         friendContact = phoneValidation.formatted!;
       }
@@ -340,35 +392,62 @@ export const notificationService = {
       if (contactType === 'sms') {
         const smsAnalysis = analyzeSMSLength(message);
         console.log('SMS Update Analysis:', smsAnalysis);
-        
-        if (smsAnalysis.recommendation) {
-          console.log('SMS Recommendation:', smsAnalysis.recommendation);
-        }
       }
 
       console.log(`Sending ${contactType} update (${updateType}) to ${friendContact}`);
 
-      const { data, error } = await supabase.functions.invoke('send-hangout-notification', {
-        body: {
-          to: friendContact,
-          message,
-          subject,
-          type: contactType
-        }
-      });
+      // Send update with retry logic
+      const result = await withRetry(
+        async () => {
+          attempts++;
+          const { data, error } = await supabase.functions.invoke('send-hangout-notification', {
+            body: {
+              to: friendContact,
+              message,
+              subject,
+              type: contactType
+            }
+          });
 
-      if (error) {
-        const errorMessage = handleNotificationError(error, contactType, friendContact);
-        console.error('Error sending update notification:', error);
-        return { success: false, error: errorMessage };
+          if (error) {
+            throw error;
+          }
+
+          return data;
+        },
+        (error: any) => {
+          const parsedError = parseErrorResponse(error, contactType);
+          return parsedError.retryable;
+        },
+        {
+          maxAttempts: 3,
+          baseDelay: 1000,
+          maxDelay: 5000
+        }
+      );
+
+      console.log('Update notification sent successfully:', result);
+      return { success: true, attempts };
+
+    } catch (error: any) {
+      console.error('Error in notification service:', error);
+      
+      let notificationError: NotificationServiceError;
+      if (error instanceof NotificationServiceError) {
+        notificationError = error;
+      } else {
+        notificationError = parseErrorResponse(error, contactType);
       }
 
-      console.log('Update notification sent successfully:', data);
-      return { success: true };
-    } catch (error: any) {
-      const errorMessage = handleNotificationError(error, contactType, friendContact);
-      console.error('Error in notification service:', error);
-      return { success: false, error: errorMessage };
+      const userFriendlyMessage = createUserFriendlyErrorMessage(notificationError, contactType);
+      
+      return { 
+        success: false, 
+        error: userFriendlyMessage,
+        errorType: notificationError.type,
+        retryable: notificationError.retryable,
+        attempts
+      };
     }
   }
 };
