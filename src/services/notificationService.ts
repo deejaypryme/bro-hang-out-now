@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 export interface NotificationRequest {
@@ -15,27 +14,137 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-// Phone number validation function
-const isValidPhoneNumber = (phone: string): boolean => {
-  // Basic phone number validation (adjust regex as needed)
-  const phoneRegex = /^\+?[1-9]\d{1,14}$/;
-  return phoneRegex.test(phone.replace(/\s|-|\(|\)/g, ''));
+// Enhanced phone number validation and formatting
+const formatPhoneNumber = (phone: string): string => {
+  // Remove all non-digit characters except +
+  let cleanPhone = phone.replace(/[^\d+]/g, '');
+  
+  // If phone doesn't start with +, add +1 for US numbers
+  if (!cleanPhone.startsWith('+')) {
+    // Check if it looks like a US number (10 or 11 digits)
+    if (cleanPhone.length === 10) {
+      cleanPhone = '+1' + cleanPhone;
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+      cleanPhone = '+' + cleanPhone;
+    } else {
+      // For other lengths, assume US and add +1
+      cleanPhone = '+1' + cleanPhone;
+    }
+  }
+  
+  return cleanPhone;
+};
+
+// Enhanced phone number validation function
+const isValidPhoneNumber = (phone: string): { valid: boolean; formatted?: string; error?: string } => {
+  if (!phone || phone.trim().length === 0) {
+    return { valid: false, error: 'Phone number is required' };
+  }
+
+  const formatted = formatPhoneNumber(phone);
+  
+  // Basic international phone number validation (E.164 format)
+  const phoneRegex = /^\+[1-9]\d{1,14}$/;
+  
+  if (!phoneRegex.test(formatted)) {
+    return { valid: false, error: 'Invalid phone number format. Please use international format (e.g., +1234567890)' };
+  }
+  
+  // Check for reasonable length (minimum 10 digits after country code)
+  const digitsOnly = formatted.replace('+', '');
+  if (digitsOnly.length < 10) {
+    return { valid: false, error: 'Phone number too short. Please include area code.' };
+  }
+  
+  if (digitsOnly.length > 15) {
+    return { valid: false, error: 'Phone number too long. Please check the format.' };
+  }
+  
+  return { valid: true, formatted };
+};
+
+// SMS character limit handling
+const SMS_CHARACTER_LIMITS = {
+  SINGLE_SMS: 160,
+  UNICODE_SMS: 70,
+  LONG_SMS_SEGMENT: 153,
+  UNICODE_LONG_SMS_SEGMENT: 67
+};
+
+const analyzeSMSLength = (message: string): { 
+  length: number; 
+  segments: number; 
+  encoding: 'GSM' | 'Unicode';
+  withinLimit: boolean;
+  recommendation?: string;
+} => {
+  // Check if message contains Unicode characters
+  const hasUnicode = /[^\x00-\x7F]/.test(message);
+  const encoding = hasUnicode ? 'Unicode' : 'GSM';
+  
+  const singleLimit = encoding === 'Unicode' ? SMS_CHARACTER_LIMITS.UNICODE_SMS : SMS_CHARACTER_LIMITS.SINGLE_SMS;
+  const segmentLimit = encoding === 'Unicode' ? SMS_CHARACTER_LIMITS.UNICODE_LONG_SMS_SEGMENT : SMS_CHARACTER_LIMITS.LONG_SMS_SEGMENT;
+  
+  let segments = 1;
+  let withinLimit = true;
+  let recommendation;
+  
+  if (message.length > singleLimit) {
+    segments = Math.ceil(message.length / segmentLimit);
+    if (segments > 3) {
+      withinLimit = false;
+      recommendation = `Message is ${message.length} characters and will be split into ${segments} SMS segments. Consider shortening to reduce costs.`;
+    }
+  }
+  
+  return {
+    length: message.length,
+    segments,
+    encoding,
+    withinLimit,
+    recommendation
+  };
+};
+
+const createSMSFallbackMessage = (
+  friendName: string,
+  organizerName: string,
+  activityName: string,
+  activityEmoji: string,
+  scheduledDate: string,
+  scheduledTime: string,
+  responseUrl: string
+): string => {
+  // Create a shorter version if the original is too long
+  return `${friendName}, ${organizerName} invites you: ${activityEmoji} ${activityName} on ${scheduledDate} at ${scheduledTime}. Reply: ${responseUrl}`;
 };
 
 // Enhanced error handling for notification responses
 const handleNotificationError = (error: any, contactType: 'sms' | 'email', contact: string) => {
   console.error(`Error sending ${contactType} to ${contact}:`, error);
   
-  if (error.message?.includes('domain')) {
-    return `Email domain verification required. Please contact support.`;
+  if (contactType === 'sms') {
+    if (error.message?.includes('21211')) {
+      return `Invalid phone number: ${contact}. Please check the format and try again.`;
+    }
+    if (error.message?.includes('21614')) {
+      return `Phone number ${contact} is not a valid mobile number or cannot receive SMS.`;
+    }
+    if (error.message?.includes('21408')) {
+      return `SMS permission denied for ${contact}. The number may have opted out.`;
+    }
+    if (error.message?.includes('Twilio')) {
+      return `SMS service temporarily unavailable. Please try email instead or contact support.`;
+    }
   }
   
-  if (error.message?.includes('Invalid email')) {
-    return `Invalid email address format: ${contact}`;
-  }
-  
-  if (error.message?.includes('Twilio')) {
-    return `SMS service temporarily unavailable. Please try email instead.`;
+  if (contactType === 'email') {
+    if (error.message?.includes('domain')) {
+      return `Email domain verification required. Please contact support.`;
+    }
+    if (error.message?.includes('Invalid email')) {
+      return `Invalid email address format: ${contact}`;
+    }
   }
   
   return `Failed to send ${contactType} notification. Please try again later.`;
@@ -61,18 +170,45 @@ export const notificationService = {
         return { success: false, error: errorMsg };
       }
       
-      if (contactType === 'sms' && !isValidPhoneNumber(friendContact)) {
-        const errorMsg = `Invalid phone number format: ${friendContact}`;
-        console.error(errorMsg);
-        return { success: false, error: errorMsg };
+      if (contactType === 'sms') {
+        const phoneValidation = isValidPhoneNumber(friendContact);
+        if (!phoneValidation.valid) {
+          console.error('Phone validation failed:', phoneValidation.error);
+          return { success: false, error: phoneValidation.error };
+        }
+        friendContact = phoneValidation.formatted!;
       }
 
       const baseUrl = window.location.origin;
       const responseUrl = `${baseUrl}/hangout-response?token=${invitationToken}`;
       
-      const message = contactType === 'sms' 
-        ? `Hey ${friendName}! ${organizerName} wants to hang out. ${activityEmoji} ${activityName} on ${scheduledDate} at ${scheduledTime}. Respond: ${responseUrl}`
-        : `
+      let message = '';
+      
+      if (contactType === 'sms') {
+        message = `Hey ${friendName}! ${organizerName} wants to hang out. ${activityEmoji} ${activityName} on ${scheduledDate} at ${scheduledTime}. Respond: ${responseUrl}`;
+        
+        // Analyze SMS length and create fallback if needed
+        const smsAnalysis = analyzeSMSLength(message);
+        console.log('SMS Analysis:', smsAnalysis);
+        
+        if (!smsAnalysis.withinLimit) {
+          console.log('Creating fallback SMS message due to length');
+          message = createSMSFallbackMessage(
+            friendName,
+            organizerName,
+            activityName,
+            activityEmoji,
+            scheduledDate,
+            scheduledTime,
+            responseUrl
+          );
+          
+          // Re-analyze fallback message
+          const fallbackAnalysis = analyzeSMSLength(message);
+          console.log('Fallback SMS Analysis:', fallbackAnalysis);
+        }
+      } else {
+        message = `
           <div style="text-align: center; margin-bottom: 30px;">
             <h2 style="color: #333; margin-bottom: 10px;">You're invited to hang out!</h2>
           </div>
@@ -100,6 +236,7 @@ export const notificationService = {
             </p>
           </div>
         `;
+      }
 
       console.log(`Sending ${contactType} invitation to ${friendContact}`);
 
@@ -144,10 +281,13 @@ export const notificationService = {
         return { success: false, error: errorMsg };
       }
       
-      if (contactType === 'sms' && !isValidPhoneNumber(friendContact)) {
-        const errorMsg = `Invalid phone number format: ${friendContact}`;
-        console.error(errorMsg);
-        return { success: false, error: errorMsg };
+      if (contactType === 'sms') {
+        const phoneValidation = isValidPhoneNumber(friendContact);
+        if (!phoneValidation.valid) {
+          console.error('Phone validation failed:', phoneValidation.error);
+          return { success: false, error: phoneValidation.error };
+        }
+        friendContact = phoneValidation.formatted!;
       }
 
       let message = '';
@@ -194,6 +334,16 @@ export const notificationService = {
               ${details ? `<div style="background: #fffbeb; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #d97706;"><p style="color: #92400e; margin: 0;"><strong>New details:</strong> ${details}</p></div>` : ''}
             `;
           break;
+      }
+
+      // For SMS updates, check character limits
+      if (contactType === 'sms') {
+        const smsAnalysis = analyzeSMSLength(message);
+        console.log('SMS Update Analysis:', smsAnalysis);
+        
+        if (smsAnalysis.recommendation) {
+          console.log('SMS Recommendation:', smsAnalysis.recommendation);
+        }
       }
 
       console.log(`Sending ${contactType} update (${updateType}) to ${friendContact}`);

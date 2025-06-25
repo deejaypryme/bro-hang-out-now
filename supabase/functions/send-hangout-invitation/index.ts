@@ -23,6 +23,47 @@ const isValidEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
+// Enhanced phone number validation and formatting
+const formatPhoneNumber = (phone: string): string => {
+  let cleanPhone = phone.replace(/[^\d+]/g, '');
+  
+  if (!cleanPhone.startsWith('+')) {
+    if (cleanPhone.length === 10) {
+      cleanPhone = '+1' + cleanPhone;
+    } else if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+      cleanPhone = '+' + cleanPhone;
+    } else {
+      cleanPhone = '+1' + cleanPhone;
+    }
+  }
+  
+  return cleanPhone;
+};
+
+const isValidPhoneNumber = (phone: string): { valid: boolean; formatted?: string; error?: string } => {
+  if (!phone || phone.trim().length === 0) {
+    return { valid: false, error: 'Phone number is required' };
+  }
+
+  const formatted = formatPhoneNumber(phone);
+  const phoneRegex = /^\+[1-9]\d{1,14}$/;
+  
+  if (!phoneRegex.test(formatted)) {
+    return { valid: false, error: 'Invalid phone number format. Please use international format.' };
+  }
+  
+  const digitsOnly = formatted.replace('+', '');
+  if (digitsOnly.length < 10) {
+    return { valid: false, error: 'Phone number too short. Please include area code.' };
+  }
+  
+  if (digitsOnly.length > 15) {
+    return { valid: false, error: 'Phone number too long. Please check the format.' };
+  }
+  
+  return { valid: true, formatted };
+};
+
 // Retry configuration
 const RETRY_CONFIG = {
   maxRetries: 3,
@@ -63,10 +104,62 @@ const validateEnvironmentVariables = () => {
   return { valid: true, missing: [] };
 };
 
+// Enhanced Twilio error handling
+const handleTwilioError = (error: any, phoneNumber: string): string => {
+  console.error("📱 Twilio error details:", error);
+  
+  if (error.code) {
+    switch (error.code) {
+      case 21211:
+        return `Invalid phone number: ${phoneNumber}. Please check the format and include country code.`;
+      case 21614:
+        return `Phone number ${phoneNumber} is not a valid mobile number or cannot receive SMS.`;
+      case 21408:
+        return `Permission denied for ${phoneNumber}. The number may have opted out of SMS.`;
+      case 21610:
+        return `Phone number ${phoneNumber} has been blocked from receiving messages.`;
+      case 30001:
+        return `Message queue is full for ${phoneNumber}. Please try again later.`;
+      case 30002:
+        return `Account suspended. Please contact support.`;
+      case 30003:
+        return `Unreachable destination for ${phoneNumber}. Please verify the number.`;
+      case 30004:
+        return `Message blocked by carrier for ${phoneNumber}.`;
+      case 30005:
+        return `Unknown destination carrier for ${phoneNumber}.`;
+      case 30008:
+        return `Unknown error occurred while sending to ${phoneNumber}.`;
+      default:
+        return `SMS delivery failed (Code: ${error.code}). Please try again or use email instead.`;
+    }
+  }
+  
+  if (error.message?.includes('authentication')) {
+    return 'SMS service authentication failed. Please contact support.';
+  }
+  
+  if (error.message?.includes('rate limit')) {
+    return 'SMS rate limit exceeded. Please try again in a few minutes.';
+  }
+  
+  return `Failed to send SMS to ${phoneNumber}. Please verify the number and try again.`;
+};
+
 const sendSMS = async (to: string, message: string) => {
   console.log("📱 Attempting to send SMS...");
   console.log("📱 SMS recipient:", to);
   console.log("📱 SMS message length:", message.length);
+
+  // Validate phone number format
+  const phoneValidation = isValidPhoneNumber(to);
+  if (!phoneValidation.valid) {
+    console.error("❌ Invalid phone number:", phoneValidation.error);
+    throw new Error(phoneValidation.error);
+  }
+  
+  const formattedPhone = phoneValidation.formatted!;
+  console.log("📱 Formatted phone number:", formattedPhone);
 
   const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
   const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
@@ -84,10 +177,16 @@ const sendSMS = async (to: string, message: string) => {
 
   console.log("📱 Twilio config - From:", fromNumber, "AccountSID:", accountSid?.substring(0, 10) + "...");
 
+  // Check message length and warn if it's long
+  if (message.length > 160) {
+    const segments = Math.ceil(message.length / 153);
+    console.log(`📱 Long SMS detected: ${message.length} chars, will be split into ${segments} segments`);
+  }
+
   const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
   
   const body = new URLSearchParams({
-    To: to,
+    To: formattedPhone,
     From: fromNumber,
     Body: message,
   });
@@ -110,15 +209,37 @@ const sendSMS = async (to: string, message: string) => {
       const errorData = await response.text();
       console.error("❌ Twilio API error:", response.status, response.statusText);
       console.error("❌ Twilio error details:", errorData);
-      throw new Error(`Twilio API failed (${response.status}): ${errorData}`);
+      
+      try {
+        const errorJson = JSON.parse(errorData);
+        const errorMessage = handleTwilioError(errorJson, formattedPhone);
+        throw new Error(errorMessage);
+      } catch (parseError) {
+        throw new Error(`Twilio API failed (${response.status}): ${errorData}`);
+      }
     }
 
     const result = await response.json();
     console.log("✅ SMS sent successfully. Message SID:", result.sid);
+    console.log("📱 SMS details:", {
+      to: result.to,
+      from: result.from,
+      status: result.status,
+      segments: result.num_segments,
+      price: result.price
+    });
+    
     return result;
-  } catch (error) {
+  } catch (error: any) {
     console.error("❌ SMS sending failed:", error);
-    throw error;
+    
+    // If it's already a formatted error message, throw it as-is
+    if (error.message && !error.message.includes('fetch')) {
+      throw error;
+    }
+    
+    // Otherwise, provide a generic fallback
+    throw new Error(handleTwilioError(error, formattedPhone));
   }
 };
 
