@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -17,6 +16,28 @@ interface HangoutInvitationRequest {
   type: 'sms' | 'email';
   invitationToken: string;
 }
+
+// Email validation function
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+// Retry configuration
+const RETRY_CONFIG = {
+  maxRetries: 3,
+  baseDelayMs: 1000,
+  maxDelayMs: 5000
+};
+
+// Sleep function for retry delays
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Calculate retry delay with exponential backoff
+const calculateRetryDelay = (attempt: number): number => {
+  const delay = RETRY_CONFIG.baseDelayMs * Math.pow(2, attempt);
+  return Math.min(delay, RETRY_CONFIG.maxDelayMs);
+};
 
 // Environment variable validation
 const validateEnvironmentVariables = () => {
@@ -101,10 +122,16 @@ const sendSMS = async (to: string, message: string) => {
   }
 };
 
-const sendEmail = async (to: string, subject: string, message: string) => {
-  console.log("📧 Attempting to send email...");
+const sendEmailWithRetry = async (to: string, subject: string, message: string): Promise<any> => {
+  console.log("📧 Attempting to send email with retry logic...");
   console.log("📧 Email recipient:", to);
   console.log("📧 Email subject:", subject);
+
+  // Validate email format
+  if (!isValidEmail(to)) {
+    console.error("❌ Invalid email format:", to);
+    throw new Error(`Invalid email format: ${to}`);
+  }
 
   const apiKey = Deno.env.get("RESEND_API_KEY");
   if (!apiKey) {
@@ -114,20 +141,71 @@ const sendEmail = async (to: string, subject: string, message: string) => {
 
   console.log("📧 Resend API key present:", apiKey.substring(0, 10) + "...");
 
-  try {
-    const emailResponse = await resend.emails.send({
-      from: "BroYourFriend <invites@broyourfriend.com>",
-      to: [to],
-      subject: subject,
-      html: message,
-    });
+  // Define sender domains with fallback
+  const senderDomains = [
+    "noreply@broyourfriend.com", // Primary verified domain
+    "onboarding@resend.dev"      // Resend default testing domain
+  ];
 
-    console.log("✅ Email sent successfully:", emailResponse);
-    return emailResponse;
-  } catch (error) {
-    console.error("❌ Email sending failed:", error);
-    throw error;
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= RETRY_CONFIG.maxRetries; attempt++) {
+    for (const senderDomain of senderDomains) {
+      try {
+        console.log(`📧 Attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries + 1} with sender: ${senderDomain}`);
+
+        const emailResponse = await resend.emails.send({
+          from: `BroYourFriend <${senderDomain}>`,
+          to: [to],
+          subject: subject,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+              <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 28px;">BroYourFriend</h1>
+              </div>
+              <div style="background: white; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e0e0e0;">
+                ${message}
+              </div>
+              <div style="text-align: center; margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 5px;">
+                <p style="color: #666; font-size: 14px; margin: 0;">
+                  This email was sent by BroYourFriend. If you didn't expect this email, you can safely ignore it.
+                </p>
+              </div>
+            </div>
+          `,
+        });
+
+        console.log("✅ Email sent successfully:", emailResponse);
+        return emailResponse;
+      } catch (error: any) {
+        lastError = error;
+        console.error(`❌ Email sending failed with ${senderDomain}:`, error.message);
+        
+        // If it's a domain-related error, try the next domain immediately
+        if (error.message?.includes('domain') || error.message?.includes('verify')) {
+          console.log(`🔄 Trying next sender domain due to domain error...`);
+          continue;
+        }
+        
+        // For other errors, break out of domain loop and retry
+        break;
+      }
+    }
+
+    // If we've tried all domains and still failed, wait before retrying
+    if (attempt < RETRY_CONFIG.maxRetries) {
+      const delay = calculateRetryDelay(attempt);
+      console.log(`⏳ Waiting ${delay}ms before retry ${attempt + 2}...`);
+      await sleep(delay);
+    }
   }
+
+  console.error("❌ All email sending attempts failed");
+  throw lastError || new Error("Email sending failed after all retry attempts");
+};
+
+const sendEmail = async (to: string, subject: string, message: string) => {
+  return await sendEmailWithRetry(to, subject, message);
 };
 
 // Health check endpoint
@@ -139,7 +217,12 @@ const handleHealthCheck = () => {
     status: "healthy",
     timestamp: new Date().toISOString(),
     environment: envCheck,
-    service: "send-hangout-invitation"
+    service: "send-hangout-invitation",
+    configuration: {
+      resendConfigured: !!Deno.env.get("RESEND_API_KEY"),
+      twilioConfigured: !!(Deno.env.get("TWILIO_ACCOUNT_SID") && Deno.env.get("TWILIO_AUTH_TOKEN")),
+      retryConfig: RETRY_CONFIG
+    }
   }), {
     status: 200,
     headers: {
