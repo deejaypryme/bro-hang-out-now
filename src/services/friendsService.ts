@@ -322,13 +322,14 @@ export const friendsService = {
     if (error) throw error;
   },
 
-  // User presence
+  // User presence - FIXED UPSERT LOGIC
   async updateUserPresence(status: 'online' | 'offline' | 'busy' | 'away', customMessage?: string): Promise<void> {
     const userId = (await supabase.auth.getUser()).data.user?.id;
     if (!userId) throw new Error('User not authenticated');
 
-    console.log('📡 Updating user presence:', { userId, status, customMessage });
+    console.log('📡 Updating user presence with proper UPSERT:', { userId, status, customMessage });
 
+    // Use UPSERT with proper conflict resolution
     const { error } = await supabase
       .from('user_presence')
       .upsert({
@@ -337,6 +338,8 @@ export const friendsService = {
         custom_message: customMessage,
         last_seen: new Date().toISOString(),
         updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
       });
     
     if (error) {
