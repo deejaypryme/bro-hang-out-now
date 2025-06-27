@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import type { 
   Profile, 
@@ -58,7 +57,7 @@ export const friendsService = {
     }
   },
 
-  // Friend invitations
+  // Friend invitations with enhanced edge function logging and error handling
   async sendFriendInvitation(invitation: {
     inviteeEmail?: string;
     inviteePhone?: string;
@@ -66,6 +65,7 @@ export const friendsService = {
     message?: string;
   }): Promise<FriendInvitation> {
     console.log('🚀 [friendsService] Starting friend invitation process:', invitation);
+    console.log('📊 [friendsService] Edge function verification - Starting notification process');
     
     try {
       // Get current user
@@ -157,7 +157,7 @@ export const friendsService = {
 
       console.log('✅ [friendsService] Invitation saved to database:', data.id);
 
-      // Send notification via edge function
+      // Enhanced edge function invocation with detailed logging
       const inviterName = userProfile?.full_name || userProfile?.username || 'Someone';
       const notificationPayload = {
         invitationId: data.id,
@@ -169,39 +169,96 @@ export const friendsService = {
         invitationToken: invitationToken
       };
 
-      console.log('📧 [friendsService] Calling edge function with payload:', notificationPayload);
+      console.log('📧 [friendsService] EDGE FUNCTION VERIFICATION - Calling send-friend-invitation function');
+      console.log('📋 [friendsService] Edge function payload:', JSON.stringify({
+        ...notificationPayload,
+        inviterEmail: '***REDACTED***' // Don't log sensitive email
+      }));
 
       try {
+        const startTime = Date.now();
+        console.log('⏱️ [friendsService] Edge function call started at:', new Date().toISOString());
+        
         const { data: functionResponse, error: notificationError } = await supabase.functions.invoke('send-friend-invitation', {
           body: notificationPayload
         });
 
+        const endTime = Date.now();
+        const duration = endTime - startTime;
+        console.log('⏱️ [friendsService] Edge function call completed in:', duration, 'ms');
+
         if (notificationError) {
-          console.error('❌ [friendsService] Edge function invocation error:', notificationError);
+          console.error('❌ [friendsService] EDGE FUNCTION ERROR - Invocation failed:', notificationError);
+          console.error('❌ [friendsService] Error details:', {
+            message: notificationError.message,
+            context: notificationError.context,
+            code: notificationError.code
+          });
           throw new Error(`Failed to send notification: ${notificationError.message}`);
         }
 
-        console.log('✅ [friendsService] Edge function response:', functionResponse);
+        console.log('✅ [friendsService] EDGE FUNCTION SUCCESS - Response received:', functionResponse);
         
-        if (!functionResponse?.success) {
-          console.error('❌ [friendsService] Edge function returned failure:', functionResponse);
+        // Detailed logging of notification delivery
+        if (functionResponse?.success) {
+          console.log('🎉 [friendsService] NOTIFICATION DELIVERY VERIFIED');
+          console.log('📊 [friendsService] Delivery status:', {
+            emailSent: functionResponse.sentVia?.email || false,
+            smsSent: functionResponse.sentVia?.sms || false,
+            emailResult: functionResponse.emailResult ? 'SUCCESS' : 'FAILED',
+            smsResult: functionResponse.smsResult ? 'SUCCESS' : 'FAILED'
+          });
+          
+          if (functionResponse.emailResult?.error) {
+            console.warn('⚠️ [friendsService] Email delivery failed:', functionResponse.emailResult.error);
+          }
+          
+          if (functionResponse.smsResult?.error) {
+            console.warn('⚠️ [friendsService] SMS delivery failed:', functionResponse.smsResult.error);
+          }
+        } else {
+          console.error('❌ [friendsService] NOTIFICATION DELIVERY FAILED:', functionResponse);
           throw new Error(`Notification failed: ${functionResponse?.error || 'Unknown error'}`);
         }
 
       } catch (notificationError) {
-        console.error('❌ [friendsService] Error calling notification function:', notificationError);
-        // Re-throw the error instead of swallowing it
-        throw new Error(`Failed to send invitation notification: ${notificationError instanceof Error ? notificationError.message : 'Unknown error'}`);
+        console.error('❌ [friendsService] EDGE FUNCTION CRITICAL ERROR:', notificationError);
+        console.error('💥 [friendsService] Full error context:', {
+          error: notificationError,
+          stack: notificationError instanceof Error ? notificationError.stack : 'No stack trace',
+          payload: JSON.stringify({
+            ...notificationPayload,
+            inviterEmail: '***REDACTED***'
+          })
+        });
+        
+        // Enhanced error handling for different failure scenarios
+        if (notificationError instanceof Error) {
+          if (notificationError.message.includes('timeout')) {
+            throw new Error('Notification service timeout - invitation saved but notification may be delayed');
+          } else if (notificationError.message.includes('network')) {
+            throw new Error('Network error while sending notification - invitation saved but recipient may not be notified');
+          } else {
+            throw new Error(`Failed to send invitation notification: ${notificationError.message}`);
+          }
+        } else {
+          throw new Error('An unexpected error occurred while sending the invitation notification');
+        }
       }
 
-      console.log('🎉 [friendsService] Friend invitation process completed successfully');
+      console.log('🎉 [friendsService] COMPLETE SUCCESS - Friend invitation process completed successfully');
+      console.log('📊 [friendsService] Final status:', {
+        invitationId: data.id,
+        databaseSaved: true,
+        notificationSent: true
+      });
 
       return {
         ...data,
         status: data.status as 'pending' | 'accepted' | 'declined' | 'expired'
       };
     } catch (error) {
-      console.error('❌ [friendsService] Error sending friend invitation:', error);
+      console.error('❌ [friendsService] FINAL ERROR - Friend invitation process failed:', error);
       if (error instanceof Error) {
         throw error;
       }
