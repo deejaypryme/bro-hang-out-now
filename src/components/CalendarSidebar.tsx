@@ -9,10 +9,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
 import TimezoneAwareTime from './TimezoneAwareTime';
 import { TimeService } from '@/services/timeService';
-import type { Hangout } from '../data/mockData';
+import type { HangoutWithDetails } from '../types/database';
 
 interface CalendarSidebarProps {
-  hangouts: Hangout[];
+  hangouts: HangoutWithDetails[];
 }
 
 const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
@@ -197,13 +197,13 @@ const CalendarSidebar: React.FC<CalendarSidebarProps> = ({ hangouts }) => {
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex items-center space-x-2">
-                      <span className="text-lg">{hangout.activity_emoji || hangout.activityEmoji}</span>
+                      <span className="text-lg">{hangout.activity_emoji}</span>
                       <div>
                         <div className="font-medium text-sm text-primary">
-                          {hangout.friend_id || hangout.friendName}
+                          {hangout.friendName || hangout.friend_id}
                         </div>
                         <div className="text-xs text-text-secondary">
-                          {hangout.activity_name || hangout.activity}
+                          {hangout.activity_name}
                         </div>
                       </div>
                     </div>
@@ -324,8 +324,8 @@ const SelectedDateEvents: React.FC<{ date: Date; userTimezone: string }> = ({ da
           {item.type === 'hangout' ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <span>{item.data.activity_emoji || item.data.activityEmoji}</span>
-                <span>{item.data.activity_name || item.data.activity}</span>
+                <span>{item.data.activity_emoji}</span>
+                <span>{item.data.activity_name}</span>
               </div>
               <TimezoneAwareTime 
                 date={new Date(`${date.toDateString()} ${item.data.scheduled_time || item.data.time}`)}
