@@ -40,11 +40,16 @@ export const friendsService = {
     inviteeId?: string;
     message?: string;
   }): Promise<FriendInvitation> {
+    console.log('🚀 Starting friend invitation process:', invitation);
+    
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
+      console.error('❌ Authentication error:', authError);
       throw new Error('User not authenticated');
     }
+
+    console.log('✅ User authenticated:', user.id);
 
     // Get user profile for notification
     const { data: userProfile, error: profileError } = await supabase
@@ -54,19 +59,25 @@ export const friendsService = {
       .single();
 
     if (profileError) {
-      console.error('Failed to get user profile:', profileError);
+      console.error('⚠️ Failed to get user profile:', profileError);
     }
+
+    console.log('👤 User profile:', userProfile);
 
     // Validate input - ensure at least one contact method is provided
     if (!invitation.inviteeEmail && !invitation.inviteePhone && !invitation.inviteeId) {
-      throw new Error('At least one contact method (email, phone, or user ID) must be provided');
+      const error = new Error('At least one contact method (email, phone, or user ID) must be provided');
+      console.error('❌ Validation error:', error.message);
+      throw error;
     }
 
     // Validate email format if provided
     if (invitation.inviteeEmail) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(invitation.inviteeEmail)) {
-        throw new Error('Invalid email format');
+        const error = new Error('Invalid email format');
+        console.error('❌ Email validation error:', error.message);
+        throw error;
       }
     }
 
@@ -74,7 +85,9 @@ export const friendsService = {
     if (invitation.inviteePhone) {
       const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
       if (!phoneRegex.test(invitation.inviteePhone.replace(/[\s\-\(\)]/g, ''))) {
-        throw new Error('Invalid phone number format');
+        const error = new Error('Invalid phone number format');
+        console.error('❌ Phone validation error:', error.message);
+        throw error;
       }
     }
 
@@ -83,7 +96,10 @@ export const friendsService = {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
 
+    console.log('🎟️ Generated invitation token:', invitationToken);
+
     try {
+      console.log('💾 Inserting invitation to database...');
       const { data, error } = await supabase
         .from('friend_invitations')
         .insert({
@@ -100,7 +116,7 @@ export const friendsService = {
         .single();
       
       if (error) {
-        console.error('Database error when sending friend invitation:', error);
+        console.error('❌ Database error when sending friend invitation:', error);
         
         // Handle specific database constraint errors
         if (error.code === '23505') {
@@ -110,42 +126,57 @@ export const friendsService = {
         } else if (error.code === '23514') {
           throw new Error('Invalid invitation data - please check your input');
         } else {
-          throw new Error('Failed to send friend invitation. Please try again.');
+          throw new Error(`Database error: ${error.message}`);
         }
       }
 
+      console.log('✅ Invitation saved to database:', data.id);
+
       // Send notification via edge function
+      const inviterName = userProfile?.full_name || userProfile?.username || 'Someone';
+      const notificationPayload = {
+        invitationId: data.id,
+        inviterName,
+        inviterEmail: user.email,
+        inviteeEmail: invitation.inviteeEmail,
+        inviteePhone: invitation.inviteePhone,
+        message: invitation.message,
+        invitationToken: invitationToken
+      };
+
+      console.log('📧 Calling edge function with payload:', notificationPayload);
+
       try {
-        const inviterName = userProfile?.full_name || userProfile?.username || 'Someone';
-        
-        const { error: notificationError } = await supabase.functions.invoke('send-friend-invitation', {
-          body: {
-            invitationId: data.id,
-            inviterName,
-            inviterEmail: user.email,
-            inviteeEmail: invitation.inviteeEmail,
-            inviteePhone: invitation.inviteePhone,
-            message: invitation.message,
-            invitationToken: invitationToken
-          }
+        const { data: functionResponse, error: notificationError } = await supabase.functions.invoke('send-friend-invitation', {
+          body: notificationPayload
         });
 
         if (notificationError) {
-          console.error('Failed to send invitation notification:', notificationError);
-          // Note: We don't throw here as the invitation was saved successfully
-          // The user will still see success, but the notification failed
+          console.error('❌ Edge function invocation error:', notificationError);
+          throw new Error(`Failed to send notification: ${notificationError.message}`);
         }
+
+        console.log('✅ Edge function response:', functionResponse);
+        
+        if (!functionResponse?.success) {
+          console.error('❌ Edge function returned failure:', functionResponse);
+          throw new Error(`Notification failed: ${functionResponse?.error || 'Unknown error'}`);
+        }
+
       } catch (notificationError) {
-        console.error('Error calling notification function:', notificationError);
-        // Continue without throwing - invitation was saved successfully
+        console.error('❌ Error calling notification function:', notificationError);
+        // Re-throw the error instead of swallowing it
+        throw new Error(`Failed to send invitation notification: ${notificationError instanceof Error ? notificationError.message : 'Unknown error'}`);
       }
+
+      console.log('🎉 Friend invitation process completed successfully');
 
       return {
         ...data,
         status: data.status as 'pending' | 'accepted' | 'declined' | 'expired'
       };
     } catch (error) {
-      console.error('Error sending friend invitation:', error);
+      console.error('❌ Error sending friend invitation:', error);
       if (error instanceof Error) {
         throw error;
       }
@@ -296,6 +327,8 @@ export const friendsService = {
     const userId = (await supabase.auth.getUser()).data.user?.id;
     if (!userId) throw new Error('User not authenticated');
 
+    console.log('📡 Updating user presence:', { userId, status, customMessage });
+
     const { error } = await supabase
       .from('user_presence')
       .upsert({
@@ -306,7 +339,12 @@ export const friendsService = {
         updated_at: new Date().toISOString()
       });
     
-    if (error) throw error;
+    if (error) {
+      console.error('❌ Error updating user presence:', error);
+      throw error;
+    }
+
+    console.log('✅ User presence updated successfully');
   },
 
   async getUserPresence(userId: string): Promise<UserPresence | null> {

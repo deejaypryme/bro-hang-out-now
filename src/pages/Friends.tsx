@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -26,34 +26,51 @@ const Friends = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredFriends, setFilteredFriends] = useState(friends);
 
-  // Set user presence to online when component mounts
+  // Memoize callbacks to prevent infinite loops
+  const handleRefetchFriends = useCallback(() => {
+    console.log('Refetching friends...');
+    refetchFriends();
+  }, [refetchFriends]);
+
+  const handleRefetchInvitations = useCallback(() => {
+    console.log('Refetching invitations...');
+    refetchInvitations();
+  }, [refetchInvitations]);
+
+  // Set user presence to online when component mounts - STABLE DEPENDENCIES
   useEffect(() => {
-    if (user) {
-      updatePresence.mutate({ status: 'online' });
-      
-      // Set up real-time subscriptions
-      const presenceChannel = friendsService.subscribeToFriendPresence(user.id, (presence) => {
-        // Update friend status in real-time
-        refetchFriends();
-      });
-      
-      const invitationsChannel = friendsService.subscribeToFriendInvitations(user.id, (invitation) => {
-        // Update invitations in real-time
-        refetchInvitations();
-      });
+    if (!user?.id) return;
 
-      return () => {
-        // Clean up subscriptions
-        presenceChannel.unsubscribe();
-        invitationsChannel.unsubscribe();
-        
-        // Set presence to offline when leaving
-        updatePresence.mutate({ status: 'offline' });
-      };
-    }
-  }, [user]);
+    console.log('Setting up user presence and subscriptions for user:', user.id);
+    
+    // Set user online
+    updatePresence.mutate({ status: 'online' });
+    
+    // Set up real-time subscriptions
+    const presenceChannel = friendsService.subscribeToFriendPresence(user.id, (presence) => {
+      console.log('Friend presence updated:', presence);
+      // Update friend status in real-time
+      handleRefetchFriends();
+    });
+    
+    const invitationsChannel = friendsService.subscribeToFriendInvitations(user.id, (invitation) => {
+      console.log('Friend invitation updated:', invitation);
+      // Update invitations in real-time
+      handleRefetchInvitations();
+    });
 
-  // Filter friends based on search query
+    return () => {
+      console.log('Cleaning up subscriptions...');
+      // Clean up subscriptions
+      presenceChannel.unsubscribe();
+      invitationsChannel.unsubscribe();
+      
+      // Set presence to offline when leaving
+      updatePresence.mutate({ status: 'offline' });
+    };
+  }, [user?.id, updatePresence, handleRefetchFriends, handleRefetchInvitations]);
+
+  // Filter friends based on search query - STABLE DEPENDENCIES
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredFriends(friends);
@@ -133,7 +150,7 @@ const Friends = () => {
               {friends.length} friends • {onlineFriends.length + filteredFriends.filter(f => f.favorite && f.status === 'online').length} online
             </p>
           </div>
-          <AddFriendModal onFriendAdded={() => refetchInvitations()} />
+          <AddFriendModal onFriendAdded={handleRefetchInvitations} />
         </div>
 
         <Card variant="glass" className="shadow-2xl border-white/20">
@@ -178,7 +195,7 @@ const Friends = () => {
                       <Users className="w-16 h-16 text-accent-orange mx-auto mb-bro-lg" />
                       <h3 className="typo-title-lg text-primary-navy mb-bro-sm">No Friends Yet</h3>
                       <p className="typo-body text-text-secondary mb-bro-xl">Start building your network by adding friends!</p>
-                      <AddFriendModal onFriendAdded={() => refetchInvitations()} />
+                      <AddFriendModal onFriendAdded={handleRefetchInvitations} />
                     </CardContent>
                   </Card>
                 ) : (
@@ -230,7 +247,6 @@ const Friends = () => {
                       </Card>
                     )}
 
-                    {/* Online Friends */}
                     {onlineFriends.length > 0 && (
                       <Card variant="glass" className="shadow-xl border-white/20">
                         <CardHeader>
@@ -274,7 +290,6 @@ const Friends = () => {
                       </Card>
                     )}
 
-                    {/* Offline Friends */}
                     {offlineFriends.length > 0 && (
                       <Card variant="glass" className="shadow-xl border-white/20">
                         <CardHeader>
@@ -325,8 +340,8 @@ const Friends = () => {
                 <FriendInvitations 
                   invitations={invitations} 
                   onInvitationUpdated={() => {
-                    refetchInvitations();
-                    refetchFriends();
+                    handleRefetchInvitations();
+                    handleRefetchFriends();
                   }}
                 />
               </TabsContent>
@@ -338,7 +353,7 @@ const Friends = () => {
           friend={selectedFriend}
           open={profileOpen}
           onOpenChange={setProfileOpen}
-          onFriendUpdated={() => refetchFriends()}
+          onFriendUpdated={handleRefetchFriends}
         />
       </main>
     </div>

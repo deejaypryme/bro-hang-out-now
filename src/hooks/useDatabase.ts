@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { TimeService } from '@/services/timeService';
@@ -52,6 +51,9 @@ export const useSendFriendInvitation = () => {
     mutationFn: friendsService.sendFriendInvitation,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['friendInvitations', user?.id] });
+    },
+    onError: (error) => {
+      console.error('❌ Friend invitation mutation failed:', error);
     }
   });
 };
@@ -75,10 +77,17 @@ export const useUpdateUserPresence = () => {
   const { user } = useAuth();
   
   return useMutation({
-    mutationFn: ({ status, customMessage }: { status: 'online' | 'offline' | 'busy' | 'away'; customMessage?: string }) =>
-      friendsService.updateUserPresence(status, customMessage),
-    onSuccess: () => {
+    mutationFn: ({ status, customMessage }: { status: 'online' | 'offline' | 'busy' | 'away'; customMessage?: string }) => {
+      console.log('🔄 User presence mutation called:', { status, customMessage });
+      return friendsService.updateUserPresence(status, customMessage);
+    },
+    onSuccess: (data, variables) => {
+      console.log('✅ User presence mutation successful:', variables);
       queryClient.invalidateQueries({ queryKey: ['userPresence', user?.id] });
+    },
+    onError: (error, variables) => {
+      console.error('❌ User presence mutation failed:', error, variables);
+      // Don't throw the error here - let it be handled by the UI
     }
   });
 };
