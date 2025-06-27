@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
+import { useToast } from './use-toast';
 import { TimeService } from '@/services/timeService';
 import { friendService, hangoutService, activityService, timeSlotService, profileService } from '@/services/database';
 import { friendsService } from '@/services/friendsService';
@@ -9,51 +10,138 @@ import { format, addDays } from 'date-fns';
 
 export const useFriends = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   
   return useQuery({
     queryKey: ['friends', user?.id],
-    queryFn: () => user ? friendsService.getFriends(user.id) : Promise.resolve([]),
-    enabled: !!user
+    queryFn: async () => {
+      console.log('🔍 Fetching friends for user:', user?.id);
+      try {
+        const result = user ? await friendsService.getFriends(user.id) : [];
+        console.log('✅ Friends fetched successfully:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to fetch friends:', error);
+        toast({
+          title: "Error Loading Friends",
+          description: "Failed to load your friends list. Please try again.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+    },
+    enabled: !!user,
+    retry: 3,
+    retryDelay: 1000
   });
 };
 
 export const useFriendInvitations = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   
   return useQuery({
     queryKey: ['friendInvitations', user?.id],
-    queryFn: () => user ? friendsService.getFriendInvitations(user.id) : Promise.resolve([]),
-    enabled: !!user
+    queryFn: async () => {
+      console.log('🔍 Fetching friend invitations for user:', user?.id);
+      try {
+        const result = user ? await friendsService.getFriendInvitations(user.id) : [];
+        console.log('✅ Friend invitations fetched successfully:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to fetch friend invitations:', error);
+        toast({
+          title: "Error Loading Invitations",
+          description: "Failed to load your friend invitations. Please try again.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+    },
+    enabled: !!user,
+    retry: 3,
+    retryDelay: 1000
   });
 };
 
 export const useUserPresence = (userId?: string) => {
+  const { toast } = useToast();
+  
   return useQuery({
     queryKey: ['userPresence', userId],
-    queryFn: () => userId ? friendsService.getUserPresence(userId) : Promise.resolve(null),
-    enabled: !!userId
+    queryFn: async () => {
+      console.log('🔍 Fetching user presence for:', userId);
+      try {
+        const result = userId ? await friendsService.getUserPresence(userId) : null;
+        console.log('✅ User presence fetched:', result?.status);
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to fetch user presence:', error);
+        return null; // Don't show toast for presence errors as they're not critical
+      }
+    },
+    enabled: !!userId,
+    retry: 1
   });
 };
 
 export const useSearchUsers = () => {
-  const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (query: string) => friendsService.searchUsers(query)
+    mutationFn: async (query: string) => {
+      console.log('🔍 Searching users with query:', query);
+      try {
+        const result = await friendsService.searchUsers(query);
+        console.log('✅ User search completed:', result.length, 'results');
+        return result;
+      } catch (error) {
+        console.error('❌ User search failed:', error);
+        toast({
+          title: "Search Failed",
+          description: "Failed to search for users. Please try again.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+    }
   });
 };
 
 export const useSendFriendInvitation = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: friendsService.sendFriendInvitation,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['friendInvitations', user?.id] });
+    mutationFn: async (invitation: any) => {
+      console.log('📨 Sending friend invitation:', invitation);
+      try {
+        const result = await friendsService.sendFriendInvitation(invitation);
+        console.log('✅ Friend invitation sent successfully:', result.id);
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to send friend invitation:', error);
+        throw error;
+      }
     },
-    onError: (error) => {
+    onSuccess: () => {
+      console.log('🔄 Invalidating friend invitations cache');
+      queryClient.invalidateQueries({ queryKey: ['friendInvitations', user?.id] });
+      toast({
+        title: "Invitation Sent",
+        description: "Friend invitation sent successfully!",
+        variant: "default"
+      });
+    },
+    onError: (error: any) => {
       console.error('❌ Friend invitation mutation failed:', error);
+      const errorMessage = error?.message || 'Failed to send friend invitation';
+      toast({
+        title: "Invitation Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
     }
   });
 };
@@ -61,13 +149,39 @@ export const useSendFriendInvitation = () => {
 export const useRespondToInvitation = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: ({ invitationId, status }: { invitationId: string; status: 'accepted' | 'declined' }) =>
-      friendsService.respondToInvitation(invitationId, status),
-    onSuccess: () => {
+    mutationFn: async ({ invitationId, status }: { invitationId: string; status: 'accepted' | 'declined' }) => {
+      console.log('📝 Responding to invitation:', invitationId, 'with status:', status);
+      try {
+        const result = await friendsService.respondToInvitation(invitationId, status);
+        console.log('✅ Invitation response processed successfully');
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to respond to invitation:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data, variables) => {
+      console.log('🔄 Invalidating caches after invitation response');
       queryClient.invalidateQueries({ queryKey: ['friendInvitations', user?.id] });
       queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+      
+      const action = variables.status === 'accepted' ? 'accepted' : 'declined';
+      toast({
+        title: `Invitation ${action}`,
+        description: `Friend invitation ${action} successfully!`,
+        variant: "default"
+      });
+    },
+    onError: (error: any) => {
+      console.error('❌ Invitation response failed:', error);
+      toast({
+        title: "Response Failed",
+        description: "Failed to respond to invitation. Please try again.",
+        variant: "destructive"
+      });
     }
   });
 };
@@ -87,7 +201,7 @@ export const useUpdateUserPresence = () => {
     },
     onError: (error, variables) => {
       console.error('❌ User presence mutation failed:', error, variables);
-      // Don't throw the error here - let it be handled by the UI
+      // Don't show toast for presence errors as they're background operations
     }
   });
 };
@@ -95,11 +209,36 @@ export const useUpdateUserPresence = () => {
 export const useRemoveFriend = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: (friendshipId: string) => friendsService.removeFriend(friendshipId),
+    mutationFn: async (friendshipId: string) => {
+      console.log('🗑️ Removing friend:', friendshipId);
+      try {
+        const result = await friendsService.removeFriend(friendshipId);
+        console.log('✅ Friend removed successfully');
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to remove friend:', error);
+        throw error;
+      }
+    },
     onSuccess: () => {
+      console.log('🔄 Invalidating friends cache after removal');
       queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+      toast({
+        title: "Friend Removed",
+        description: "Friend removed successfully.",
+        variant: "default"
+      });
+    },
+    onError: (error: any) => {
+      console.error('❌ Remove friend failed:', error);
+      toast({
+        title: "Remove Failed",
+        description: "Failed to remove friend. Please try again.",
+        variant: "destructive"
+      });
     }
   });
 };
@@ -107,12 +246,36 @@ export const useRemoveFriend = () => {
 export const useUpdateFriendNotes = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: ({ friendshipId, notes }: { friendshipId: string; notes: string }) =>
-      friendsService.updateFriendNotes(friendshipId, notes),
+    mutationFn: async ({ friendshipId, notes }: { friendshipId: string; notes: string }) => {
+      console.log('📝 Updating friend notes:', friendshipId);
+      try {
+        const result = await friendsService.updateFriendNotes(friendshipId, notes);
+        console.log('✅ Friend notes updated successfully');
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to update friend notes:', error);
+        throw error;
+      }
+    },
     onSuccess: () => {
+      console.log('🔄 Invalidating friends cache after notes update');
       queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+      toast({
+        title: "Notes Updated",
+        description: "Friend notes updated successfully.",
+        variant: "default"
+      });
+    },
+    onError: (error: any) => {
+      console.error('❌ Update friend notes failed:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update friend notes. Please try again.",
+        variant: "destructive"
+      });
     }
   });
 };
@@ -120,30 +283,90 @@ export const useUpdateFriendNotes = () => {
 export const useToggleFriendFavorite = () => {
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { toast } = useToast();
   
   return useMutation({
-    mutationFn: ({ friendshipId, favorite }: { friendshipId: string; favorite: boolean }) =>
-      friendsService.toggleFriendFavorite(friendshipId, favorite),
-    onSuccess: () => {
+    mutationFn: async ({ friendshipId, favorite }: { friendshipId: string; favorite: boolean }) => {
+      console.log('⭐ Toggling friend favorite:', friendshipId, 'to', favorite);
+      try {
+        const result = await friendsService.toggleFriendFavorite(friendshipId, favorite);
+        console.log('✅ Friend favorite toggled successfully');
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to toggle friend favorite:', error);
+        throw error;
+      }
+    },
+    onSuccess: (data, variables) => {
+      console.log('🔄 Invalidating friends cache after favorite toggle');
       queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+      const action = variables.favorite ? 'added to' : 'removed from';
+      toast({
+        title: "Favorites Updated",
+        description: `Friend ${action} favorites successfully.`,
+        variant: "default"
+      });
+    },
+    onError: (error: any) => {
+      console.error('❌ Toggle friend favorite failed:', error);
+      toast({
+        title: "Update Failed",
+        description: "Failed to update favorites. Please try again.",
+        variant: "destructive"
+      });
     }
   });
 };
 
 export const useHangouts = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   
   return useQuery({
     queryKey: ['hangouts', user?.id],
-    queryFn: () => user ? hangoutService.getHangouts(user.id) : Promise.resolve([]),
-    enabled: !!user
+    queryFn: async () => {
+      console.log('🔍 Fetching hangouts for user:', user?.id);
+      try {
+        const result = user ? await hangoutService.getHangouts(user.id) : [];
+        console.log('✅ Hangouts fetched successfully:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to fetch hangouts:', error);
+        toast({
+          title: "Error Loading Hangouts",
+          description: "Failed to load your hangouts. Please try again.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+    },
+    enabled: !!user,
+    retry: 3
   });
 };
 
 export const useActivities = () => {
+  const { toast } = useToast();
+  
   return useQuery({
     queryKey: ['activities'],
-    queryFn: activityService.getActivities
+    queryFn: async () => {
+      console.log('🔍 Fetching activities');
+      try {
+        const result = await activityService.getActivities();
+        console.log('✅ Activities fetched successfully:', result.length);
+        return result;
+      } catch (error) {
+        console.error('❌ Failed to fetch activities:', error);
+        toast({
+          title: "Error Loading Activities",
+          description: "Failed to load activities. Please try again.",
+          variant: "destructive"
+        });
+        throw error;
+      }
+    },
+    retry: 3
   });
 };
 
