@@ -26,51 +26,50 @@ const Friends = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredFriends, setFilteredFriends] = useState(friends);
 
-  // Memoize callbacks to prevent infinite loops
-  const handleRefetchFriends = useCallback(() => {
-    console.log('Refetching friends...');
-    refetchFriends();
-  }, [refetchFriends]);
-
-  const handleRefetchInvitations = useCallback(() => {
-    console.log('Refetching invitations...');
-    refetchInvitations();
-  }, [refetchInvitations]);
-
-  // Set user presence to online when component mounts - STABLE DEPENDENCIES
+  // STABLE: Set user presence to online when component mounts, offline when unmounts
   useEffect(() => {
     if (!user?.id) return;
 
-    console.log('Setting up user presence and subscriptions for user:', user.id);
+    console.log('🔄 Setting user presence to online for user:', user.id);
     
-    // Set user online
+    // Set user online when component mounts
     updatePresence.mutate({ status: 'online' });
+
+    // Cleanup: Set user offline when component unmounts
+    return () => {
+      console.log('🔄 Setting user presence to offline for user:', user.id);
+      updatePresence.mutate({ status: 'offline' });
+    };
+  }, [user?.id]); // STABLE: Only depends on user.id
+
+  // STABLE: Set up real-time subscriptions only once
+  useEffect(() => {
+    if (!user?.id) return;
+
+    console.log('📡 Setting up real-time subscriptions for user:', user.id);
     
-    // Set up real-time subscriptions
+    // Set up presence subscription
     const presenceChannel = friendsService.subscribeToFriendPresence(user.id, (presence) => {
-      console.log('Friend presence updated:', presence);
-      // Update friend status in real-time
-      handleRefetchFriends();
+      console.log('👥 Friend presence updated:', presence);
+      // Simple refetch without cascading effects
+      setTimeout(() => refetchFriends(), 100);
     });
     
+    // Set up invitations subscription
     const invitationsChannel = friendsService.subscribeToFriendInvitations(user.id, (invitation) => {
-      console.log('Friend invitation updated:', invitation);
-      // Update invitations in real-time
-      handleRefetchInvitations();
+      console.log('📨 Friend invitation updated:', invitation);
+      // Simple refetch without cascading effects
+      setTimeout(() => refetchInvitations(), 100);
     });
 
     return () => {
-      console.log('Cleaning up subscriptions...');
-      // Clean up subscriptions
+      console.log('🧹 Cleaning up real-time subscriptions');
       presenceChannel.unsubscribe();
       invitationsChannel.unsubscribe();
-      
-      // Set presence to offline when leaving
-      updatePresence.mutate({ status: 'offline' });
     };
-  }, [user?.id, updatePresence, handleRefetchFriends, handleRefetchInvitations]);
+  }, [user?.id]); // STABLE: Only depends on user.id
 
-  // Filter friends based on search query - STABLE DEPENDENCIES
+  // STABLE: Filter friends based on search query
   useEffect(() => {
     if (!searchQuery.trim()) {
       setFilteredFriends(friends);
@@ -81,12 +80,23 @@ const Friends = () => {
       );
       setFilteredFriends(filtered);
     }
-  }, [friends, searchQuery]);
+  }, [friends, searchQuery]); // STABLE: Only depends on friends array and searchQuery
 
-  const handleFriendClick = (friend: FriendWithProfile) => {
+  // STABLE: Callback functions that don't change between renders
+  const handleFriendClick = useCallback((friend: FriendWithProfile) => {
     setSelectedFriend(friend);
     setProfileOpen(true);
-  };
+  }, []);
+
+  const handleRefetchFriends = useCallback(() => {
+    console.log('🔄 Manually refetching friends...');
+    refetchFriends();
+  }, [refetchFriends]);
+
+  const handleRefetchInvitations = useCallback(() => {
+    console.log('🔄 Manually refetching invitations...');
+    refetchInvitations();
+  }, [refetchInvitations]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
