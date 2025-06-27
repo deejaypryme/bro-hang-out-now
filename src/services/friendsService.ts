@@ -1,5 +1,3 @@
-
-
 import { supabase } from "@/integrations/supabase/client";
 import type { 
   Profile, 
@@ -42,23 +40,80 @@ export const friendsService = {
     inviteeId?: string;
     message?: string;
   }): Promise<FriendInvitation> {
-    const { data, error } = await supabase
-      .from('friend_invitations')
-      .insert({
-        inviter_id: (await supabase.auth.getUser()).data.user?.id,
-        invitee_email: invitation.inviteeEmail,
-        invitee_phone: invitation.inviteePhone,
-        invitee_id: invitation.inviteeId,
-        message: invitation.message
-      })
-      .select()
-      .single();
-    
-    if (error) throw error;
-    return {
-      ...data,
-      status: data.status as 'pending' | 'accepted' | 'declined' | 'expired'
-    };
+    // Get current user
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      throw new Error('User not authenticated');
+    }
+
+    // Validate input - ensure at least one contact method is provided
+    if (!invitation.inviteeEmail && !invitation.inviteePhone && !invitation.inviteeId) {
+      throw new Error('At least one contact method (email, phone, or user ID) must be provided');
+    }
+
+    // Validate email format if provided
+    if (invitation.inviteeEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(invitation.inviteeEmail)) {
+        throw new Error('Invalid email format');
+      }
+    }
+
+    // Validate phone format if provided (basic validation)
+    if (invitation.inviteePhone) {
+      const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+      if (!phoneRegex.test(invitation.inviteePhone.replace(/[\s\-\(\)]/g, ''))) {
+        throw new Error('Invalid phone number format');
+      }
+    }
+
+    // Generate invitation token and expiration date
+    const invitationToken = crypto.randomUUID();
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+
+    try {
+      const { data, error } = await supabase
+        .from('friend_invitations')
+        .insert({
+          inviter_id: user.id,
+          invitee_email: invitation.inviteeEmail || null,
+          invitee_phone: invitation.inviteePhone || null,
+          invitee_id: invitation.inviteeId || null,
+          invitation_token: invitationToken,
+          expires_at: expiresAt.toISOString(),
+          message: invitation.message || null,
+          status: 'pending'
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Database error when sending friend invitation:', error);
+        
+        // Handle specific database constraint errors
+        if (error.code === '23505') {
+          throw new Error('An invitation to this contact already exists');
+        } else if (error.code === '23503') {
+          throw new Error('Invalid user or contact information provided');
+        } else if (error.code === '23514') {
+          throw new Error('Invalid invitation data - please check your input');
+        } else {
+          throw new Error('Failed to send friend invitation. Please try again.');
+        }
+      }
+
+      return {
+        ...data,
+        status: data.status as 'pending' | 'accepted' | 'declined' | 'expired'
+      };
+    } catch (error) {
+      console.error('Error sending friend invitation:', error);
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred while sending the invitation');
+    }
   },
 
   async getFriendInvitations(userId: string): Promise<FriendInvitationWithProfile[]> {
@@ -277,4 +332,3 @@ export const friendsService = {
       .subscribe();
   }
 };
-

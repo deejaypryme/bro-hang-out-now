@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Mail, Phone, User, Search } from 'lucide-react';
+import { Plus, Mail, Phone, User, Search, AlertCircle } from 'lucide-react';
 import { friendsService } from '@/services/friendsService';
 import { useToast } from '@/hooks/use-toast';
 import type { Profile } from '@/types/database';
@@ -27,6 +27,52 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
 
+  // Validation states
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+
+  // Validation functions
+  const validateEmail = (emailValue: string) => {
+    if (!emailValue) {
+      setEmailError('');
+      return true;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const validatePhone = (phoneValue: string) => {
+    if (!phoneValue) {
+      setPhoneError('');
+      return true;
+    }
+    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+    const cleanPhone = phoneValue.replace(/[\s\-\(\)]/g, '');
+    if (!phoneRegex.test(cleanPhone)) {
+      setPhoneError('Please enter a valid phone number');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    validateEmail(value);
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPhone(value);
+    validatePhone(value);
+  };
+
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
@@ -35,9 +81,10 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
       const results = await friendsService.searchUsers(searchQuery);
       setSearchResults(results);
     } catch (error) {
+      console.error('Search error:', error);
       toast({
         title: "Search Failed",
-        description: "Could not search for users. Please try again.",
+        description: error instanceof Error ? error.message : "Could not search for users. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -46,14 +93,48 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
   };
 
   const handleSendInvitation = async (type: 'email' | 'phone' | 'user', targetId?: string) => {
+    // Validate inputs before sending
+    if (type === 'email') {
+      if (!email.trim()) {
+        toast({
+          title: "Email Required",
+          description: "Please enter an email address.",
+          variant: "destructive"
+        });
+        return;
+      }
+      if (!validateEmail(email)) {
+        return;
+      }
+    } else if (type === 'phone') {
+      if (!phone.trim()) {
+        toast({
+          title: "Phone Required",
+          description: "Please enter a phone number.",
+          variant: "destructive"
+        });
+        return;
+      }
+      if (!validatePhone(phone)) {
+        return;
+      }
+    } else if (type === 'user' && !targetId) {
+      toast({
+        title: "User Required",
+        description: "Please select a user to invite.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setLoading(true);
     try {
-      const invitationData: any = { message };
+      const invitationData: any = { message: message.trim() || undefined };
       
       if (type === 'email') {
-        invitationData.inviteeEmail = email;
+        invitationData.inviteeEmail = email.trim();
       } else if (type === 'phone') {
-        invitationData.inviteePhone = phone;
+        invitationData.inviteePhone = phone.trim();
       } else if (type === 'user' && targetId) {
         invitationData.inviteeId = targetId;
       }
@@ -61,7 +142,7 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
       await friendsService.sendFriendInvitation(invitationData);
       
       toast({
-        title: "Invitation Sent!",
+        title: "Invitation Sent! 🎉",
         description: `Friend invitation has been sent successfully.`
       });
 
@@ -71,15 +152,24 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
       setMessage('');
       setSearchQuery('');
       setSearchResults([]);
+      setEmailError('');
+      setPhoneError('');
       setOpen(false);
       
       if (onFriendAdded) {
         onFriendAdded();
       }
     } catch (error) {
+      console.error('Invitation error:', error);
+      
+      let errorMessage = "Could not send friend invitation. Please try again.";
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Failed to Send Invitation",
-        description: "Could not send friend invitation. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -163,12 +253,19 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
                 type="email"
                 placeholder="friend@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
+                className={emailError ? 'border-red-500' : ''}
               />
+              {emailError && (
+                <div className="flex items-center gap-1 text-sm text-red-500">
+                  <AlertCircle className="w-4 h-4" />
+                  {emailError}
+                </div>
+              )}
             </div>
             <Button 
               onClick={() => handleSendInvitation('email')} 
-              disabled={loading || !email}
+              disabled={loading || !email || !!emailError}
               className="w-full"
             >
               <Mail className="w-4 h-4 mr-2" />
@@ -184,12 +281,19 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
                 type="tel"
                 placeholder="+1 (555) 123-4567"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={handlePhoneChange}
+                className={phoneError ? 'border-red-500' : ''}
               />
+              {phoneError && (
+                <div className="flex items-center gap-1 text-sm text-red-500">
+                  <AlertCircle className="w-4 h-4" />
+                  {phoneError}
+                </div>
+              )}
             </div>
             <Button 
               onClick={() => handleSendInvitation('phone')} 
-              disabled={loading || !phone}
+              disabled={loading || !phone || !!phoneError}
               className="w-full"
             >
               <Phone className="w-4 h-4 mr-2" />
