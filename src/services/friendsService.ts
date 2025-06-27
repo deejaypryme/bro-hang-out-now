@@ -46,6 +46,17 @@ export const friendsService = {
       throw new Error('User not authenticated');
     }
 
+    // Get user profile for notification
+    const { data: userProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('full_name, username')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError) {
+      console.error('Failed to get user profile:', profileError);
+    }
+
     // Validate input - ensure at least one contact method is provided
     if (!invitation.inviteeEmail && !invitation.inviteePhone && !invitation.inviteeId) {
       throw new Error('At least one contact method (email, phone, or user ID) must be provided');
@@ -101,6 +112,32 @@ export const friendsService = {
         } else {
           throw new Error('Failed to send friend invitation. Please try again.');
         }
+      }
+
+      // Send notification via edge function
+      try {
+        const inviterName = userProfile?.full_name || userProfile?.username || 'Someone';
+        
+        const { error: notificationError } = await supabase.functions.invoke('send-friend-invitation', {
+          body: {
+            invitationId: data.id,
+            inviterName,
+            inviterEmail: user.email,
+            inviteeEmail: invitation.inviteeEmail,
+            inviteePhone: invitation.inviteePhone,
+            message: invitation.message,
+            invitationToken: invitationToken
+          }
+        });
+
+        if (notificationError) {
+          console.error('Failed to send invitation notification:', notificationError);
+          // Note: We don't throw here as the invitation was saved successfully
+          // The user will still see success, but the notification failed
+        }
+      } catch (notificationError) {
+        console.error('Error calling notification function:', notificationError);
+        // Continue without throwing - invitation was saved successfully
       }
 
       return {
