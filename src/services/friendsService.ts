@@ -374,8 +374,8 @@ export const friendsService = {
           favorite,
           created_at,
           blocked_by,
-          friend_profile:profiles!friendships_friend_id_fkey(*),
-          friend_presence:user_presence!user_presence_user_id_fkey(*)
+          friend_profile:profiles!friend_id(*),
+          friend_presence:user_presence(status, custom_message, last_seen)
         `)
         .eq('user_id', userId)
         .eq('status', 'accepted')
