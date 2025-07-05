@@ -7,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 import { hangoutsService } from '@/services/hangoutsService';
 import { notificationService } from '@/services/notificationService';
 import { CalendarDays, Clock, MapPin, User } from 'lucide-react';
+import CalendarSelector from './CalendarSelector';
 import type { HangoutWithDetails } from '@/types/database';
 import type { HangoutInvitation } from '@/services/hangoutsService';
 
@@ -211,20 +212,16 @@ const HangoutResponse: React.FC = () => {
 
             {/* Status */}
             {hasResponded ? (
-              <div className={`text-center py-4 rounded-lg ${
-                invitation.status === 'accepted' 
-                  ? 'bg-green-50 text-green-800' 
-                  : 'bg-gray-50 text-gray-600'
-              }`}>
-                <p className="font-medium">
-                  {invitation.status === 'accepted' 
-                    ? "You've accepted this invitation!"
-                    : "You've declined this invitation."}
-                </p>
-                {invitation.status === 'accepted' && (
-                  <p className="text-sm mt-1">See you there! 🎉</p>
-                )}
-              </div>
+              invitation.status === 'accepted' ? (
+                <CalendarSelector 
+                  hangout={hangout}
+                  onClose={() => navigate('/')}
+                />
+              ) : (
+                <div className="text-center py-4 bg-gray-50 text-gray-600 rounded-lg">
+                  <p className="font-medium">You've declined this invitation.</p>
+                </div>
+              )
             ) : isExpired ? (
               <div className="text-center py-4 bg-red-50 text-red-800 rounded-lg">
                 <p className="font-medium">This invitation has expired</p>
