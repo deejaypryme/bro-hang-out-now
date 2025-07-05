@@ -37,20 +37,10 @@ export const friendsService = {
     console.log('🔍 [friendsService] Searching user by email:', email);
     
     try {
-      // Since we can't directly query auth.users, we'll search by email invitation
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .limit(1)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') {
-        console.error('❌ [friendsService] Search user by email error:', error);
-        throw error;
-      }
-      
-      console.log('✅ [friendsService] User search by email completed');
-      return data;
+      // Since we can't access auth.users directly, we need to use the friend invitation flow
+      // This function will return null to indicate that email invitations should use the friend_invitations table
+      console.log('ℹ️ [friendsService] Email-based invitations should use the friend invitation system');
+      return null;
     } catch (error) {
       console.error('❌ [friendsService] Search user by email failed:', error);
       throw error;
@@ -374,8 +364,10 @@ export const friendsService = {
           favorite,
           created_at,
           blocked_by,
-          friend_profile:profiles!friend_id(*),
-          friend_presence:user_presence(status, custom_message, last_seen)
+          friend_profile:profiles!friend_id(
+            *,
+            user_presence!user_id(status, custom_message, last_seen)
+          )
         `)
         .eq('user_id', userId)
         .eq('status', 'accepted')
@@ -398,14 +390,14 @@ export const friendsService = {
         timezone: friendship.friend_profile.timezone,
         created_at: friendship.friend_profile.created_at,
         updated_at: friendship.friend_profile.updated_at,
-        status: (friendship.friend_presence?.status as 'online' | 'offline' | 'busy' | 'away') || 'offline',
-        lastSeen: new Date(friendship.friend_presence?.last_seen || friendship.friend_profile.updated_at),
+        status: (friendship.friend_profile.user_presence?.[0]?.status as 'online' | 'offline' | 'busy' | 'away') || 'offline',
+        lastSeen: new Date(friendship.friend_profile.user_presence?.[0]?.last_seen || friendship.friend_profile.updated_at),
         friendshipDate: new Date(friendship.created_at),
         friendshipStatus: friendship.status as 'pending' | 'accepted' | 'blocked',
         friendshipId: friendship.id,
         notes: friendship.notes,
         favorite: friendship.favorite || false,
-        customMessage: friendship.friend_presence?.custom_message
+        customMessage: friendship.friend_profile.user_presence?.[0]?.custom_message
       }));
     } catch (error) {
       console.error('❌ [friendsService] Get friends failed:', error);
