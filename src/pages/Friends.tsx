@@ -25,7 +25,7 @@ const FriendsContent = () => {
   const [selectedFriend, setSelectedFriend] = useState<FriendWithProfile | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredFriends, setFilteredFriends] = useState(friends);
+  const [filteredFriends, setFilteredFriends] = useState<FriendWithProfile[]>([]);
 
   // STABLE: Set user presence to online when component mounts, offline when unmounts
   useEffect(() => {

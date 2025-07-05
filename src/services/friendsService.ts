@@ -354,7 +354,8 @@ export const friendsService = {
     console.log('🔍 [friendsService] Fetching friends for user:', userId);
     
     try {
-      const { data, error } = await supabase
+      // Use separate queries to avoid PostgREST relationship issues
+      const { data: friendships, error: friendshipsError } = await supabase
         .from('friendships')
         .select(`
           id,
@@ -363,42 +364,82 @@ export const friendsService = {
           notes,
           favorite,
           created_at,
-          blocked_by,
-          friend_profile:profiles!friend_id(
-            *,
-            user_presence!user_id(status, custom_message, last_seen)
-          )
+          blocked_by
         `)
         .eq('user_id', userId)
         .eq('status', 'accepted')
         .is('blocked_by', null);
-      
-      if (error) {
-        console.error('❌ [friendsService] Get friends error:', error);
-        throw new Error(`Failed to fetch friends: ${error.message}`);
+
+      if (friendshipsError) {
+        console.error('❌ [friendsService] Get friendships error:', friendshipsError);
+        throw new Error(`Failed to fetch friendships: ${friendshipsError.message}`);
       }
+
+      if (!friendships?.length) {
+        console.log('ℹ️ [friendsService] No friendships found');
+        return [];
+      }
+
+      // Get friend profiles
+      const friendIds = friendships.map(f => f.friend_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', friendIds);
+
+      if (profilesError) {
+        console.error('❌ [friendsService] Get profiles error:', profilesError);
+        throw new Error(`Failed to fetch friend profiles: ${profilesError.message}`);
+      }
+
+      // Get presence data
+      const { data: presenceData, error: presenceError } = await supabase
+        .from('user_presence')
+        .select('user_id, status, custom_message, last_seen')
+        .in('user_id', friendIds);
+
+      if (presenceError) {
+        console.warn('⚠️ [friendsService] Get presence error (non-critical):', presenceError);
+      }
+
+      // Combine the data
+      const data = friendships.map(friendship => {
+        const profile = profiles?.find(p => p.id === friendship.friend_id);
+        const presence = presenceData?.find(p => p.user_id === friendship.friend_id);
+        return {
+          ...friendship,
+          friend_profile: profile,
+          user_presence: presence ? [presence] : []
+        };
+      });
+      
       
       console.log('✅ [friendsService] Friends fetched:', data?.length || 0);
       
-      return (data || []).map((friendship: any): FriendWithProfile => ({
-        id: friendship.friend_profile.id,
-        username: friendship.friend_profile.username,
-        full_name: friendship.friend_profile.full_name,
-        avatar_url: friendship.friend_profile.avatar_url,
-        phone: friendship.friend_profile.phone,
-        preferred_times: friendship.friend_profile.preferred_times || [],
-        timezone: friendship.friend_profile.timezone,
-        created_at: friendship.friend_profile.created_at,
-        updated_at: friendship.friend_profile.updated_at,
-        status: (friendship.friend_profile.user_presence?.[0]?.status as 'online' | 'offline' | 'busy' | 'away') || 'offline',
-        lastSeen: new Date(friendship.friend_profile.user_presence?.[0]?.last_seen || friendship.friend_profile.updated_at),
-        friendshipDate: new Date(friendship.created_at),
-        friendshipStatus: friendship.status as 'pending' | 'accepted' | 'blocked',
-        friendshipId: friendship.id,
-        notes: friendship.notes,
-        favorite: friendship.favorite || false,
-        customMessage: friendship.friend_profile.user_presence?.[0]?.custom_message
-      }));
+      return data.map((friendship: any): FriendWithProfile => {
+        const profile = friendship.friend_profile;
+        const presence = friendship.user_presence?.[0];
+        
+        return {
+          id: profile?.id || friendship.friend_id,
+          username: profile?.username,
+          full_name: profile?.full_name,
+          avatar_url: profile?.avatar_url,
+          phone: profile?.phone,
+          preferred_times: profile?.preferred_times || [],
+          timezone: profile?.timezone,
+          created_at: profile?.created_at || friendship.created_at,
+          updated_at: profile?.updated_at || friendship.created_at,
+          status: (presence?.status as 'online' | 'offline' | 'busy' | 'away') || 'offline',
+          lastSeen: new Date(presence?.last_seen || profile?.updated_at || friendship.created_at),
+          friendshipDate: new Date(friendship.created_at),
+          friendshipStatus: friendship.status as 'pending' | 'accepted' | 'blocked',
+          friendshipId: friendship.id,
+          notes: friendship.notes,
+          favorite: friendship.favorite || false,
+          customMessage: presence?.custom_message
+        };
+      });
     } catch (error) {
       console.error('❌ [friendsService] Get friends failed:', error);
       throw error;
