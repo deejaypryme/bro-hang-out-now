@@ -107,3 +107,12 @@ export const EMOTIONAL_SIGNALS: EmotionalSignal[] = [
     description: "Stressed and need active outlet" 
   }
 ];
+
+// Flatten all activities from all categories into a single array
+export const activities: (Activity & { id: string; category: string })[] = ACTIVITY_CATEGORIES.flatMap((category, categoryIndex) =>
+  category.activities.map((activity, activityIndex) => ({
+    ...activity,
+    id: `${categoryIndex}-${activityIndex}`,
+    category: category.name
+  }))
+);
