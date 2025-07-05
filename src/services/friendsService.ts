@@ -260,13 +260,10 @@ export const friendsService = {
     console.log('🔍 [friendsService] Fetching friend invitations for user:', userId);
     
     try {
-      const { data, error } = await supabase
+      // Get invitations using separate queries to avoid PostgREST relationship issues
+      const { data: invitations, error } = await supabase
         .from('friend_invitations')
-        .select(`
-          *,
-          inviter_profile:profiles!friend_invitations_inviter_id_fkey(*),
-          invitee_profile:profiles!friend_invitations_invitee_id_fkey(*)
-        `)
+        .select('*')
         .or(`inviter_id.eq.${userId},invitee_id.eq.${userId}`)
         .order('created_at', { ascending: false });
       
@@ -274,14 +271,49 @@ export const friendsService = {
         console.error('❌ [friendsService] Get friend invitations error:', error);
         throw new Error(`Failed to fetch invitations: ${error.message}`);
       }
+
+      if (!invitations?.length) {
+        console.log('ℹ️ [friendsService] No invitations found');
+        return [];
+      }
+
+      // Get unique profile IDs for both inviters and invitees
+      const profileIds = [
+        ...new Set([
+          ...invitations.map(inv => inv.inviter_id),
+          ...invitations.filter(inv => inv.invitee_id).map(inv => inv.invitee_id!)
+        ])
+      ];
+
+      // Fetch profiles separately
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', profileIds);
+
+      if (profilesError) {
+        console.warn('⚠️ [friendsService] Get profiles error (non-critical):', profilesError);
+      }
+
+      // Combine the data
+      const data = invitations.map(invitation => {
+        const inviterProfile = profiles?.find(p => p.id === invitation.inviter_id);
+        const inviteeProfile = invitation.invitee_id 
+          ? profiles?.find(p => p.id === invitation.invitee_id)
+          : null;
+        
+        return {
+          ...invitation,
+          inviterProfile,
+          inviteeProfile
+        };
+      });
       
       console.log('✅ [friendsService] Friend invitations fetched:', data?.length || 0);
       
-      return (data || []).map((invitation: any): FriendInvitationWithProfile => ({
+      return data.map((invitation: any): FriendInvitationWithProfile => ({
         ...invitation,
-        status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired',
-        inviterProfile: invitation.inviter_profile,
-        inviteeProfile: invitation.invitee_profile
+        status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired'
       }));
     } catch (error) {
       console.error('❌ [friendsService] Get friend invitations failed:', error);
