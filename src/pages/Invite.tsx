@@ -1,210 +1,60 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
 import { Button } from '../components/ui/button';
-import { Card, CardContent } from '../components/ui/card';
-import InviteFlow from '../components/InviteFlow';
-import { hangoutsService } from '@/services/hangoutsService';
-import { notificationService } from '@/services/notificationService';
-import { type FriendWithProfile } from '@/types/database';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { simpleSocialService } from '@/services/simpleSocialService';
+import { useFriends } from '@/hooks/useDatabase'; 
+import SimpleHangoutInvite from '../components/SimpleHangoutInvite';
 import { type Activity, type EmotionalSignal } from '../data/activities';
-import { type TimeOption } from '../components/TimeSelection';
-import { ArrowLeft, ArrowRight } from 'lucide-react';
-
-type Step = 'friend' | 'time' | 'activity';
+import { activities } from '../data/activities';
+import { ArrowLeft, Calendar, Users } from 'lucide-react';
+import { Avatar, AvatarFallback } from '../components/ui/avatar';
 
 const Invite = () => {
   const navigate = useNavigate();
-  const [currentStep, setCurrentStep] = useState<Step>('friend');
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [selectedFriend, setSelectedFriend] = useState<FriendWithProfile | null>(null);
-  const [selectedTimeOptions, setSelectedTimeOptions] = useState<TimeOption[]>([]);
+  const { data: friends = [], isLoading: friendsLoading } = useFriends();
+  const [selectedFriend, setSelectedFriend] = useState<any>(null);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
-  const [selectedSignal, setSelectedSignal] = useState<EmotionalSignal | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
-  const [notificationStatus, setNotificationStatus] = useState<{
-    success: boolean;
-    error?: string;
-    retryable?: boolean;
-    attempts?: number;
-  } | null>(null);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
 
-  // Auto-advance when friend is selected
-  useEffect(() => {
-    if (selectedFriend && currentStep === 'friend') {
-      const timer = setTimeout(() => {
-        setCompletedSteps(prev => [...prev, 'friend']);
-        setCurrentStep('time');
-      }, 500);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [selectedFriend, currentStep]);
+  if (friendsLoading) {
+    return (
+      <div className="min-h-screen hero-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-3xl text-white mx-auto mb-bro-lg animate-pulse shadow-2xl">
+            👊
+          </div>
+          <p className="typo-body text-white/80">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-  // Auto-advance only when 4 time options are selected
-  useEffect(() => {
-    if (selectedTimeOptions.length === 4 && currentStep === 'time') {
-      const timer = setTimeout(() => {
-        setCompletedSteps(prev => [...prev, 'time']);
-        setCurrentStep('activity');
-      }, 800);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [selectedTimeOptions.length, currentStep]);
-
-  const handleBack = () => {
-    if (currentStep === 'time') {
-      setCurrentStep('friend');
-      setCompletedSteps(prev => prev.filter(step => step !== 'friend'));
-    } else if (currentStep === 'activity') {
-      setCurrentStep('time');
-      setCompletedSteps(prev => prev.filter(step => step !== 'time'));
-    }
+  const handleInviteSuccess = () => {
+    setInviteDialogOpen(false);
+    setSelectedFriend(null);
+    setSelectedActivity(null);
+    navigate('/home');
   };
 
-  const handleNext = () => {
-    if (currentStep === 'time' && selectedTimeOptions.length > 0) {
-      setCompletedSteps(prev => [...prev, 'time']);
-      setCurrentStep('activity');
-    }
-  };
-
-  const handleSend = async () => {
-    if (!selectedFriend || selectedTimeOptions.length === 0 || !selectedActivity) {
-      toast({
-        title: "Incomplete Information",
-        description: "Please select a friend, time options, and activity.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsCreating(true);
-    setNotificationStatus(null);
-
-    try {
-      // Create hangout and invitation
-      const { hangout, invitation } = await hangoutsService.createHangoutWithInvitation({
-        friend: selectedFriend,
-        timeOptions: selectedTimeOptions,
-        activity: selectedActivity,
-        signal: selectedSignal || undefined,
-        message: selectedSignal?.description || undefined
-      });
-
-      console.log('Created hangout:', hangout);
-      console.log('Created invitation:', invitation);
-
-      // Send notification
-      const contactType = selectedFriend.phone ? 'sms' : 'email';
-      const contact = selectedFriend.phone || selectedFriend.username || '';
-      
-      if (contact) {
-        const notificationResult = await notificationService.sendHangoutInvitation(
-          selectedFriend.full_name || selectedFriend.username,
-          contact,
-          selectedActivity.name,
-          selectedActivity.emoji,
-          selectedTimeOptions[0].date,
-          selectedTimeOptions[0].startTime,
-          invitation.invitation_token,
-          'You', // For now, using "You" as organizer name
-          contactType
-        );
-
-        setNotificationStatus(notificationResult);
-
-        if (notificationResult.success) {
-          toast({
-            title: "BYF Invite Sent! 🎉",
-            description: `Your invite to ${selectedFriend.full_name || selectedFriend.username} has been sent via ${contactType}${notificationResult.attempts && notificationResult.attempts > 1 ? ` (after ${notificationResult.attempts} attempts)` : ''}. They'll get a notification to respond.`,
-          });
-          
-          // Navigate back to home on success
-          navigate('/home');
-        } else {
-          // Show error with specific feedback
-          const errorTitle = notificationResult.retryable 
-            ? "Invite Created - Notification Delayed ⚠️"
-            : "Invite Created - Notification Failed ❌";
-          
-          const errorDescription = notificationResult.retryable
-            ? `Your invite has been created, but we couldn't send the notification right now. ${notificationResult.error} We'll keep trying to send it.`
-            : `Your invite has been created, but we couldn't send the notification. ${notificationResult.error} You can share the link manually.`;
-
-          toast({
-            title: errorTitle,
-            description: errorDescription,
-            variant: notificationResult.retryable ? "default" : "destructive"
-          });
-
-          // Don't navigate away if notification failed, let user see the error and potentially retry
-        }
-      } else {
-        toast({
-          title: "Invite Created! ⚠️",
-          description: `Your invite has been created, but no contact information is available for ${selectedFriend.full_name || selectedFriend.username}.`,
-          variant: "destructive"
-        });
-      }
-
-    } catch (error) {
-      console.error('Error creating hangout invitation:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create hangout invitation. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsCreating(false);
-    }
-  };
-
-  const handleRetryNotification = async () => {
-    if (!selectedFriend || !selectedActivity || !selectedTimeOptions.length || !notificationStatus || notificationStatus.success) {
-      return;
-    }
-
-    setIsCreating(true);
-
-    try {
-      const contactType = selectedFriend.phone ? 'sms' : 'email';
-      const contact = selectedFriend.phone || selectedFriend.username || '';
-
-      if (contact) {
-        // We need the invitation token - this would need to be stored or retrieved
-        // For now, we'll show a message that they need to go back to home
-        toast({
-          title: "Retry from Home",
-          description: "Please go back to the home page to retry sending the notification.",
-          variant: "default"
-        });
-        navigate('/home');
-      }
-    } catch (error) {
-      console.error('Error retrying notification:', error);
-      toast({
-        title: "Retry Failed",
-        description: "Failed to retry sending the notification. Please try again later.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsCreating(false);
-    }
+  const openInviteDialog = (friend: any, activity: Activity) => {
+    setSelectedFriend(friend);
+    setSelectedActivity(activity);
+    setInviteDialogOpen(true);
   };
 
   return (
     <div className="min-h-screen hero-background">
       {/* Header */}
       <header className="glass-surface border-b border-white/20 sticky top-0 z-20 shadow-xl">
-        <div className="max-w-2xl mx-auto px-bro-lg py-bro-lg">
+        <div className="max-w-4xl mx-auto px-bro-lg py-bro-lg">
           <div className="flex items-center gap-bro-lg">
             <Button
               variant="ghost"
               onClick={() => navigate('/home')}
               className="flex items-center gap-bro-sm text-primary-navy hover:bg-white/10"
-              disabled={isCreating}
             >
               <ArrowLeft className="w-4 h-4" />
               Back
@@ -214,8 +64,8 @@ const Invite = () => {
                 📅
               </div>
               <div>
-                <h1 className="typo-title-lg text-primary-navy">Schedule Bro Time</h1>
-                <p className="typo-mono text-text-secondary">Plan your next hangout</p>
+                <h1 className="typo-title-lg text-primary-navy">Quick Hangout Invite</h1>
+                <p className="typo-mono text-text-secondary">Choose a friend and activity</p>
               </div>
             </div>
           </div>
@@ -223,98 +73,119 @@ const Invite = () => {
       </header>
 
       {/* Main Content */}
-      <div className="pb-bro-xl">
-        <Card variant="glass" className="max-w-2xl mx-auto mt-bro-xl shadow-2xl border-white/20">
-          <CardContent className="pt-bro-lg">
-            <InviteFlow 
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-              selectedFriend={selectedFriend}
-              selectedTimeOptions={selectedTimeOptions}
-              selectedActivity={selectedActivity}
-              selectedSignal={selectedSignal}
-              onSelectFriend={setSelectedFriend}
-              onUpdateTimeOptions={setSelectedTimeOptions}
-              onSelectActivity={setSelectedActivity}
-              onSelectSignal={setSelectedSignal}
-              onNext={handleNext}
-              onSendInvite={handleSend}
-            />
-
-            {/* Notification Status Display */}
-            {notificationStatus && !notificationStatus.success && (
-              <div className="mt-bro-lg p-bro-md rounded-lg border-l-4 border-amber-500 bg-amber-50">
-                <div className="flex items-start">
-                  <div className="flex-shrink-0">
-                    <span className="text-amber-500 text-xl">⚠️</span>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-amber-800">
-                      Notification Issue
-                    </p>
-                    <p className="text-sm text-amber-700 mt-1">
-                      {notificationStatus.error}
-                    </p>
-                    {notificationStatus.retryable && (
-                      <div className="mt-3">
-                        <Button
-                          onClick={handleRetryNotification}
-                          disabled={isCreating}
-                          variant="outline"
-                          size="sm"
-                          className="text-amber-800 border-amber-300 hover:bg-amber-100"
-                        >
-                          {isCreating ? 'Retrying...' : 'Retry Notification'}
-                        </Button>
+      <div className="max-w-4xl mx-auto py-bro-xl px-bro-lg space-y-bro-xl">
+        {friends.length === 0 ? (
+          <Card variant="glass" className="text-center py-bro-2xl">
+            <CardContent>
+              <div className="text-6xl mb-bro-lg">👥</div>
+              <h3 className="typo-title-lg text-primary-navy mb-bro-md">No Friends Yet</h3>
+              <p className="typo-body text-text-secondary mb-bro-lg max-w-md mx-auto">
+                You need friends to send hangout invitations. Add some friends first!
+              </p>
+              <Button onClick={() => navigate('/friends')} className="flex items-center gap-bro-sm">
+                <Users className="w-4 h-4" />
+                Go to Friends
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {/* Friends Section */}
+            <div>
+              <h2 className="typo-title-lg text-white mb-bro-lg">Choose a Friend</h2>
+              <div className="grid gap-bro-md md:grid-cols-2 lg:grid-cols-3">
+                {friends.map((friend) => (
+                  <Card key={friend.id} variant="glass" className="hover:shadow-xl transition-all duration-300">
+                    <CardHeader className="flex flex-row items-center gap-bro-md pb-bro-md">
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-gradient-to-r from-accent-orange to-accent-light text-white">
+                          {(friend.full_name || friend.username || 'U')[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <CardTitle className="text-primary-navy text-sm truncate">
+                          {friend.full_name || friend.username || 'Unknown User'}
+                        </CardTitle>
+                        {friend.username && friend.full_name && (
+                          <p className="typo-mono text-text-secondary text-xs truncate">@{friend.username}</p>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </div>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      <div className="grid grid-cols-2 gap-bro-xs">
+                        {activities.slice(0, 4).map((activity) => (
+                          <Button
+                            key={activity.id}
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openInviteDialog(friend, activity)}
+                            className="flex items-center gap-bro-xs text-xs h-8"
+                          >
+                            <span className="text-sm">{activity.emoji}</span>
+                            <span className="truncate">{activity.name}</span>
+                          </Button>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </div>
+
+            {/* All Activities Section */}
+            <div>
+              <h2 className="typo-title-lg text-white mb-bro-lg">Or Browse All Activities</h2>
+              <div className="grid gap-bro-md sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {activities.map((activity) => (
+                  <Card key={activity.id} variant="glass" className="hover:shadow-xl transition-all duration-300">
+                    <CardContent className="p-bro-md text-center">
+                      <div className="text-3xl mb-bro-sm">{activity.emoji}</div>
+                      <h3 className="typo-body font-medium text-primary-navy mb-bro-xs">{activity.name}</h3>
+                      <p className="typo-mono text-text-secondary text-xs mb-bro-md">{activity.category}</p>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full"
+                        onClick={() => {
+                          if (friends.length === 1) {
+                            openInviteDialog(friends[0], activity);
+                          } else {
+                            toast({
+                              title: "Choose a Friend",
+                              description: "Select a friend from the list above first",
+                            });
+                          }
+                        }}
+                      >
+                        Invite
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Bottom Navigation - Show on time and activity steps */}
-      {(currentStep === 'time' || currentStep === 'activity') && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 glass-surface border-t border-white/20 p-bro-lg shadow-2xl">
-          <div className="max-w-2xl mx-auto flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              className="flex items-center gap-bro-sm"
-              disabled={isCreating}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </Button>
-            
-            {currentStep === 'time' ? (
-              <Button
-                onClick={handleNext}
-                disabled={selectedTimeOptions.length === 0 || isCreating}
-                variant="primary"
-                size="lg"
-                className="flex items-center gap-bro-sm"
-              >
-                Next
-                <ArrowRight className="w-4 h-4" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSend}
-                disabled={!selectedActivity || isCreating}
-                variant="primary"
-                size="lg"
-                className="flex items-center gap-bro-sm"
-              >
-                {isCreating ? 'Sending...' : 'Send Invite'}
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Invite Dialog */}
+      <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Hangout Invite</DialogTitle>
+          </DialogHeader>
+          {selectedFriend && selectedActivity && (
+            <SimpleHangoutInvite
+              friendId={selectedFriend.id}
+              friendName={selectedFriend.full_name || selectedFriend.username || 'Friend'}
+              activityName={selectedActivity.name}
+              activityEmoji={selectedActivity.emoji}
+              onSuccess={handleInviteSuccess}
+              onCancel={() => setInviteDialogOpen(false)}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

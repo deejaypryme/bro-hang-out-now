@@ -168,6 +168,36 @@ export type Database = {
         }
         Relationships: []
       }
+      friend_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          recipient_id: string
+          requester_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_id: string
+          requester_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          recipient_id?: string
+          requester_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           blocked_by: string | null
@@ -253,6 +283,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      hangout_requests: {
+        Row: {
+          activity_emoji: string
+          activity_name: string
+          created_at: string
+          friend_id: string
+          id: string
+          message: string | null
+          organizer_id: string
+          proposed_date: string
+          proposed_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          activity_emoji?: string
+          activity_name: string
+          created_at?: string
+          friend_id: string
+          id?: string
+          message?: string | null
+          organizer_id: string
+          proposed_date: string
+          proposed_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          activity_emoji?: string
+          activity_name?: string
+          created_at?: string
+          friend_id?: string
+          id?: string
+          message?: string | null
+          organizer_id?: string
+          proposed_date?: string
+          proposed_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       hangout_time_proposals: {
         Row: {
@@ -530,7 +602,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_notifications: {
+        Row: {
+          created_at: string | null
+          from_user_id: string | null
+          from_user_name: string | null
+          from_username: string | null
+          id: string | null
+          message: string | null
+          status: string | null
+          to_user_id: string | null
+          type: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       [_ in never]: never
