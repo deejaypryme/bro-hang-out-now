@@ -21,9 +21,12 @@ export const useFriendsData = () => {
     // Cleanup: Set user offline when component unmounts
     return () => {
       console.log('🔄 Setting user presence to offline for user:', user.id);
-      updatePresence.mutate({ status: 'offline' });
+      // Use a timeout to avoid calling mutation during cleanup
+      setTimeout(() => {
+        updatePresence.mutate({ status: 'offline' });
+      }, 0);
     };
-  }, [user?.id, updatePresence]);
+  }, [user?.id]); // Removed updatePresence from dependencies
 
   // Set up real-time subscriptions
   useEffect(() => {
@@ -50,7 +53,7 @@ export const useFriendsData = () => {
       presenceChannel.unsubscribe();
       invitationsChannel.unsubscribe();
     };
-  }, [user?.id, refetchFriends, refetchInvitations]);
+  }, [user?.id]); // Removed refetch functions from dependencies
 
   const handleRefetchFriends = useCallback(() => {
     console.log('🔄 Manually refetching friends...');
