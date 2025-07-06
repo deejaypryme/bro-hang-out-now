@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Users, Bell } from 'lucide-react';
 import Header from '@/components/Header';
@@ -48,10 +49,6 @@ const FriendsContent = () => {
     totalHangouts: 12,
   };
 
-  const pendingInvitations = invitations.filter(inv => inv.status === 'pending');
-  const { favoriteFriends, onlineFriends } = categorizeFriends(filteredFriends);
-  const onlineFriendsCount = onlineFriends.length + favoriteFriends.filter(f => f.status === 'online').length;
-
   // Show loading fallback for initial load
   if (friendsLoading || invitationsLoading) {
     return (
@@ -63,6 +60,41 @@ const FriendsContent = () => {
       </div>
     );
   }
+
+  // Show error state if data fetching failed
+  if (friendsError || invitationsError) {
+    const errorMessage = friendsError?.message || invitationsError?.message || 'Failed to load data. Please try again.';
+    
+    return (
+      <div className="min-h-screen hero-background">
+        <Header userStats={userStats} />
+        <main className="max-w-4xl mx-auto py-bro-2xl px-bro-lg">
+          <Card variant="glass" className="shadow-2xl border-white/20">
+            <CardContent className="pt-bro-lg text-center space-y-bro-lg">
+              <div className="space-y-bro-md">
+                <h2 className="text-2xl font-bold text-primary-navy">Something went wrong</h2>
+                <p className="text-secondary-slate">{errorMessage}</p>
+              </div>
+              <Button 
+                onClick={() => {
+                  handleRefetchFriends();
+                  handleRefetchInvitations();
+                }}
+                className="bg-accent-orange hover:bg-accent-orange/80 text-white"
+              >
+                Try Again
+              </Button>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  // Safe data operations after error check
+  const pendingInvitations = invitations.filter(inv => inv.status === 'pending');
+  const { favoriteFriends, onlineFriends } = categorizeFriends(filteredFriends);
+  const onlineFriendsCount = onlineFriends.length + favoriteFriends.filter(f => f.status === 'online').length;
 
   return (
     <div className="min-h-screen hero-background">
