@@ -1,4 +1,113 @@
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+
+// Enhanced error handling for database operations
+class DatabaseError extends Error {
+  constructor(
+    message: string,
+    public code?: string,
+    public details?: any,
+    public userMessage?: string
+  ) {
+    super(message);
+    this.name = 'DatabaseError';
+  }
+}
+
+const handleDatabaseError = (error: any, operation: string): DatabaseError => {
+  console.error(`Database error in ${operation}:`, error);
+  
+  let userMessage = 'An unexpected error occurred. Please try again.';
+  
+  // Handle specific PostgreSQL error codes
+  switch (error.code) {
+    case '23505': // Unique violation
+      if (error.message.includes('friendships')) {
+        userMessage = 'You are already friends with this person.';
+      } else if (error.message.includes('friend_invitations')) {
+        userMessage = 'An invitation has already been sent to this person.';
+      } else {
+        userMessage = 'This action has already been completed.';
+      }
+      break;
+    case '23503': // Foreign key violation
+      userMessage = 'Invalid user or contact information provided.';
+      break;
+    case '23514': // Check constraint violation
+      userMessage = 'The provided data does not meet the required format.';
+      break;
+    case '42P01': // Undefined table
+      userMessage = 'System error: Please contact support.';
+      break;
+    case 'PGRST116': // No rows returned
+      userMessage = 'The requested item could not be found.';
+      break;
+    default:
+      if (error.message.includes('permission denied')) {
+        userMessage = 'You do not have permission to perform this action.';
+      } else if (error.message.includes('connection')) {
+        userMessage = 'Connection error. Please check your internet and try again.';
+      }
+  }
+  
+  return new DatabaseError(
+    error.message || 'Database operation failed',
+    error.code,
+    error,
+    userMessage
+  );
+};
+
+// Pre-check functions to prevent constraint violations
+const checkExistingFriendship = async (userId: string, friendId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('friendships')
+      .select('id')
+      .or(`and(user_id.eq.${userId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${userId})`)
+      .limit(1);
+
+    if (error) {
+      console.error('Error checking existing friendship:', error);
+      return false; // Assume no friendship exists on error
+    }
+
+    return data && data.length > 0;
+  } catch (error) {
+    console.error('Error in checkExistingFriendship:', error);
+    return false;
+  }
+};
+
+const checkExistingInvitation = async (inviterId: string, inviteeEmail?: string, inviteePhone?: string, inviteeId?: string): Promise<boolean> => {
+  try {
+    let query = supabase
+      .from('friend_invitations')
+      .select('id')
+      .eq('inviter_id', inviterId)
+      .eq('status', 'pending');
+
+    if (inviteeId) {
+      query = query.eq('invitee_id', inviteeId);
+    } else if (inviteeEmail) {
+      query = query.eq('invitee_email', inviteeEmail);
+    } else if (inviteePhone) {
+      query = query.eq('invitee_phone', inviteePhone);
+    }
+
+    const { data, error } = await query.limit(1);
+
+    if (error) {
+      console.error('Error checking existing invitation:', error);
+      return false;
+    }
+
+    return data && data.length > 0;
+  } catch (error) {
+    console.error('Error in checkExistingInvitation:', error);
+    return false;
+  }
+};
 import type { 
   Profile, 
   Friendship, 
@@ -47,7 +156,7 @@ export const friendsService = {
     }
   },
 
-  // Friend invitations with enhanced edge function logging and error handling
+  // Friend invitations with enhanced error handling and pre-checks
   async sendFriendInvitation(invitation: {
     inviteeEmail?: string;
     inviteePhone?: string;
@@ -55,17 +164,81 @@ export const friendsService = {
     message?: string;
   }): Promise<FriendInvitation> {
     console.log('🚀 [friendsService] Starting friend invitation process:', invitation);
-    console.log('📊 [friendsService] Edge function verification - Starting notification process');
     
     try {
       // Get current user
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       if (authError || !user) {
-        console.error('❌ [friendsService] Authentication error:', authError);
-        throw new Error('User not authenticated');
+        throw handleDatabaseError(authError || new Error('User not authenticated'), 'authentication');
       }
 
       console.log('✅ [friendsService] User authenticated:', user.id);
+
+      // Enhanced validation
+      if (!invitation.inviteeEmail && !invitation.inviteePhone && !invitation.inviteeId) {
+        throw new DatabaseError(
+          'At least one contact method must be provided',
+          'VALIDATION_ERROR',
+          null,
+          'Please provide an email, phone number, or select a user to invite.'
+        );
+      }
+
+      // Pre-check for existing invitations to prevent constraint violations
+      const existingInvitation = await checkExistingInvitation(
+        user.id,
+        invitation.inviteeEmail,
+        invitation.inviteePhone,
+        invitation.inviteeId
+      );
+
+      if (existingInvitation) {
+        throw new DatabaseError(
+          'Invitation already exists',
+          '23505',
+          null,
+          'You have already sent an invitation to this person. Please wait for them to respond.'
+        );
+      }
+
+      // Pre-check for existing friendship if inviteeId is provided
+      if (invitation.inviteeId) {
+        const existingFriendship = await checkExistingFriendship(user.id, invitation.inviteeId);
+        if (existingFriendship) {
+          throw new DatabaseError(
+            'Friendship already exists',
+            '23505',
+            null,
+            'You are already friends with this person.'
+          );
+        }
+      }
+
+      // Enhanced validation with better error messages
+      if (invitation.inviteeEmail) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(invitation.inviteeEmail)) {
+          throw new DatabaseError(
+            'Invalid email format',
+            'VALIDATION_ERROR',
+            null,
+            'Please enter a valid email address (e.g., user@example.com).'
+          );
+        }
+      }
+
+      if (invitation.inviteePhone) {
+        const cleanPhone = invitation.inviteePhone.replace(/[\s\-\(\)]/g, '');
+        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+        if (!phoneRegex.test(cleanPhone)) {
+          throw new DatabaseError(
+            'Invalid phone number format',
+            'VALIDATION_ERROR',
+            null,
+            'Please enter a valid phone number with country code (e.g., +1234567890).'
+          );
+        }
+      }
 
       // Get user profile for notification
       const { data: userProfile, error: profileError } = await supabase
@@ -78,41 +251,10 @@ export const friendsService = {
         console.warn('⚠️ [friendsService] Failed to get user profile:', profileError);
       }
 
-      console.log('👤 [friendsService] User profile:', userProfile);
-
-      // Validate input - ensure at least one contact method is provided
-      if (!invitation.inviteeEmail && !invitation.inviteePhone && !invitation.inviteeId) {
-        const error = new Error('At least one contact method (email, phone, or user ID) must be provided');
-        console.error('❌ [friendsService] Validation error:', error.message);
-        throw error;
-      }
-
-      // Validate email format if provided
-      if (invitation.inviteeEmail) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(invitation.inviteeEmail)) {
-          const error = new Error('Invalid email format');
-          console.error('❌ [friendsService] Email validation error:', error.message);
-          throw error;
-        }
-      }
-
-      // Validate phone format if provided (basic validation)
-      if (invitation.inviteePhone) {
-        const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-        if (!phoneRegex.test(invitation.inviteePhone.replace(/[\s\-\(\)]/g, ''))) {
-          const error = new Error('Invalid phone number format');
-          console.error('❌ [friendsService] Phone validation error:', error.message);
-          throw error;
-        }
-      }
-
       // Generate invitation token and expiration date
       const invitationToken = crypto.randomUUID();
       const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
-
-      console.log('🎟️ [friendsService] Generated invitation token:', invitationToken);
+      expiresAt.setDate(expiresAt.getDate() + 7);
 
       console.log('💾 [friendsService] Inserting invitation to database...');
       const { data, error } = await supabase
@@ -131,23 +273,12 @@ export const friendsService = {
         .single();
       
       if (error) {
-        console.error('❌ [friendsService] Database error when sending friend invitation:', error);
-        
-        // Handle specific database constraint errors
-        if (error.code === '23505') {
-          throw new Error('An invitation to this contact already exists');
-        } else if (error.code === '23503') {
-          throw new Error('Invalid user or contact information provided');
-        } else if (error.code === '23514') {
-          throw new Error('Invalid invitation data - please check your input');
-        } else {
-          throw new Error(`Database error: ${error.message}`);
-        }
+        throw handleDatabaseError(error, 'friend invitation creation');
       }
 
       console.log('✅ [friendsService] Invitation saved to database:', data.id);
 
-      // Enhanced edge function invocation with detailed logging
+      // Enhanced edge function invocation with retry logic
       const inviterName = userProfile?.full_name || userProfile?.username || 'Someone';
       const notificationPayload = {
         invitationId: data.id,
@@ -159,100 +290,56 @@ export const friendsService = {
         invitationToken: invitationToken
       };
 
-      console.log('📧 [friendsService] EDGE FUNCTION VERIFICATION - Calling send-friend-invitation function');
-      console.log('📋 [friendsService] Edge function payload:', JSON.stringify({
-        ...notificationPayload,
-        inviterEmail: '***REDACTED***' // Don't log sensitive email
-      }));
+      // Notification with retry logic
+      let notificationSuccess = false;
+      let lastNotificationError: any = null;
+      const maxRetries = 3;
 
-      try {
-        const startTime = Date.now();
-        console.log('⏱️ [friendsService] Edge function call started at:', new Date().toISOString());
-        
-        const { data: functionResponse, error: notificationError } = await supabase.functions.invoke('send-friend-invitation', {
-          body: notificationPayload
-        });
-
-        const endTime = Date.now();
-        const duration = endTime - startTime;
-        console.log('⏱️ [friendsService] Edge function call completed in:', duration, 'ms');
-
-        if (notificationError) {
-          console.error('❌ [friendsService] EDGE FUNCTION ERROR - Invocation failed:', notificationError);
-          console.error('❌ [friendsService] Error details:', {
-            message: notificationError.message,
-            context: notificationError.context,
-            code: notificationError.code
-          });
-          throw new Error(`Failed to send notification: ${notificationError.message}`);
-        }
-
-        console.log('✅ [friendsService] EDGE FUNCTION SUCCESS - Response received:', functionResponse);
-        
-        // Detailed logging of notification delivery
-        if (functionResponse?.success) {
-          console.log('🎉 [friendsService] NOTIFICATION DELIVERY VERIFIED');
-          console.log('📊 [friendsService] Delivery status:', {
-            emailSent: functionResponse.sentVia?.email || false,
-            smsSent: functionResponse.sentVia?.sms || false,
-            emailResult: functionResponse.emailResult ? 'SUCCESS' : 'FAILED',
-            smsResult: functionResponse.smsResult ? 'SUCCESS' : 'FAILED'
-          });
+      for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+          console.log(`📧 [friendsService] Notification attempt ${attempt}/${maxRetries}`);
           
-          if (functionResponse.emailResult?.error) {
-            console.warn('⚠️ [friendsService] Email delivery failed:', functionResponse.emailResult.error);
-          }
-          
-          if (functionResponse.smsResult?.error) {
-            console.warn('⚠️ [friendsService] SMS delivery failed:', functionResponse.smsResult.error);
-          }
-        } else {
-          console.error('❌ [friendsService] NOTIFICATION DELIVERY FAILED:', functionResponse);
-          throw new Error(`Notification failed: ${functionResponse?.error || 'Unknown error'}`);
-        }
+          const { data: functionResponse, error: notificationError } = await supabase.functions.invoke('send-friend-invitation', {
+            body: notificationPayload
+          });
 
-      } catch (notificationError) {
-        console.error('❌ [friendsService] EDGE FUNCTION CRITICAL ERROR:', notificationError);
-        console.error('💥 [friendsService] Full error context:', {
-          error: notificationError,
-          stack: notificationError instanceof Error ? notificationError.stack : 'No stack trace',
-          payload: JSON.stringify({
-            ...notificationPayload,
-            inviterEmail: '***REDACTED***'
-          })
-        });
-        
-        // Enhanced error handling for different failure scenarios
-        if (notificationError instanceof Error) {
-          if (notificationError.message.includes('timeout')) {
-            throw new Error('Notification service timeout - invitation saved but notification may be delayed');
-          } else if (notificationError.message.includes('network')) {
-            throw new Error('Network error while sending notification - invitation saved but recipient may not be notified');
-          } else {
-            throw new Error(`Failed to send invitation notification: ${notificationError.message}`);
+          if (notificationError) {
+            throw notificationError;
           }
-        } else {
-          throw new Error('An unexpected error occurred while sending the invitation notification');
+
+          console.log('✅ [friendsService] Notification sent successfully');
+          notificationSuccess = true;
+          break;
+        } catch (error) {
+          console.error(`❌ [friendsService] Notification attempt ${attempt} failed:`, error);
+          lastNotificationError = error;
+          
+          if (attempt < maxRetries) {
+            // Exponential backoff: wait 1s, 2s, 4s
+            const delay = Math.pow(2, attempt - 1) * 1000;
+            console.log(`⏳ [friendsService] Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
         }
       }
 
-      console.log('🎉 [friendsService] COMPLETE SUCCESS - Friend invitation process completed successfully');
-      console.log('📊 [friendsService] Final status:', {
-        invitationId: data.id,
-        databaseSaved: true,
-        notificationSent: true
-      });
+      if (!notificationSuccess) {
+        console.warn('⚠️ [friendsService] All notification attempts failed, but invitation was saved');
+        // Don't throw - invitation was saved successfully, just notification failed
+      }
 
       return {
         ...data,
         status: data.status as 'pending' | 'accepted' | 'declined' | 'expired'
       };
     } catch (error) {
-      console.error('❌ [friendsService] FINAL ERROR - Friend invitation process failed:', error);
-      if (error instanceof Error) {
+      console.error('❌ [friendsService] Friend invitation process failed:', error);
+      
+      if (error instanceof DatabaseError) {
         throw error;
       }
-      throw new Error('An unexpected error occurred while sending the invitation');
+      
+      throw handleDatabaseError(error, 'friend invitation');
     }
   },
 

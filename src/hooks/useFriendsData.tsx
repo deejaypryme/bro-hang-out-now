@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useFriends, useFriendInvitations, useUpdateUserPresence } from '@/hooks/useDatabase';
 import { friendsService } from '@/services/friendsService';
@@ -8,8 +8,20 @@ export const useFriendsData = () => {
   const { data: friends = [], isLoading: friendsLoading, error: friendsError, refetch: refetchFriends } = useFriends();
   const { data: invitations = [], isLoading: invitationsLoading, error: invitationsError, refetch: refetchInvitations } = useFriendInvitations();
   const updatePresence = useUpdateUserPresence();
+  const subscriptionsRef = useRef<{ presence?: any; invitations?: any }>({});
 
-  // Set user presence to online when component mounts, offline when unmounts
+  // Stabilized refetch functions to prevent infinite loops
+  const stableRefetchFriends = useCallback(() => {
+    console.log('🔄 Manually refetching friends...');
+    refetchFriends();
+  }, [refetchFriends]);
+
+  const stableRefetchInvitations = useCallback(() => {
+    console.log('🔄 Manually refetching invitations...');
+    refetchInvitations();
+  }, [refetchInvitations]);
+
+  // Set user presence to online when component mounts
   useEffect(() => {
     if (!user?.id) return;
 
@@ -18,52 +30,63 @@ export const useFriendsData = () => {
     // Set user online when component mounts
     updatePresence.mutate({ status: 'online' });
 
-    // Cleanup: Set user offline when component unmounts
+    // Clean cleanup without presence mutation to avoid render loops
     return () => {
-      console.log('🔄 Setting user presence to offline for user:', user.id);
-      // Use a timeout to avoid calling mutation during cleanup
-      setTimeout(() => {
-        updatePresence.mutate({ status: 'offline' });
-      }, 0);
+      console.log('🧹 Component unmounting for user:', user.id);
     };
-  }, [user?.id]); // Removed updatePresence from dependencies
+  }, [user?.id, updatePresence]);
 
-  // Set up real-time subscriptions
+  // Simplified real-time subscriptions with proper cleanup
   useEffect(() => {
     if (!user?.id) return;
 
     console.log('📡 Setting up real-time subscriptions for user:', user.id);
     
-    // Set up presence subscription
-    const presenceChannel = friendsService.subscribeToFriendPresence(user.id, (presence) => {
+    // Clean up existing subscriptions first
+    if (subscriptionsRef.current.presence) {
+      subscriptionsRef.current.presence.unsubscribe();
+    }
+    if (subscriptionsRef.current.invitations) {
+      subscriptionsRef.current.invitations.unsubscribe();
+    }
+    
+    // Set up presence subscription with debounced refetch
+    subscriptionsRef.current.presence = friendsService.subscribeToFriendPresence(user.id, (presence) => {
       console.log('👥 Friend presence updated:', presence);
-      // Simple refetch without cascading effects
-      setTimeout(() => refetchFriends(), 100);
+      // Debounced refetch to prevent rapid fire updates
+      setTimeout(() => {
+        try {
+          stableRefetchFriends();
+        } catch (error) {
+          console.error('Error refetching friends after presence update:', error);
+        }
+      }, 500);
     });
     
-    // Set up invitations subscription
-    const invitationsChannel = friendsService.subscribeToFriendInvitations(user.id, (invitation) => {
+    // Set up invitations subscription with debounced refetch
+    subscriptionsRef.current.invitations = friendsService.subscribeToFriendInvitations(user.id, (invitation) => {
       console.log('📨 Friend invitation updated:', invitation);
-      // Simple refetch without cascading effects
-      setTimeout(() => refetchInvitations(), 100);
+      // Debounced refetch to prevent rapid fire updates
+      setTimeout(() => {
+        try {
+          stableRefetchInvitations();
+        } catch (error) {
+          console.error('Error refetching invitations after update:', error);
+        }
+      }, 500);
     });
 
     return () => {
       console.log('🧹 Cleaning up real-time subscriptions');
-      presenceChannel.unsubscribe();
-      invitationsChannel.unsubscribe();
+      if (subscriptionsRef.current.presence) {
+        subscriptionsRef.current.presence.unsubscribe();
+      }
+      if (subscriptionsRef.current.invitations) {
+        subscriptionsRef.current.invitations.unsubscribe();
+      }
+      subscriptionsRef.current = {};
     };
-  }, [user?.id]); // Removed refetch functions from dependencies
-
-  const handleRefetchFriends = useCallback(() => {
-    console.log('🔄 Manually refetching friends...');
-    refetchFriends();
-  }, [refetchFriends]);
-
-  const handleRefetchInvitations = useCallback(() => {
-    console.log('🔄 Manually refetching invitations...');
-    refetchInvitations();
-  }, [refetchInvitations]);
+  }, [user?.id, stableRefetchFriends, stableRefetchInvitations]);
 
   return {
     friends,
@@ -72,7 +95,7 @@ export const useFriendsData = () => {
     invitations,
     invitationsLoading,
     invitationsError,
-    handleRefetchFriends,
-    handleRefetchInvitations
+    handleRefetchFriends: stableRefetchFriends,
+    handleRefetchInvitations: stableRefetchInvitations
   };
 };

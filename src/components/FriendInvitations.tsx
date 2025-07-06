@@ -7,6 +7,7 @@ import { Separator } from '@/components/ui/separator';
 import { Check, X, Clock, Mail, Phone, User } from 'lucide-react';
 import { friendsService } from '@/services/friendsService';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import type { FriendInvitationWithProfile } from '@/types/database';
 
 interface FriendInvitationsProps {
@@ -20,6 +21,7 @@ const FriendInvitations: React.FC<FriendInvitationsProps> = ({
 }) => {
   const [loading, setLoading] = useState<string | null>(null);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleRespondToInvitation = async (invitationId: string, status: 'accepted' | 'declined') => {
     setLoading(invitationId);
@@ -35,6 +37,7 @@ const FriendInvitations: React.FC<FriendInvitationsProps> = ({
         onInvitationUpdated();
       }
     } catch (error) {
+      console.error('Error responding to invitation:', error);
       toast({
         title: "Failed to Respond",
         description: "Could not respond to invitation. Please try again.",
@@ -64,8 +67,14 @@ const FriendInvitations: React.FC<FriendInvitationsProps> = ({
     return name ? name.charAt(0).toUpperCase() : '?';
   };
 
-  const sentInvitations = invitations.filter(inv => inv.inviter_id !== inv.invitee_id);
-  const receivedInvitations = invitations.filter(inv => inv.inviter_id !== inv.invitee_id);
+  // Fixed filtering logic - properly separate sent vs received invitations
+  const sentInvitations = invitations.filter(inv => inv.inviter_id === user?.id);
+  const receivedInvitations = invitations.filter(inv => inv.inviter_id !== user?.id);
+
+  console.log('Current user ID:', user?.id);
+  console.log('Total invitations:', invitations.length);
+  console.log('Sent invitations:', sentInvitations.length);
+  console.log('Received invitations:', receivedInvitations.length);
 
   if (invitations.length === 0) {
     return (
