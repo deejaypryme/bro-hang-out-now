@@ -41,6 +41,9 @@
     "@radix-ui/react-tooltip": "^1.1.4",
     "@supabase/supabase-js": "^2.50.0",
     "@tanstack/react-query": "^5.56.2",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/validator": "^13.15.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -49,6 +52,7 @@
     "date-fns-tz": "^3.2.0",
     "embla-carousel-react": "^8.3.0",
     "framer-motion": "^12.17.3",
+    "happy-dom": "^18.0.1",
     "ics": "^3.8.1",
     "input-otp": "^1.2.4",
     "lucide-react": "^0.462.0",
@@ -65,6 +69,7 @@
     "tailwindcss-animate": "^1.0.7",
     "validator": "^13.15.15",
     "vaul": "^0.9.3",
+    "vitest": "^3.2.4",
     "zod": "^3.23.8"
   },
   "devDependencies": {
