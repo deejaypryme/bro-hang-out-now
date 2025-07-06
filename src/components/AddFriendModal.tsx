@@ -1,14 +1,16 @@
 
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Mail, Phone, User, Search, AlertCircle } from 'lucide-react';
+import { Plus, Mail, Phone, User, Search, AlertCircle, CheckCircle } from 'lucide-react';
 import { friendsService } from '@/services/friendsService';
 import { useToast } from '@/hooks/use-toast';
+import validator from 'validator';
 import type { Profile } from '@/types/database';
 
 interface AddFriendModalProps {
@@ -30,18 +32,31 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
   // Validation states
   const [emailError, setEmailError] = useState('');
   const [phoneError, setPhoneError] = useState('');
+  const [searchError, setSearchError] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+  }>({ open: false, title: '', description: '', action: () => {} });
 
-  // Validation functions
+  // Enhanced validation functions using validator library
   const validateEmail = (emailValue: string) => {
     if (!emailValue) {
       setEmailError('');
       return true;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailValue)) {
-      setEmailError('Please enter a valid email address');
+    
+    if (!validator.isEmail(emailValue)) {
+      setEmailError('Please enter a valid email address (e.g., user@example.com)');
       return false;
     }
+    
+    if (emailValue.length > 254) {
+      setEmailError('Email address is too long (maximum 254 characters)');
+      return false;
+    }
+    
     setEmailError('');
     return true;
   };
@@ -51,13 +66,40 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
       setPhoneError('');
       return true;
     }
-    const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-    const cleanPhone = phoneValue.replace(/[\s\-\(\)]/g, '');
-    if (!phoneRegex.test(cleanPhone)) {
-      setPhoneError('Please enter a valid phone number');
+    
+    const cleanPhone = phoneValue.replace(/[\s\-\(\)\.]/g, '');
+    
+    if (!validator.isMobilePhone(cleanPhone, 'any', { strictMode: false })) {
+      setPhoneError('Please enter a valid phone number (e.g., +1234567890)');
       return false;
     }
+    
+    if (cleanPhone.length > 15) {
+      setPhoneError('Phone number is too long (maximum 15 digits)');
+      return false;
+    }
+    
     setPhoneError('');
+    return true;
+  };
+
+  const validateSearchQuery = (query: string) => {
+    if (!query.trim()) {
+      setSearchError('Search query cannot be empty');
+      return false;
+    }
+    
+    if (query.trim().length < 2) {
+      setSearchError('Search query must be at least 2 characters');
+      return false;
+    }
+    
+    if (query.length > 50) {
+      setSearchError('Search query is too long (maximum 50 characters)');
+      return false;
+    }
+    
+    setSearchError('');
     return true;
   };
 
@@ -74,17 +116,20 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
   };
 
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    if (!validateSearchQuery(searchQuery)) return;
     
     setLoading(true);
     try {
-      const results = await friendsService.searchUsers(searchQuery);
+      const results = await friendsService.searchUsers(searchQuery.trim());
       setSearchResults(results);
+      setSearchError('');
     } catch (error) {
       console.error('Search error:', error);
+      const errorMessage = error instanceof Error ? error.message : "Could not search for users. Please try again.";
+      setSearchError(errorMessage);
       toast({
         title: "Search Failed",
-        description: error instanceof Error ? error.message : "Could not search for users. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -92,8 +137,31 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
     }
   };
 
+  const confirmSendInvitation = (type: 'email' | 'phone' | 'user', targetId?: string, targetName?: string) => {
+    let description = '';
+    let recipient = '';
+    
+    if (type === 'email') {
+      recipient = email.trim();
+      description = `Send a friend invitation to ${recipient}?`;
+    } else if (type === 'phone') {
+      recipient = phone.trim();
+      description = `Send a friend invitation via SMS to ${recipient}?`;
+    } else if (type === 'user' && targetName) {
+      recipient = targetName;
+      description = `Send a friend invitation to ${recipient}?`;
+    }
+    
+    setConfirmDialog({
+      open: true,
+      title: 'Confirm Friend Invitation',
+      description,
+      action: () => handleSendInvitation(type, targetId)
+    });
+  };
+
   const handleSendInvitation = async (type: 'email' | 'phone' | 'user', targetId?: string) => {
-    // Validate inputs before sending
+    // Enhanced validation before sending
     if (type === 'email') {
       if (!email.trim()) {
         toast({
@@ -103,7 +171,7 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
         });
         return;
       }
-      if (!validateEmail(email)) {
+      if (!validateEmail(email.trim())) {
         return;
       }
     } else if (type === 'phone') {
@@ -115,7 +183,7 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
         });
         return;
       }
-      if (!validatePhone(phone)) {
+      if (!validatePhone(phone.trim())) {
         return;
       }
     } else if (type === 'user' && !targetId) {
@@ -129,12 +197,15 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
 
     setLoading(true);
     try {
-      const invitationData: any = { message: message.trim() || undefined };
+      const invitationData: any = { 
+        message: message.trim() || undefined 
+      };
       
       if (type === 'email') {
-        invitationData.inviteeEmail = email.trim();
+        invitationData.inviteeEmail = validator.normalizeEmail(email.trim());
       } else if (type === 'phone') {
-        invitationData.inviteePhone = phone.trim();
+        const cleanPhone = phone.trim().replace(/[\s\-\(\)\.]/g, '');
+        invitationData.inviteePhone = cleanPhone;
       } else if (type === 'user' && targetId) {
         invitationData.inviteeId = targetId;
       }
@@ -146,7 +217,7 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
         description: `Friend invitation has been sent successfully.`
       });
 
-      // Reset form
+      // Reset form with all validation states
       setEmail('');
       setPhone('');
       setMessage('');
@@ -154,6 +225,7 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
       setSearchResults([]);
       setEmailError('');
       setPhoneError('');
+      setSearchError('');
       setOpen(false);
       
       if (onFriendAdded) {
@@ -174,6 +246,7 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
       });
     } finally {
       setLoading(false);
+      setConfirmDialog(prev => ({ ...prev, open: false }));
     }
   };
 
@@ -209,13 +282,23 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
                   id="search"
                   placeholder="Enter name or username..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    validateSearchQuery(e.target.value);
+                  }}
                   onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className={searchError ? 'border-red-500' : ''}
                 />
-                <Button onClick={handleSearch} disabled={loading} size="sm">
+                <Button onClick={handleSearch} disabled={loading || !!searchError} size="sm">
                   <Search className="w-4 h-4" />
                 </Button>
               </div>
+              {searchError && (
+                <div className="flex items-center gap-1 text-sm text-red-500">
+                  <AlertCircle className="w-4 h-4" />
+                  {searchError}
+                </div>
+              )}
             </div>
             
             {searchResults.length > 0 && (
@@ -233,7 +316,7 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
                     </div>
                     <Button 
                       size="sm" 
-                      onClick={() => handleSendInvitation('user', user.id)}
+                      onClick={() => confirmSendInvitation('user', user.id, user.full_name || user.username)}
                       disabled={loading}
                     >
                       <User className="w-4 h-4 mr-1" />
@@ -254,17 +337,22 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
                 placeholder="friend@example.com"
                 value={email}
                 onChange={handleEmailChange}
-                className={emailError ? 'border-red-500' : ''}
+                className={emailError ? 'border-red-500' : (email && !emailError ? 'border-green-500' : '')}
               />
-              {emailError && (
+              {emailError ? (
                 <div className="flex items-center gap-1 text-sm text-red-500">
                   <AlertCircle className="w-4 h-4" />
                   {emailError}
                 </div>
-              )}
+              ) : email && !emailError ? (
+                <div className="flex items-center gap-1 text-sm text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                  Valid email address
+                </div>
+              ) : null}
             </div>
             <Button 
-              onClick={() => handleSendInvitation('email')} 
+              onClick={() => confirmSendInvitation('email')} 
               disabled={loading || !email || !!emailError}
               className="w-full"
             >
@@ -282,17 +370,22 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
                 placeholder="+1 (555) 123-4567"
                 value={phone}
                 onChange={handlePhoneChange}
-                className={phoneError ? 'border-red-500' : ''}
+                className={phoneError ? 'border-red-500' : (phone && !phoneError ? 'border-green-500' : '')}
               />
-              {phoneError && (
+              {phoneError ? (
                 <div className="flex items-center gap-1 text-sm text-red-500">
                   <AlertCircle className="w-4 h-4" />
                   {phoneError}
                 </div>
-              )}
+              ) : phone && !phoneError ? (
+                <div className="flex items-center gap-1 text-sm text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                  Valid phone number
+                </div>
+              ) : null}
             </div>
             <Button 
-              onClick={() => handleSendInvitation('phone')} 
+              onClick={() => confirmSendInvitation('phone')} 
               disabled={loading || !phone || !!phoneError}
               className="w-full"
             >
@@ -312,6 +405,19 @@ const AddFriendModal: React.FC<AddFriendModalProps> = ({ onFriendAdded }) => {
             rows={3}
           />
         </div>
+        
+        <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
+              <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmDialog.action}>Send Invitation</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );

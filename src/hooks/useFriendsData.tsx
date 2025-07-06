@@ -36,48 +36,103 @@ export const useFriendsData = () => {
     };
   }, [user?.id, updatePresence]);
 
-  // Simplified real-time subscriptions with proper cleanup
+  // Enhanced real-time subscriptions with reconnection logic
   useEffect(() => {
     if (!user?.id) return;
 
-    console.log('📡 Setting up real-time subscriptions for user:', user.id);
+    console.log('📡 Setting up enhanced real-time subscriptions for user:', user.id);
     
-    // Clean up existing subscriptions first
-    if (subscriptionsRef.current.presence) {
-      subscriptionsRef.current.presence.unsubscribe();
-    }
-    if (subscriptionsRef.current.invitations) {
-      subscriptionsRef.current.invitations.unsubscribe();
-    }
-    
-    // Set up presence subscription with debounced refetch
-    subscriptionsRef.current.presence = friendsService.subscribeToFriendPresence(user.id, (presence) => {
-      console.log('👥 Friend presence updated:', presence);
-      // Debounced refetch to prevent rapid fire updates
-      setTimeout(() => {
-        try {
-          stableRefetchFriends();
-        } catch (error) {
-          console.error('Error refetching friends after presence update:', error);
-        }
-      }, 500);
-    });
-    
-    // Set up invitations subscription with debounced refetch
-    subscriptionsRef.current.invitations = friendsService.subscribeToFriendInvitations(user.id, (invitation) => {
-      console.log('📨 Friend invitation updated:', invitation);
-      // Debounced refetch to prevent rapid fire updates
-      setTimeout(() => {
-        try {
-          stableRefetchInvitations();
-        } catch (error) {
-          console.error('Error refetching invitations after update:', error);
-        }
-      }, 500);
+    const connectionStates = useRef({
+      presenceConnected: false,
+      invitationsConnected: false,
+      retryCount: 0,
+      maxRetries: 5
     });
 
+    const exponentialBackoff = (attempt: number) => Math.min(1000 * Math.pow(2, attempt), 30000);
+    
+    const setupSubscription = async (type: 'presence' | 'invitations', attempt = 0) => {
+      try {
+        // Clean up existing subscription
+        if (subscriptionsRef.current[type]) {
+          subscriptionsRef.current[type].unsubscribe();
+        }
+
+        let subscription;
+        if (type === 'presence') {
+          subscription = friendsService.subscribeToFriendPresence(user.id, (presence) => {
+            console.log('👥 Friend presence updated:', presence);
+            connectionStates.current.presenceConnected = true;
+            connectionStates.current.retryCount = 0;
+            
+            // Debounced refetch to prevent rapid fire updates
+            setTimeout(() => {
+              try {
+                stableRefetchFriends();
+              } catch (error) {
+                console.error('Error refetching friends after presence update:', error);
+              }
+            }, 500);
+          });
+        } else {
+          subscription = friendsService.subscribeToFriendInvitations(user.id, (invitation) => {
+            console.log('📨 Friend invitation updated:', invitation);
+            connectionStates.current.invitationsConnected = true;
+            connectionStates.current.retryCount = 0;
+            
+            // Debounced refetch to prevent rapid fire updates
+            setTimeout(() => {
+              try {
+                stableRefetchInvitations();
+              } catch (error) {
+                console.error('Error refetching invitations after update:', error);
+              }
+            }, 500);
+          });
+        }
+
+        subscriptionsRef.current[type] = subscription;
+        console.log(`✅ ${type} subscription established (attempt ${attempt + 1})`);
+
+      } catch (error) {
+        console.error(`❌ ${type} subscription failed (attempt ${attempt + 1}):`, error);
+        
+        if (attempt < connectionStates.current.maxRetries) {
+          const delay = exponentialBackoff(attempt);
+          console.log(`🔄 Retrying ${type} subscription in ${delay}ms...`);
+          
+          setTimeout(() => {
+            setupSubscription(type, attempt + 1);
+          }, delay);
+        } else {
+          console.error(`💥 ${type} subscription failed after ${connectionStates.current.maxRetries} attempts`);
+        }
+      }
+    };
+
+    // Set up both subscriptions
+    setupSubscription('presence');
+    setupSubscription('invitations');
+
+    // Periodic health check and reconnection
+    const healthCheckInterval = setInterval(() => {
+      console.log('🏥 Health check - Presence:', connectionStates.current.presenceConnected, 'Invitations:', connectionStates.current.invitationsConnected);
+      
+      if (!connectionStates.current.presenceConnected && connectionStates.current.retryCount < connectionStates.current.maxRetries) {
+        console.log('🔄 Reconnecting presence subscription...');
+        setupSubscription('presence');
+      }
+      
+      if (!connectionStates.current.invitationsConnected && connectionStates.current.retryCount < connectionStates.current.maxRetries) {
+        console.log('🔄 Reconnecting invitations subscription...');
+        setupSubscription('invitations');
+      }
+    }, 30000); // Check every 30 seconds
+
     return () => {
-      console.log('🧹 Cleaning up real-time subscriptions');
+      console.log('🧹 Cleaning up enhanced real-time subscriptions');
+      clearInterval(healthCheckInterval);
+      
       if (subscriptionsRef.current.presence) {
         subscriptionsRef.current.presence.unsubscribe();
       }

@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
-import { Search, User, UserPlus, Check } from 'lucide-react';
+import { Search, User, UserPlus, Check, AlertCircle } from 'lucide-react';
+import validator from 'validator';
 
 interface UserSearchResult {
   id: string;
@@ -20,21 +22,61 @@ const SimpleFriendSearch: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [sendingTo, setSendingTo] = useState<string | null>(null);
   const [sentRequests, setSentRequests] = useState<Set<string>>(new Set());
+  const [queryError, setQueryError] = useState('');
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+  }>({ open: false, title: '', description: '', action: () => {} });
+
+  const validateQuery = (searchQuery: string) => {
+    if (!searchQuery.trim()) {
+      setQueryError('');
+      return true;
+    }
+    
+    if (searchQuery.trim().length < 2) {
+      setQueryError('Search must be at least 2 characters');
+      return false;
+    }
+    
+    if (searchQuery.length > 50) {
+      setQueryError('Search is too long (maximum 50 characters)');
+      return false;
+    }
+    
+    if (!/^[a-zA-Z0-9\s@._-]+$/.test(searchQuery)) {
+      setQueryError('Search contains invalid characters');
+      return false;
+    }
+    
+    setQueryError('');
+    return true;
+  };
 
   const searchUsers = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([]);
+      setQueryError('');
+      return;
+    }
+
+    if (!validateQuery(searchQuery)) {
       return;
     }
 
     setLoading(true);
     try {
-      const users = await simpleSocialService.searchUsersByUsername(searchQuery);
+      const users = await simpleSocialService.searchUsersByUsername(searchQuery.trim());
       setResults(users);
+      setQueryError('');
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to search users";
+      setQueryError(errorMessage);
       toast({
         title: "Search Error",
-        description: "Failed to search users",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
@@ -49,6 +91,16 @@ const SimpleFriendSearch: React.FC = () => {
 
     return () => clearTimeout(debounceTimer);
   }, [query]);
+
+  const confirmSendFriendRequest = (userId: string, username: string | null) => {
+    const displayName = username || 'this user';
+    setConfirmDialog({
+      open: true,
+      title: 'Send Friend Request',
+      description: `Send a friend request to @${displayName}? They'll be notified instantly.`,
+      action: () => sendFriendRequest(userId, username)
+    });
+  };
 
   const sendFriendRequest = async (userId: string, username: string | null) => {
     setSendingTo(userId);
@@ -67,6 +119,7 @@ const SimpleFriendSearch: React.FC = () => {
       });
     } finally {
       setSendingTo(null);
+      setConfirmDialog(prev => ({ ...prev, open: false }));
     }
   };
 
@@ -77,10 +130,19 @@ const SimpleFriendSearch: React.FC = () => {
         <Input
           placeholder="Search by username..."
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="pl-10"
+          onChange={(e) => {
+            setQuery(e.target.value);
+            validateQuery(e.target.value);
+          }}
+          className={`pl-10 ${queryError ? 'border-red-500' : ''}`}
         />
       </div>
+      {queryError && (
+        <div className="flex items-center gap-1 text-sm text-red-500">
+          <AlertCircle className="w-4 h-4" />
+          {queryError}
+        </div>
+      )}
 
       {loading && (
         <div className="flex items-center justify-center py-8">
@@ -120,7 +182,7 @@ const SimpleFriendSearch: React.FC = () => {
                   ) : (
                     <Button
                       size="sm"
-                      onClick={() => sendFriendRequest(user.id, user.username)}
+                      onClick={() => confirmSendFriendRequest(user.id, user.username)}
                       disabled={sendingTo === user.id}
                       className="flex items-center gap-2"
                     >
@@ -142,6 +204,19 @@ const SimpleFriendSearch: React.FC = () => {
           <p className="text-sm mt-2">Try searching by username</p>
         </div>
       )}
+      
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => setConfirmDialog(prev => ({ ...prev, open }))}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>{confirmDialog.description}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDialog.action}>Send Request</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
