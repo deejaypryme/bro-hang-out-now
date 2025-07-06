@@ -135,7 +135,8 @@ export const friendsService = {
       }
       
       console.log('✅ [friendsService] Search completed:', data?.length || 0, 'results');
-      return data || [];
+      // Ensure we always return an array, never null/undefined
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('❌ [friendsService] Search users failed:', error);
       throw error;
@@ -361,6 +362,7 @@ export const friendsService = {
 
       if (!invitations?.length) {
         console.log('ℹ️ [friendsService] No invitations found');
+        // Always return an array, never null/undefined
         return [];
       }
 
@@ -496,6 +498,7 @@ export const friendsService = {
 
       if (!friendships?.length) {
         console.log('ℹ️ [friendsService] No friendships found');
+        // Always return an array, never null/undefined  
         return [];
       }
 

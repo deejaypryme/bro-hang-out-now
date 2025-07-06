@@ -183,7 +183,9 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message 
+        error: error.message,
+        message: error.message, // Consistent with frontend expectations
+        data: null // Consistent data field
       }),
       {
         status: 500,
