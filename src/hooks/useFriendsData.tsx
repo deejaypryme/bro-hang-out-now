@@ -9,6 +9,12 @@ export const useFriendsData = () => {
   const { data: invitations = [], isLoading: invitationsLoading, error: invitationsError, refetch: refetchInvitations } = useFriendInvitations();
   const updatePresence = useUpdateUserPresence();
   const subscriptionsRef = useRef<{ presence?: any; invitations?: any }>({});
+  const connectionStatesRef = useRef({
+    presenceConnected: false,
+    invitationsConnected: false,
+    retryCount: 0,
+    maxRetries: 5
+  });
 
   // Stabilized refetch functions to prevent infinite loops
   const stableRefetchFriends = useCallback(() => {
@@ -42,13 +48,6 @@ export const useFriendsData = () => {
 
     console.log('📡 Setting up enhanced real-time subscriptions for user:', user.id);
     
-    const connectionStates = useRef({
-      presenceConnected: false,
-      invitationsConnected: false,
-      retryCount: 0,
-      maxRetries: 5
-    });
-
     const exponentialBackoff = (attempt: number) => Math.min(1000 * Math.pow(2, attempt), 30000);
     
     const setupSubscription = async (type: 'presence' | 'invitations', attempt = 0) => {
@@ -62,8 +61,8 @@ export const useFriendsData = () => {
         if (type === 'presence') {
           subscription = friendsService.subscribeToFriendPresence(user.id, (presence) => {
             console.log('👥 Friend presence updated:', presence);
-            connectionStates.current.presenceConnected = true;
-            connectionStates.current.retryCount = 0;
+            connectionStatesRef.current.presenceConnected = true;
+            connectionStatesRef.current.retryCount = 0;
             
             // Debounced refetch to prevent rapid fire updates
             setTimeout(() => {
@@ -77,8 +76,8 @@ export const useFriendsData = () => {
         } else {
           subscription = friendsService.subscribeToFriendInvitations(user.id, (invitation) => {
             console.log('📨 Friend invitation updated:', invitation);
-            connectionStates.current.invitationsConnected = true;
-            connectionStates.current.retryCount = 0;
+            connectionStatesRef.current.invitationsConnected = true;
+            connectionStatesRef.current.retryCount = 0;
             
             // Debounced refetch to prevent rapid fire updates
             setTimeout(() => {
@@ -97,7 +96,7 @@ export const useFriendsData = () => {
       } catch (error) {
         console.error(`❌ ${type} subscription failed (attempt ${attempt + 1}):`, error);
         
-        if (attempt < connectionStates.current.maxRetries) {
+        if (attempt < connectionStatesRef.current.maxRetries) {
           const delay = exponentialBackoff(attempt);
           console.log(`🔄 Retrying ${type} subscription in ${delay}ms...`);
           
@@ -105,7 +104,7 @@ export const useFriendsData = () => {
             setupSubscription(type, attempt + 1);
           }, delay);
         } else {
-          console.error(`💥 ${type} subscription failed after ${connectionStates.current.maxRetries} attempts`);
+          console.error(`💥 ${type} subscription failed after ${connectionStatesRef.current.maxRetries} attempts`);
         }
       }
     };
@@ -116,14 +115,14 @@ export const useFriendsData = () => {
 
     // Periodic health check and reconnection
     const healthCheckInterval = setInterval(() => {
-      console.log('🏥 Health check - Presence:', connectionStates.current.presenceConnected, 'Invitations:', connectionStates.current.invitationsConnected);
+      console.log('🏥 Health check - Presence:', connectionStatesRef.current.presenceConnected, 'Invitations:', connectionStatesRef.current.invitationsConnected);
       
-      if (!connectionStates.current.presenceConnected && connectionStates.current.retryCount < connectionStates.current.maxRetries) {
+      if (!connectionStatesRef.current.presenceConnected && connectionStatesRef.current.retryCount < connectionStatesRef.current.maxRetries) {
         console.log('🔄 Reconnecting presence subscription...');
         setupSubscription('presence');
       }
       
-      if (!connectionStates.current.invitationsConnected && connectionStates.current.retryCount < connectionStates.current.maxRetries) {
+      if (!connectionStatesRef.current.invitationsConnected && connectionStatesRef.current.retryCount < connectionStatesRef.current.maxRetries) {
         console.log('🔄 Reconnecting invitations subscription...');
         setupSubscription('invitations');
       }
