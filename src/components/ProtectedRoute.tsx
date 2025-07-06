@@ -8,10 +8,15 @@ interface ProtectedRouteProps {
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
+  console.log('🔒 [ProtectedRoute] Checking authentication...');
+  
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  console.log('🔒 [ProtectedRoute] Auth state:', { hasUser: !!user, loading });
+
   if (loading) {
+    console.log('🔒 [ProtectedRoute] Still loading, showing loading screen...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -25,10 +30,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!user) {
+    console.log('🔒 [ProtectedRoute] No user found, redirecting to login...');
     // Redirect to login page with return url
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  console.log('🔒 [ProtectedRoute] User authenticated, rendering children...');
   return <>{children}</>;
 };
 

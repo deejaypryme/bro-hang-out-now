@@ -18,47 +18,59 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  console.log('🔐 [AuthProvider] Initializing...');
+  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Separate effect for profile loading to avoid circular dependencies
   useEffect(() => {
+    if (user && !profile) {
+      console.log('👤 [AuthProvider] Loading user profile...');
+      profileService.getProfile(user.id)
+        .then(userProfile => {
+          console.log('✅ [AuthProvider] Profile loaded successfully');
+          setProfile(userProfile);
+        })
+        .catch(error => {
+          console.error('❌ [AuthProvider] Error loading profile:', error);
+        });
+    } else if (!user) {
+      setProfile(null);
+    }
+  }, [user, profile]);
+
+  useEffect(() => {
+    console.log('🔐 [AuthProvider] Setting up auth state listener...');
+    
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
+        console.log('🔐 [AuthProvider] Auth state changed:', event, !!session);
         setSession(session);
         setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Fetch user profile
-          setTimeout(async () => {
-            try {
-              const userProfile = await profileService.getProfile(session.user.id);
-              setProfile(userProfile);
-            } catch (error) {
-              console.error('Error fetching profile:', error);
-            }
-          }, 0);
-        } else {
-          setProfile(null);
-        }
-        
         setLoading(false);
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔐 [AuthProvider] Initial session check:', !!session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('🔐 [AuthProvider] Cleaning up auth listener...');
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, metadata?: any) => {
+    console.log('🔐 [AuthProvider] Signing up user...');
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -70,20 +82,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
     
+    if (error) {
+      console.error('❌ [AuthProvider] Sign up error:', error);
+    } else {
+      console.log('✅ [AuthProvider] Sign up successful');
+    }
+    
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
+    console.log('🔐 [AuthProvider] Signing in user...');
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
     
+    if (error) {
+      console.error('❌ [AuthProvider] Sign in error:', error);
+    } else {
+      console.log('✅ [AuthProvider] Sign in successful');
+    }
+    
     return { error };
   };
 
   const signOut = async () => {
+    console.log('🔐 [AuthProvider] Signing out user...');
     const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('❌ [AuthProvider] Sign out error:', error);
+    } else {
+      console.log('✅ [AuthProvider] Sign out successful');
+    }
     return { error };
   };
 
@@ -96,6 +127,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signOut
   };
+
+  console.log('🔐 [AuthProvider] Rendering with state:', { 
+    hasUser: !!user, 
+    hasSession: !!session, 
+    hasProfile: !!profile, 
+    loading 
+  });
 
   return (
     <AuthContext.Provider value={value}>

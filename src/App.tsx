@@ -18,9 +18,13 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import HangoutResponse from './components/HangoutResponse';
 
+console.log('📱 [App] Starting App component initialization...');
+
 const queryClient = new QueryClient();
 
 function App() {
+  console.log('📱 [App] Rendering App component...');
+  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
