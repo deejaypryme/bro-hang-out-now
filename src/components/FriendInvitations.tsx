@@ -16,12 +16,15 @@ interface FriendInvitationsProps {
 }
 
 const FriendInvitations: React.FC<FriendInvitationsProps> = ({ 
-  invitations, 
+  invitations = [], 
   onInvitationUpdated 
 }) => {
   const [loading, setLoading] = useState<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  
+  // Defensive data handling
+  const safeInvitations = Array.isArray(invitations) ? invitations : [];
 
   const handleRespondToInvitation = async (invitationId: string, status: 'accepted' | 'declined') => {
     setLoading(invitationId);
@@ -68,15 +71,15 @@ const FriendInvitations: React.FC<FriendInvitationsProps> = ({
   };
 
   // Fixed filtering logic - properly separate sent vs received invitations
-  const sentInvitations = invitations.filter(inv => inv.inviter_id === user?.id);
-  const receivedInvitations = invitations.filter(inv => inv.inviter_id !== user?.id);
+  const sentInvitations = safeInvitations.filter(inv => inv.inviter_id === user?.id);
+  const receivedInvitations = safeInvitations.filter(inv => inv.inviter_id !== user?.id);
 
   console.log('Current user ID:', user?.id);
-  console.log('Total invitations:', invitations.length);
+  console.log('Total invitations:', safeInvitations.length);
   console.log('Sent invitations:', sentInvitations.length);
   console.log('Received invitations:', receivedInvitations.length);
 
-  if (invitations.length === 0) {
+  if (safeInvitations.length === 0) {
     return (
       <Card>
         <CardContent className="text-center py-8">

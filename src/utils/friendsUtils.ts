@@ -23,9 +23,12 @@ export const getAvatarFallback = (name: string): string => {
 };
 
 export const categorizeFriends = (friends: FriendWithProfile[]) => {
-  const favoriteFriends = friends.filter(friend => friend.favorite);
-  const onlineFriends = friends.filter(friend => friend.status === 'online' && !friend.favorite);
-  const offlineFriends = friends.filter(friend => friend.status !== 'online' && !friend.favorite);
+  // Defensive data handling
+  const safeFriends = Array.isArray(friends) ? friends : [];
+  
+  const favoriteFriends = safeFriends.filter(friend => friend.favorite);
+  const onlineFriends = safeFriends.filter(friend => friend.status === 'online' && !friend.favorite);
+  const offlineFriends = safeFriends.filter(friend => friend.status !== 'online' && !friend.favorite);
   
   return { favoriteFriends, onlineFriends, offlineFriends };
 };

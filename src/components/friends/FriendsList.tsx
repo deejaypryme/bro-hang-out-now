@@ -11,11 +11,21 @@ interface FriendsListProps {
   onFriendClick: (friend: FriendWithProfile) => void;
 }
 
-const FriendsList = ({ favoriteFriends, onlineFriends, offlineFriends, onFriendClick }: FriendsListProps) => {
+const FriendsList = ({ 
+  favoriteFriends = [], 
+  onlineFriends = [], 
+  offlineFriends = [], 
+  onFriendClick 
+}: FriendsListProps) => {
+  // Defensive data handling
+  const safeFavoriteFriends = Array.isArray(favoriteFriends) ? favoriteFriends : [];
+  const safeOnlineFriends = Array.isArray(onlineFriends) ? onlineFriends : [];
+  const safeOfflineFriends = Array.isArray(offlineFriends) ? offlineFriends : [];
+  
   return (
     <div className="space-y-bro-xl">
       {/* Favorite Friends */}
-      {favoriteFriends.length > 0 && (
+      {safeFavoriteFriends.length > 0 && (
         <Card variant="glass" className="shadow-xl border-white/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-bro-sm typo-title-md text-primary-navy">
@@ -24,7 +34,7 @@ const FriendsList = ({ favoriteFriends, onlineFriends, offlineFriends, onFriendC
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-bro-md">
-            {favoriteFriends.map((friend) => (
+            {safeFavoriteFriends.map((friend) => (
               <FriendCard
                 key={friend.id}
                 friend={friend}
@@ -37,16 +47,16 @@ const FriendsList = ({ favoriteFriends, onlineFriends, offlineFriends, onFriendC
       )}
 
       {/* Online Friends */}
-      {onlineFriends.length > 0 && (
+      {safeOnlineFriends.length > 0 && (
         <Card variant="glass" className="shadow-xl border-white/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-bro-sm typo-title-md text-primary-navy">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              Online ({onlineFriends.length})
+              Online ({safeOnlineFriends.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-bro-md">
-            {onlineFriends.map((friend) => (
+            {safeOnlineFriends.map((friend) => (
               <FriendCard
                 key={friend.id}
                 friend={friend}
@@ -59,16 +69,16 @@ const FriendsList = ({ favoriteFriends, onlineFriends, offlineFriends, onFriendC
       )}
 
       {/* Offline Friends */}
-      {offlineFriends.length > 0 && (
+      {safeOfflineFriends.length > 0 && (
         <Card variant="glass" className="shadow-xl border-white/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-bro-sm typo-title-md text-primary-navy">
               <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-              Offline ({offlineFriends.length})
+              Offline ({safeOfflineFriends.length})
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-bro-md">
-            {offlineFriends.map((friend) => (
+            {safeOfflineFriends.map((friend) => (
               <FriendCard
                 key={friend.id}
                 friend={friend}

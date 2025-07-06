@@ -12,11 +12,14 @@ interface InvitationsTabProps {
 }
 
 const InvitationsTab = ({
-  invitations,
+  invitations = [],
   invitationsError,
   onRetry,
   onInvitationUpdated
 }: InvitationsTabProps) => {
+  // Defensive data handling
+  const safeInvitations = Array.isArray(invitations) ? invitations : [];
+  
   return (
     <ErrorBoundary>
       {invitationsError ? (
@@ -26,7 +29,7 @@ const InvitationsTab = ({
         />
       ) : (
         <FriendInvitations 
-          invitations={invitations} 
+          invitations={safeInvitations} 
           onInvitationUpdated={onInvitationUpdated}
         />
       )}

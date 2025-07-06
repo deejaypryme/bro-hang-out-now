@@ -8,13 +8,17 @@ interface FriendsHeaderProps {
   onFriendAdded: () => void;
 }
 
-const FriendsHeader = ({ friends, onlineFriendsCount, onFriendAdded }: FriendsHeaderProps) => {
+const FriendsHeader = ({ friends = [], onlineFriendsCount = 0, onFriendAdded }: FriendsHeaderProps) => {
+  // Defensive check for friends data
+  const safeFriends = Array.isArray(friends) ? friends : [];
+  const safeOnlineCount = typeof onlineFriendsCount === 'number' ? onlineFriendsCount : 0;
+  
   return (
     <div className="flex items-center justify-between mb-bro-2xl">
       <div>
         <h1 className="typo-headline-lg text-white mb-bro-sm">Friends</h1>
         <p className="typo-body text-white/80">
-          {friends.length} friends • {onlineFriendsCount} online
+          {safeFriends.length} friends • {safeOnlineCount} online
         </p>
       </div>
       <AddFriendModal onFriendAdded={onFriendAdded} />

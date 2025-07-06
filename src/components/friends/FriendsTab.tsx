@@ -21,16 +21,20 @@ interface FriendsTabProps {
 }
 
 const FriendsTab = ({
-  friends,
-  filteredFriends,
+  friends = [],
+  filteredFriends = [],
   friendsError,
-  searchQuery,
+  searchQuery = '',
   onSearchChange,
   onFriendClick,
   onRetry,
   onFriendAdded
 }: FriendsTabProps) => {
-  const { favoriteFriends, onlineFriends, offlineFriends } = categorizeFriends(filteredFriends);
+  // Defensive data handling
+  const safeFriends = Array.isArray(friends) ? friends : [];
+  const safeFilteredFriends = Array.isArray(filteredFriends) ? filteredFriends : [];
+  
+  const { favoriteFriends, onlineFriends, offlineFriends } = categorizeFriends(safeFilteredFriends);
 
   return (
     <div className="space-y-bro-xl">
@@ -47,7 +51,7 @@ const FriendsTab = ({
               onSearchChange={onSearchChange}
             />
 
-            {friends.length === 0 ? (
+            {safeFriends.length === 0 ? (
               <Card variant="glass" className="shadow-xl border-white/20">
                 <CardContent className="text-center py-bro-4xl">
                   <Users className="w-16 h-16 text-accent-orange mx-auto mb-bro-lg" />
