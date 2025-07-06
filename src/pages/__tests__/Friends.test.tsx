@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/test-utils'
+import { screen, waitFor } from '@testing-library/dom'
+import { render, userEvent } from '@/test-utils'
 import Friends from '@/pages/Friends'
 import { mockUser, mockFriend, mockInvitation, mockApiError } from '@/test-utils'
 
@@ -104,8 +105,9 @@ describe('Friends Page', () => {
       expect(screen.getByText('Try Again')).toBeInTheDocument()
       
       // Test retry functionality
+      const { user } = render(<div/>)
       const tryAgainButton = screen.getByText('Try Again')
-      await userEvent.click(tryAgainButton)
+      await user.click(tryAgainButton)
       
       expect(mockRefetchFriends).toHaveBeenCalled()
       expect(mockRefetchInvitations).toHaveBeenCalled()

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@/test-utils'
+import { screen, waitFor } from '@testing-library/dom'
+import { render, userEvent } from '@/test-utils'
 import FriendInvitations from '@/components/FriendInvitations'
 import { mockUser, mockInvitation } from '@/test-utils'
 
