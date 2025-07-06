@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { friendsService } from '@/services/friendsService';
 import { useToast } from '@/hooks/use-toast';
+import { ConfirmationDialog } from '@/components/ConfirmationDialog';
 import type { FriendWithProfile } from '@/types/database';
 
 interface FriendProfileProps {
@@ -37,6 +38,9 @@ const FriendProfile: React.FC<FriendProfileProps> = ({
 }) => {
   const [notes, setNotes] = useState(friend?.notes || '');
   const [loading, setLoading] = useState(false);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
+  const [showBlockDialog, setShowBlockDialog] = useState(false);
+  const [optimisticHidden, setOptimisticHidden] = useState(false);
   const { toast } = useToast();
 
   React.useEffect(() => {
@@ -106,11 +110,10 @@ const FriendProfile: React.FC<FriendProfileProps> = ({
   };
 
   const handleRemoveFriend = async () => {
-    if (!confirm(`Are you sure you want to remove ${friend.full_name} from your friends?`)) {
-      return;
-    }
-
+    // Optimistic update
+    setOptimisticHidden(true);
     setLoading(true);
+    
     try {
       await friendsService.removeFriend(friend.friendshipId);
       toast({
@@ -120,6 +123,8 @@ const FriendProfile: React.FC<FriendProfileProps> = ({
       onOpenChange(false);
       if (onFriendUpdated) onFriendUpdated();
     } catch (error) {
+      // Revert optimistic update on error
+      setOptimisticHidden(false);
       toast({
         title: "Failed to Remove Friend",
         description: "Could not remove friend. Please try again.",
@@ -131,11 +136,10 @@ const FriendProfile: React.FC<FriendProfileProps> = ({
   };
 
   const handleBlockFriend = async () => {
-    if (!confirm(`Are you sure you want to block ${friend.full_name}? This will remove them from your friends and prevent future communication.`)) {
-      return;
-    }
-
+    // Optimistic update
+    setOptimisticHidden(true);
     setLoading(true);
+    
     try {
       await friendsService.blockFriend(friend.friendshipId, friend.id);
       toast({
@@ -145,6 +149,8 @@ const FriendProfile: React.FC<FriendProfileProps> = ({
       onOpenChange(false);
       if (onFriendUpdated) onFriendUpdated();
     } catch (error) {
+      // Revert optimistic update on error
+      setOptimisticHidden(false);
       toast({
         title: "Failed to Block Friend",
         description: "Could not block friend. Please try again.",
@@ -160,151 +166,181 @@ const FriendProfile: React.FC<FriendProfileProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>Friend Profile</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-6">
-          {/* Profile Header */}
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl font-semibold">
-                {getAvatarFallback(friend.full_name || friend.username || '')}
+    <>
+      <Dialog open={open && !optimisticHidden} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Friend Profile</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* ... keep existing code (all UI components) */}
+            
+            {/* Profile Header */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-16 h-16 bg-blue-500 rounded-full flex items-center justify-center text-white text-xl font-semibold">
+                  {getAvatarFallback(friend.full_name || friend.username || '')}
+                </div>
+                <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
               </div>
-              <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full border-2 border-white ${getStatusColor(friend.status)}`}></div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-lg font-semibold">{friend.full_name || friend.username}</h3>
+                  {friend.favorite && (
+                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                  )}
+                </div>
+                {friend.username && <p className="text-sm text-gray-500">@{friend.username}</p>}
+                <div className="flex items-center gap-2 mt-1">
+                  <Badge variant="outline" className="text-xs">
+                    {getStatusText(friend.status)}
+                  </Badge>
+                  {friend.customMessage && (
+                    <span className="text-xs text-gray-500">"{friend.customMessage}"</span>
+                  )}
+                </div>
+              </div>
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold">{friend.full_name || friend.username}</h3>
-                {friend.favorite && (
-                  <Star className="w-4 h-4 text-yellow-500 fill-current" />
+
+            <Separator />
+
+            {/* Friend Info */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                  <span className="text-gray-600">Friends since</span>
+                </div>
+                <span>{friend.friendshipDate.toLocaleDateString()}</span>
+                
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-gray-500" />
+                  <span className="text-gray-600">Last seen</span>
+                </div>
+                <span>{friend.lastSeen.toLocaleString()}</span>
+                
+                {friend.phone && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-gray-500" />
+                      <span className="text-gray-600">Phone</span>
+                    </div>
+                    <span>{friend.phone}</span>
+                  </>
                 )}
               </div>
-              {friend.username && <p className="text-sm text-gray-500">@{friend.username}</p>}
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant="outline" className="text-xs">
-                  {getStatusText(friend.status)}
-                </Badge>
-                {friend.customMessage && (
-                  <span className="text-xs text-gray-500">"{friend.customMessage}"</span>
-                )}
-              </div>
-            </div>
-          </div>
 
-          <Separator />
-
-          {/* Friend Info */}
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-600">Friends since</span>
-              </div>
-              <span>{friend.friendshipDate.toLocaleDateString()}</span>
-              
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-500" />
-                <span className="text-gray-600">Last seen</span>
-              </div>
-              <span>{friend.lastSeen.toLocaleString()}</span>
-              
-              {friend.phone && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-gray-500" />
-                    <span className="text-gray-600">Phone</span>
+              {friend.preferred_times.length > 0 && (
+                <div>
+                  <Label className="text-sm font-medium">Preferred Times</Label>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {friend.preferred_times.map((time, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {time}
+                      </Badge>
+                    ))}
                   </div>
-                  <span>{friend.phone}</span>
-                </>
+                </div>
               )}
             </div>
 
-            {friend.preferred_times.length > 0 && (
-              <div>
-                <Label className="text-sm font-medium">Preferred Times</Label>
-                <div className="flex flex-wrap gap-1 mt-1">
-                  {friend.preferred_times.map((time, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {time}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
+            <Separator />
+
+            {/* Notes Section */}
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                placeholder="Add personal notes about this friend..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+              />
+              <Button 
+                onClick={handleSaveNotes} 
+                disabled={loading || notes === friend.notes}
+                size="sm"
+                className="w-full"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Notes
+              </Button>
+            </div>
+
+            <Separator />
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                onClick={handleToggleFavorite}
+                disabled={loading}
+                className="flex items-center gap-2"
+              >
+                <Heart className={`w-4 h-4 ${friend.favorite ? 'fill-current text-red-500' : ''}`} />
+                {friend.favorite ? 'Unfavorite' : 'Favorite'}
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => {/* TODO: Open hangout creation */}}
+                className="flex items-center gap-2"
+              >
+                <MessageSquare className="w-4 h-4" />
+                Hang Out
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => setShowRemoveDialog(true)}
+                disabled={loading}
+                className="flex items-center gap-2 text-orange-600 hover:text-orange-700"
+              >
+                <UserMinus className="w-4 h-4" />
+                Remove
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={() => setShowBlockDialog(true)}
+                disabled={loading}
+                className="flex items-center gap-2 text-red-600 hover:text-red-700"
+              >
+                <UserX className="w-4 h-4" />
+                Block
+              </Button>
+            </div>
           </div>
+        </DialogContent>
+      </Dialog>
 
-          <Separator />
+      <ConfirmationDialog
+        open={showRemoveDialog}
+        onOpenChange={setShowRemoveDialog}
+        title="Remove Friend"
+        description={`Are you sure you want to remove ${friend.full_name} from your friends?`}
+        confirmText="Remove"
+        onConfirm={() => {
+          setShowRemoveDialog(false);
+          handleRemoveFriend();
+        }}
+        variant="default"
+      />
 
-          {/* Notes Section */}
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes</Label>
-            <Textarea
-              id="notes"
-              placeholder="Add personal notes about this friend..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-            />
-            <Button 
-              onClick={handleSaveNotes} 
-              disabled={loading || notes === friend.notes}
-              size="sm"
-              className="w-full"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              Save Notes
-            </Button>
-          </div>
-
-          <Separator />
-
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              variant="outline"
-              onClick={handleToggleFavorite}
-              disabled={loading}
-              className="flex items-center gap-2"
-            >
-              <Heart className={`w-4 h-4 ${friend.favorite ? 'fill-current text-red-500' : ''}`} />
-              {friend.favorite ? 'Unfavorite' : 'Favorite'}
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={() => {/* TODO: Open hangout creation */}}
-              className="flex items-center gap-2"
-            >
-              <MessageSquare className="w-4 h-4" />
-              Hang Out
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={handleRemoveFriend}
-              disabled={loading}
-              className="flex items-center gap-2 text-orange-600 hover:text-orange-700"
-            >
-              <UserMinus className="w-4 h-4" />
-              Remove
-            </Button>
-            
-            <Button
-              variant="outline"
-              onClick={handleBlockFriend}
-              disabled={loading}
-              className="flex items-center gap-2 text-red-600 hover:text-red-700"
-            >
-              <UserX className="w-4 h-4" />
-              Block
-            </Button>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <ConfirmationDialog
+        open={showBlockDialog}
+        onOpenChange={setShowBlockDialog}
+        title="Block Friend"
+        description={`Are you sure you want to block ${friend.full_name}? This will remove them from your friends and prevent future communication.`}
+        confirmText="Block"
+        onConfirm={() => {
+          setShowBlockDialog(false);
+          handleBlockFriend();
+        }}
+        variant="destructive"
+      />
+    </>
   );
 };
 
