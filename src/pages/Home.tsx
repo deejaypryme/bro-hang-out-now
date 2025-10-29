@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import QuickActionsSection from '../components/QuickActionsSection';
 import DashboardGrid from '../components/DashboardGrid';
 import ActivityFeed from '../components/ActivityFeed';
+import { DashboardSkeleton } from '../components/LoadingFallback';
 
 const Home = () => {
   const { user, loading: authLoading } = useAuth();
@@ -46,14 +47,9 @@ const Home = () => {
     return (
       <div className="min-h-screen hero-background">
         <Header userStats={userStats} />
-        <div className="flex items-center justify-center h-96">
-          <div className="text-center">
-            <div className="w-12 h-12 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-2xl text-white mx-auto mb-bro-lg animate-pulse shadow-lg">
-              👊
-            </div>
-            <p className="typo-body text-white/80">Loading your data...</p>
-          </div>
-        </div>
+        <main className="max-w-6xl mx-auto py-bro-2xl">
+          <DashboardSkeleton />
+        </main>
       </div>
     );
   }

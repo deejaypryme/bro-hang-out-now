@@ -10,14 +10,17 @@ import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { Settings, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useHangouts } from '../hooks/useDatabase';
+import { CalendarSkeleton } from '../components/LoadingFallback';
 import type { Hangout } from '../types/database';
+import { useNavigate } from 'react-router-dom';
 
 const Calendar = () => {
+  const navigate = useNavigate();
   const [showSettings, setShowSettings] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   
   // Get real hangouts data
-  const { data: hangouts = [] } = useHangouts();
+  const { data: hangouts = [], isLoading: hangoutsLoading } = useHangouts();
   
   // Filter hangouts for selected date
   const selectedDateHangouts = selectedDate
@@ -72,6 +75,45 @@ const Calendar = () => {
               <Card variant="glass" className="shadow-2xl border-white/20">
                 <CardContent className="pt-bro-lg">
                   <CalendarIntegrationSettings />
+                </CardContent>
+              </Card>
+            ) : hangoutsLoading ? (
+              <Card variant="glass" className="shadow-2xl border-white/20">
+                <CardContent className="p-bro-lg">
+                  <CalendarSkeleton />
+                </CardContent>
+              </Card>
+            ) : hangouts.length === 0 ? (
+              <Card variant="glass" className="shadow-2xl border-white/20 text-center py-bro-4xl">
+                <CardContent>
+                  <div className="text-8xl mb-bro-xl animate-pulse">📅</div>
+                  <h3 className="typo-headline-md text-primary-navy mb-bro-md">Your Calendar is Empty</h3>
+                  <p className="typo-body text-text-secondary mb-bro-xl max-w-md mx-auto">
+                    No hangouts scheduled yet. Start by sending your first "Bro You Free?" invite!
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-bro-md justify-center items-center">
+                    <Button 
+                      onClick={() => navigate('/invite')} 
+                      variant="default"
+                      size="lg"
+                      className="shadow-xl"
+                    >
+                      <CalendarIcon className="w-4 h-4 mr-bro-sm" />
+                      Schedule Hangout
+                    </Button>
+                    <Button 
+                      onClick={() => navigate('/friends')} 
+                      variant="outline"
+                      size="lg"
+                    >
+                      Add Friends First
+                    </Button>
+                  </div>
+                  <div className="mt-bro-xl pt-bro-xl border-t border-white/20">
+                    <p className="typo-mono text-text-muted text-sm">
+                      💡 Tip: Once you have hangouts scheduled, they'll appear on this calendar
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             ) : (

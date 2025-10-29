@@ -52,12 +52,19 @@ const FriendsTab = ({
             />
 
             {safeFriends.length === 0 ? (
-              <Card variant="glass" className="shadow-xl border-white/20">
-                <CardContent className="text-center py-bro-4xl">
-                  <Users className="w-16 h-16 text-accent-orange mx-auto mb-bro-lg" />
-                  <h3 className="typo-title-lg text-primary-navy mb-bro-sm">No Friends Yet</h3>
-                  <p className="typo-body text-text-secondary mb-bro-xl">Start building your network by adding friends!</p>
+              <Card variant="glass" className="shadow-xl border-white/20 text-center py-bro-4xl">
+                <CardContent>
+                  <div className="text-8xl mb-bro-lg animate-pulse">👥</div>
+                  <h3 className="typo-headline-md text-primary-navy mb-bro-md">Your Squad Awaits</h3>
+                  <p className="typo-body text-text-secondary mb-bro-xl max-w-md mx-auto">
+                    Start building your network by adding friends. Once you connect, you can easily coordinate hangouts!
+                  </p>
                   <AddFriendModal onFriendAdded={onFriendAdded} />
+                  <div className="mt-bro-xl pt-bro-xl border-t border-white/20 max-w-md mx-auto">
+                    <p className="typo-mono text-text-muted text-sm">
+                      💡 Tip: You can add friends by email, phone, or username
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
             ) : (

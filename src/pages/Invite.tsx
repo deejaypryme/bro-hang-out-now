@@ -11,6 +11,7 @@ import { type Activity, type EmotionalSignal } from '../data/activities';
 import { activities } from '../data/activities';
 import { ArrowLeft, Calendar, Users } from 'lucide-react';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
+import { InvitePageSkeleton } from '../components/LoadingFallback';
 
 const Invite = () => {
   const navigate = useNavigate();
@@ -21,13 +22,31 @@ const Invite = () => {
 
   if (friendsLoading) {
     return (
-      <div className="min-h-screen hero-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-3xl text-white mx-auto mb-bro-lg animate-pulse shadow-2xl">
-            👊
+      <div className="min-h-screen hero-background">
+        <header className="glass-surface border-b border-white/20 sticky top-0 z-20 shadow-xl">
+          <div className="max-w-4xl mx-auto px-bro-lg py-bro-lg">
+            <div className="flex items-center gap-bro-lg">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/home')}
+                className="flex items-center gap-bro-sm text-primary-navy hover:bg-white/10"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </Button>
+              <div className="flex items-center gap-bro-md">
+                <div className="w-10 h-10 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-xl text-white shadow-lg">
+                  📅
+                </div>
+                <div>
+                  <h1 className="typo-title-lg text-primary-navy">Quick Hangout Invite</h1>
+                  <p className="typo-mono text-text-secondary">Choose a friend and activity</p>
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="typo-body text-white/80">Loading...</p>
-        </div>
+        </header>
+        <InvitePageSkeleton />
       </div>
     );
   }
@@ -75,17 +94,28 @@ const Invite = () => {
       {/* Main Content */}
       <div className="max-w-4xl mx-auto py-bro-xl px-bro-lg space-y-bro-xl">
         {friends.length === 0 ? (
-          <Card variant="glass" className="text-center py-bro-2xl">
+          <Card variant="glass" className="text-center py-bro-4xl">
             <CardContent>
-              <div className="text-6xl mb-bro-lg">👥</div>
-              <h3 className="typo-title-lg text-primary-navy mb-bro-md">No Friends Yet</h3>
-              <p className="typo-body text-text-secondary mb-bro-lg max-w-md mx-auto">
-                You need friends to send hangout invitations. Add some friends first!
+              <div className="text-8xl mb-bro-lg animate-bounce">👥</div>
+              <h3 className="typo-headline-md text-primary-navy mb-bro-md">No Friends Yet</h3>
+              <p className="typo-body text-text-secondary mb-bro-xl max-w-md mx-auto">
+                You need friends to send hangout invitations. Add some friends first to get started!
               </p>
-              <Button onClick={() => navigate('/friends')} className="flex items-center gap-bro-sm">
-                <Users className="w-4 h-4" />
-                Go to Friends
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-bro-md justify-center">
+                <Button 
+                  onClick={() => navigate('/friends')} 
+                  size="lg"
+                  className="shadow-xl"
+                >
+                  <Users className="w-4 h-4 mr-bro-sm" />
+                  Add Friends
+                </Button>
+              </div>
+              <div className="mt-bro-xl pt-bro-xl border-t border-white/20 max-w-md mx-auto">
+                <p className="typo-mono text-text-muted text-sm">
+                  💡 Tip: Once you add friends, you can quickly invite them to hangouts from this page
+                </p>
+              </div>
             </CardContent>
           </Card>
         ) : (
