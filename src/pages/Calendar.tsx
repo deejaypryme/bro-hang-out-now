@@ -1,23 +1,33 @@
 
 import React, { useState } from 'react';
+import { format, isSameDay, parseISO } from 'date-fns';
 import Header from '../components/Header';
 import CalendarSidebar from '../components/CalendarSidebar';
 import CalendarIntegrationSettings from '../components/CalendarIntegrationSettings';
+import { MonthCalendar } from '../components/MonthCalendar';
+import { HangoutDayDetails } from '../components/HangoutDayDetails';
 import { Button } from '../components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Settings, Calendar as CalendarIcon } from 'lucide-react';
+import { Card, CardContent } from '../components/ui/card';
+import { Settings, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useHangouts } from '../hooks/useDatabase';
+import type { Hangout } from '../types/database';
 
 const Calendar = () => {
   const [showSettings, setShowSettings] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   
   // Get real hangouts data
   const { data: hangouts = [] } = useHangouts();
   
+  // Filter hangouts for selected date
+  const selectedDateHangouts = selectedDate
+    ? hangouts.filter(h => isSameDay(parseISO(h.scheduled_date), selectedDate))
+    : [];
+  
   const userStats = {
     broPoints: 485,
     currentStreak: 3,
-    totalHangouts: 12,
+    totalHangouts: hangouts.filter(h => h.status === 'confirmed' || h.status === 'completed').length,
   };
 
   return (
@@ -65,28 +75,27 @@ const Calendar = () => {
                 </CardContent>
               </Card>
             ) : (
-              <Card variant="glass" className="shadow-2xl border-white/20">
-                <CardContent className="text-center py-bro-4xl">
-                  <div className="w-20 h-20 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-xl flex items-center justify-center text-4xl text-white mx-auto mb-bro-xl shadow-xl">
-                    📅
-                  </div>
-                  <h2 className="typo-title-lg text-primary-navy mb-bro-sm">
-                    Calendar View Coming Soon
-                  </h2>
-                  <p className="typo-body text-text-secondary mb-bro-xl max-w-md mx-auto">
-                    Your events are shown in the sidebar. Full calendar view and integrations are available in settings.
-                  </p>
-                  <Button 
-                    onClick={() => setShowSettings(true)}
-                    variant="primary"
-                    size="lg"
-                    className="flex items-center space-x-bro-sm"
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Manage Calendar Integrations</span>
-                  </Button>
-                </CardContent>
-              </Card>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-bro-lg">
+                {/* Calendar View */}
+                <Card variant="glass" className="shadow-2xl border-white/20">
+                  <CardContent className="p-bro-lg">
+                    <MonthCalendar
+                      hangouts={hangouts}
+                      selectedDate={selectedDate}
+                      onSelectDate={setSelectedDate}
+                    />
+                  </CardContent>
+                </Card>
+
+                {/* Day Details */}
+                {selectedDate && (
+                  <HangoutDayDetails
+                    date={selectedDate}
+                    hangouts={selectedDateHangouts}
+                    onClose={() => setSelectedDate(undefined)}
+                  />
+                )}
+              </div>
             )}
           </div>
         </div>
