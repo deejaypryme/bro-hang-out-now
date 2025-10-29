@@ -26,10 +26,13 @@ const Home = () => {
     );
   }
 
-  // Mock user stats for now - these could be calculated from real data
+  // Calculate user stats from real data
+  const confirmedHangouts = hangouts.filter(h => h.status === 'confirmed');
+  const completedHangouts = hangouts.filter(h => h.status === 'completed');
+  
   const userStats = {
-    broPoints: 485,
-    currentStreak: hangouts.filter(h => h.status === 'confirmed').length || 1,
+    broPoints: (completedHangouts.length * 50) + (confirmedHangouts.length * 10),
+    currentStreak: confirmedHangouts.length,
     totalHangouts: hangouts.length,
   };
 

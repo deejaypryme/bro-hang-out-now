@@ -71,9 +71,6 @@ const HangoutResponse: React.FC = () => {
     try {
       await hangoutsService.respondToInvitation(invitation.id, response);
       
-      // Send notification to organizer
-      const organizerProfile = await fetch(`/api/profiles/${hangout.organizer_id}`).catch(() => null);
-      
       setHasResponded(true);
       setInvitation(prev => prev ? { ...prev, status: response } : null);
 

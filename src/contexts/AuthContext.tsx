@@ -25,9 +25,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Separate effect for profile loading to avoid circular dependencies
+  // Load profile independently when user changes
   useEffect(() => {
-    if (user && !profile) {
+    if (user?.id) {
       console.log('👤 [AuthProvider] Loading user profile...');
       profileService.getProfile(user.id)
         .then(userProfile => {
@@ -37,10 +37,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .catch(error => {
           console.error('❌ [AuthProvider] Error loading profile:', error);
         });
-    } else if (!user) {
+    } else {
       setProfile(null);
     }
-  }, [user, profile]);
+  }, [user?.id]);
 
   useEffect(() => {
     console.log('🔐 [AuthProvider] Setting up auth state listener...');

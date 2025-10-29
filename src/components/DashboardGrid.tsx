@@ -21,8 +21,27 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
   userStats
 }) => {
   const navigate = useNavigate();
-  const nextHangout = hangouts[0];
+  
+  // Get upcoming hangouts and sort by date
+  const upcomingHangouts = hangouts
+    .filter(h => h.status === 'confirmed' && new Date(h.scheduled_date) >= new Date())
+    .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime());
+  
+  const nextHangout = upcomingHangouts[0];
   const activeFriends = friends.slice(0, 3);
+  
+  // Calculate real monthly stats
+  const currentMonth = new Date().getMonth();
+  const currentYear = new Date().getFullYear();
+  const monthlyHangouts = hangouts.filter(h => {
+    const hangoutDate = new Date(h.scheduled_date);
+    return hangoutDate.getMonth() === currentMonth && hangoutDate.getFullYear() === currentYear;
+  }).length;
+  
+  const completedThisMonth = hangouts.filter(h => {
+    const hangoutDate = new Date(h.scheduled_date);
+    return h.status === 'completed' && hangoutDate.getMonth() === currentMonth && hangoutDate.getFullYear() === currentYear;
+  }).length;
 
   const handleAddFriends = () => {
     navigate('/friends');
@@ -99,18 +118,13 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
               {nextHangout ? (
                 <div>
                   <div className="typo-title-sm mb-bro-sm text-primary-navy">
-                    {nextHangout.time}
+                    {new Date(nextHangout.scheduled_date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                   </div>
-                  <div className="typo-body text-text-secondary mb-bro-lg font-medium">
-                    {nextHangout.activity} with {nextHangout.friendName}
+                  <div className="typo-body text-text-secondary mb-bro-xs font-medium">
+                    {nextHangout.scheduled_time}
                   </div>
-                  <div className="flex gap-bro-sm">
-                    <Button variant="outline" size="sm" className="typo-mono border-primary-navy/20 text-primary-navy hover:bg-primary-navy hover:text-white">
-                      Reschedule
-                    </Button>
-                    <Button variant="ghost" size="sm" className="typo-mono text-text-secondary hover:text-accent-orange">
-                      Details
-                    </Button>
+                  <div className="typo-body text-primary-navy mb-bro-lg font-semibold">
+                    {nextHangout.activity_emoji} {nextHangout.activity_name}
                   </div>
                 </div>
               ) : (
@@ -171,15 +185,15 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
               <div className="space-y-bro-md">
                 <div className="flex justify-between">
                   <span className="typo-body text-text-secondary font-medium">Hangouts</span>
-                  <span className="typo-title-sm text-primary-navy">8</span>
+                  <span className="typo-title-sm text-primary-navy">{monthlyHangouts}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="typo-body text-text-secondary font-medium">Response Rate</span>
-                  <span className="typo-title-sm text-primary-navy">85%</span>
+                  <span className="typo-body text-text-secondary font-medium">Completed</span>
+                  <span className="typo-title-sm text-primary-navy">{completedThisMonth}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="typo-body text-text-secondary font-medium">Current Streak</span>
-                  <span className="typo-title-sm text-green-600">{userStats.currentStreak} days</span>
+                  <span className="typo-title-sm text-green-600">{userStats.currentStreak}</span>
                 </div>
               </div>
             </CardContent>
