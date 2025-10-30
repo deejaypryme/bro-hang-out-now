@@ -154,10 +154,10 @@ const DashboardGrid: React.FC<DashboardGridProps> = ({
                 {activeFriends.map(friend => (
                   <div key={friend.id} className="flex items-center gap-bro-md">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-accent-orange to-accent-light flex items-center justify-center text-white typo-body font-semibold shadow-lg">
-                      {friend.avatar}
+                      {(friend.full_name || friend.username || '?').charAt(0).toUpperCase()}
                     </div>
                     <div className="flex-1">
-                      <div className="typo-body font-semibold text-primary-navy">{friend.name}</div>
+                      <div className="typo-body font-semibold text-primary-navy">{friend.full_name || friend.username || 'Friend'}</div>
                       <div className="mt-bro-xs">
                         <Badge 
                           variant={friend.status === 'online' ? 'default' : 'secondary'}
