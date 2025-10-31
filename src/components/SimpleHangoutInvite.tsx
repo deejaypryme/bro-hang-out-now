@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { simpleSocialService } from '@/services/simpleSocialService';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -51,14 +51,39 @@ const SimpleHangoutInvite: React.FC<SimpleHangoutInviteProps> = ({
 
     setSending(true);
     try {
-      await simpleSocialService.sendHangoutRequest(
-        friendId,
-        activityName,
-        activityEmoji,
-        date,
-        time,
-        message.trim() || undefined
-      );
+      // Create a simple hangout invitation
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error('Not authenticated');
+
+      // Create the hangout directly
+      const { data: hangout, error: hangoutError } = await supabase
+        .from('hangouts')
+        .insert({
+          organizer_id: user.id,
+          friend_id: friendId,
+          activity_name: activityName,
+          activity_emoji: activityEmoji,
+          scheduled_date: date,
+          scheduled_time: time,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (hangoutError) throw hangoutError;
+
+      // Create the invitation
+      const { error: invitationError } = await supabase
+        .from('hangout_invitations')
+        .insert({
+          hangout_id: hangout.id,
+          inviter_id: user.id,
+          invitee_id: friendId,
+          status: 'pending',
+          message: message.trim() || null
+        });
+
+      if (invitationError) throw invitationError;
 
       toast({
         title: "Hangout Invite Sent! 🎉",
@@ -78,15 +103,12 @@ const SimpleHangoutInvite: React.FC<SimpleHangoutInviteProps> = ({
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <span className="text-2xl">{activityEmoji}</span>
-          Invite {friendName}
+          <span>Invite {friendName} to {activityName}</span>
         </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          Send a hangout invitation for <strong>{activityName}</strong>
-        </p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
@@ -119,19 +141,15 @@ const SimpleHangoutInvite: React.FC<SimpleHangoutInviteProps> = ({
         <div className="space-y-2">
           <Label htmlFor="message" className="flex items-center gap-2">
             <MessageCircle className="w-4 h-4" />
-            Message (optional)
+            Message (Optional)
           </Label>
           <Textarea
             id="message"
-            placeholder="Add a personal message..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            placeholder="Add a personal message to your invite..."
             rows={3}
-            maxLength={200}
           />
-          <p className="text-xs text-muted-foreground">
-            {message.length}/200 characters
-          </p>
         </div>
 
         <div className="flex gap-2 pt-4">

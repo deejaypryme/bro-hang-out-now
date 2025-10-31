@@ -1,16 +1,24 @@
-
 import React from 'react';
 import Header from '../components/Header';
 import BroModePanel from '../components/BroModePanel';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { mockUserStats } from '../data/mockData';
+import { useHangouts } from '@/hooks/useDatabase';
+import type { UserStats } from '@/types/stats';
 
 const BroMode = () => {
-  const userStats = {
-    broPoints: 485,
-    currentStreak: 3,
-    totalHangouts: 12,
-    achievements: mockUserStats.achievements
+  const { data: hangouts = [] } = useHangouts();
+  
+  // Calculate real stats from database
+  const userStats: UserStats = {
+    broPoints: hangouts.filter(h => h.status === 'completed').length * 50,
+    currentStreak: 0, // TODO: Calculate from hangout dates
+    totalHangouts: hangouts.filter(h => h.status === 'completed').length,
+    achievements: [
+      { name: "Getting Started", emoji: "🚀", requirement: "Complete your first hangout", earned: hangouts.some(h => h.status === 'completed'), progress: hangouts.some(h => h.status === 'completed') ? 100 : 0 },
+      { name: "Social Butterfly", emoji: "🦋", requirement: "5 completed hangouts", earned: hangouts.filter(h => h.status === 'completed').length >= 5, progress: Math.min(100, (hangouts.filter(h => h.status === 'completed').length / 5) * 100) },
+      { name: "Marathon Bro", emoji: "🏃", requirement: "10 completed hangouts", earned: hangouts.filter(h => h.status === 'completed').length >= 10, progress: Math.min(100, (hangouts.filter(h => h.status === 'completed').length / 10) * 100) },
+      { name: "The Connector", emoji: "🌐", requirement: "Schedule 3 hangouts in one week", earned: false, progress: 0 }
+    ]
   };
 
   return (

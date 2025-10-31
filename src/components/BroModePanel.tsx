@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { type UserStats, type Achievement } from '../data/mockData';
+import { type UserStats } from '@/types/stats';
 
 interface BroModePanelProps {
   userStats: UserStats;

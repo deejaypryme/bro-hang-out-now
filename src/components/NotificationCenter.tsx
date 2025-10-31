@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { simpleSocialService, type FriendRequest, type HangoutRequest } from '@/services/simpleSocialService';
+import React from 'react';
+import { useFriendInvitations, useRespondToInvitation, useHangoutInvitations, useRespondToHangoutInvitation } from '@/hooks/useDatabase';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,84 +12,51 @@ interface NotificationCenterProps {
 }
 
 const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
-  const { user } = useAuth();
-  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
-  const [hangoutRequests, setHangoutRequests] = useState<HangoutRequest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [processingId, setProcessingId] = useState<string | null>(null);
+  const { data: friendInvitations = [], isLoading: loadingFriends } = useFriendInvitations();
+  const { data: hangoutInvitations = [], isLoading: loadingHangouts } = useHangoutInvitations();
+  const respondToInvitation = useRespondToInvitation();
+  const respondToHangout = useRespondToHangoutInvitation();
 
-  const loadNotifications = async () => {
-    if (!user) return;
-    
+  const handleFriendRequest = async (invitationId: string, response: 'accepted' | 'declined') => {
     try {
-      const [friends, hangouts] = await Promise.all([
-        simpleSocialService.getFriendRequests(),
-        simpleSocialService.getHangoutRequests()
-      ]);
-      
-      setFriendRequests(friends);
-      setHangoutRequests(hangouts);
-    } catch (error) {
-      console.error('Error loading notifications:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load notifications",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadNotifications();
-  }, [user]);
-
-  const handleFriendRequest = async (requestId: string, response: 'accepted' | 'declined') => {
-    setProcessingId(requestId);
-    try {
-      await simpleSocialService.respondToFriendRequest(requestId, response);
+      await respondToInvitation.mutateAsync({ invitationId, status: response });
       toast({
         title: response === 'accepted' ? "Friend Added!" : "Request Declined",
         description: response === 'accepted' 
           ? "You're now friends! You can send them hangout invitations."
           : "Friend request declined",
       });
-      loadNotifications();
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to respond to friend request",
         variant: "destructive"
       });
-    } finally {
-      setProcessingId(null);
     }
   };
 
-  const handleHangoutRequest = async (requestId: string, response: 'accepted' | 'declined') => {
-    setProcessingId(requestId);
+  const handleHangoutRequest = async (invitationId: string, response: 'accepted' | 'declined') => {
     try {
-      await simpleSocialService.respondToHangoutRequest(requestId, response);
+      await respondToHangout.mutateAsync({ invitationId, response });
       toast({
         title: response === 'accepted' ? "Hangout Confirmed!" : "Hangout Declined",
         description: response === 'accepted' 
           ? "Your hangout has been added to your calendar!"
           : "Hangout request declined",
       });
-      loadNotifications();
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to respond to hangout request",
         variant: "destructive"
       });
-    } finally {
-      setProcessingId(null);
     }
   };
 
-  const totalNotifications = friendRequests.length + hangoutRequests.length;
+  const pendingFriendInvitations = friendInvitations.filter(inv => inv.status === 'pending');
+  const pendingHangoutInvitations = hangoutInvitations.filter(inv => inv.status === 'pending');
+  const totalNotifications = pendingFriendInvitations.length + pendingHangoutInvitations.length;
+  const loading = loadingFriends || loadingHangouts;
 
   if (loading) {
     return (
@@ -137,8 +103,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
         ) : (
           <>
             {/* Friend Requests */}
-            {friendRequests.map((request) => (
-              <div key={request.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+            {pendingFriendInvitations.map((invitation) => (
+              <div key={invitation.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
                 <Avatar className="w-10 h-10">
                   <AvatarFallback>
                     <User className="w-4 h-4" />
@@ -150,18 +116,18 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
                     <span className="font-medium text-sm">Friend Request</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">
-                    Someone wants to be your friend
+                    From: {invitation.inviterProfile?.full_name || invitation.inviterProfile?.username || 'Someone'}
                   </p>
-                  {request.message && (
+                  {invitation.message && (
                     <p className="text-xs text-muted-foreground mb-3 italic">
-                      "{request.message}"
+                      "{invitation.message}"
                     </p>
                   )}
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      onClick={() => handleFriendRequest(request.id, 'accepted')}
-                      disabled={processingId === request.id}
+                      onClick={() => handleFriendRequest(invitation.id, 'accepted')}
+                      disabled={respondToInvitation.isPending}
                       className="flex items-center gap-1"
                     >
                       <Check className="w-3 h-3" />
@@ -170,8 +136,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleFriendRequest(request.id, 'declined')}
-                      disabled={processingId === request.id}
+                      onClick={() => handleFriendRequest(invitation.id, 'declined')}
+                      disabled={respondToInvitation.isPending}
                       className="flex items-center gap-1"
                     >
                       <X className="w-3 h-3" />
@@ -183,11 +149,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
             ))}
 
             {/* Hangout Requests */}
-            {hangoutRequests.map((request) => (
-              <div key={request.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
+            {pendingHangoutInvitations.map((invitation) => (
+              <div key={invitation.id} className="flex items-start gap-3 p-3 rounded-lg border bg-card">
                 <Avatar className="w-10 h-10">
                   <AvatarFallback>
-                    {request.activity_emoji}
+                    {invitation.hangout?.activity_emoji || '🤝'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
@@ -196,21 +162,21 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
                     <span className="font-medium text-sm">Hangout Invitation</span>
                   </div>
                   <p className="text-sm text-muted-foreground mb-1">
-                    <strong>{request.activity_name}</strong>
+                    <strong>{invitation.hangout?.activity_name || 'Hangout'}</strong>
                   </p>
                   <p className="text-xs text-muted-foreground mb-2">
-                    {new Date(request.proposed_date).toLocaleDateString()} at {request.proposed_time}
+                    {invitation.hangout?.scheduled_date && new Date(invitation.hangout.scheduled_date).toLocaleDateString()} at {invitation.hangout?.scheduled_time || 'TBD'}
                   </p>
-                  {request.message && (
+                  {invitation.message && (
                     <p className="text-xs text-muted-foreground mb-3 italic">
-                      "{request.message}"
+                      "{invitation.message}"
                     </p>
                   )}
                   <div className="flex gap-2">
                     <Button
                       size="sm"
-                      onClick={() => handleHangoutRequest(request.id, 'accepted')}
-                      disabled={processingId === request.id}
+                      onClick={() => handleHangoutRequest(invitation.id, 'accepted')}
+                      disabled={respondToHangout.isPending}
                       className="flex items-center gap-1"
                     >
                       <Check className="w-3 h-3" />
@@ -219,8 +185,8 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ onClose }) => {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleHangoutRequest(request.id, 'declined')}
-                      disabled={processingId === request.id}
+                      onClick={() => handleHangoutRequest(invitation.id, 'declined')}
+                      disabled={respondToHangout.isPending}
                       className="flex items-center gap-1"
                     >
                       <X className="w-3 h-3" />
