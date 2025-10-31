@@ -1,11 +1,12 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useFriends, useHangouts } from '@/hooks/useDatabase';
 import Header from '../components/Header';
 import QuickActionsSection from '../components/QuickActionsSection';
 import DashboardGrid from '../components/DashboardGrid';
 import ActivityFeed from '../components/ActivityFeed';
+import WelcomeBanner from '../components/WelcomeBanner';
 import { DashboardSkeleton } from '../components/LoadingFallback';
 
 const Home = () => {
@@ -43,6 +44,22 @@ const Home = () => {
   ).length;
   const activeStreak = userStats.currentStreak;
 
+  // Welcome banner state - only show for new users
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
+
+  useEffect(() => {
+    // Show welcome banner if user is new and hasn't dismissed it
+    const hasSeenWelcome = localStorage.getItem('welcomeBannerDismissed');
+    if (isNewUser && !hasSeenWelcome) {
+      setShowWelcomeBanner(true);
+    }
+  }, [isNewUser]);
+
+  const handleDismissWelcome = () => {
+    localStorage.setItem('welcomeBannerDismissed', 'true');
+    setShowWelcomeBanner(false);
+  };
+
   if (friendsLoading || hangoutsLoading) {
     return (
       <div className="min-h-screen hero-background">
@@ -59,7 +76,13 @@ const Home = () => {
       <Header userStats={userStats} />
       
       <main className="max-w-6xl mx-auto py-bro-2xl space-y-bro-2xl">
-        <QuickActionsSection 
+        {showWelcomeBanner && (
+          <div className="px-bro-lg md:px-bro-xl">
+            <WelcomeBanner onDismiss={handleDismissWelcome} />
+          </div>
+        )}
+        
+        <QuickActionsSection
           isNewUser={isNewUser}
           userStats={userStats}
           upcomingCount={upcomingCount}

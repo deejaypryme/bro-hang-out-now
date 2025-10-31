@@ -13,6 +13,7 @@ import FriendsTab from '@/components/friends/FriendsTab';
 import InvitationsTab from '@/components/friends/InvitationsTab';
 import { useFriendsData } from '@/hooks/useFriendsData';
 import { useFriendsFiltering } from '@/hooks/useFriendsFiltering';
+import { useHangouts } from '@/hooks/useDatabase';
 import { categorizeFriends } from '@/utils/friendsUtils';
 import type { FriendWithProfile } from '@/types/database';
 
@@ -29,6 +30,7 @@ const FriendsContent = () => {
   } = useFriendsData();
 
   const { searchQuery, setSearchQuery, filteredFriends } = useFriendsFiltering(friends);
+  const { data: hangouts = [] } = useHangouts();
   
   const [selectedFriend, setSelectedFriend] = useState<FriendWithProfile | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -43,10 +45,14 @@ const FriendsContent = () => {
     handleRefetchFriends();
   }, [handleRefetchInvitations, handleRefetchFriends]);
 
+  // Calculate user stats from real data
+  const confirmedHangouts = hangouts.filter(h => h.status === 'confirmed');
+  const completedHangouts = hangouts.filter(h => h.status === 'completed');
+  
   const userStats = {
-    broPoints: 485,
-    currentStreak: 3,
-    totalHangouts: 12,
+    broPoints: (completedHangouts.length * 50) + (confirmedHangouts.length * 10),
+    currentStreak: confirmedHangouts.length,
+    totalHangouts: hangouts.length,
   };
 
   // Show loading fallback for initial load
