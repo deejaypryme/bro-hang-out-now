@@ -163,7 +163,7 @@ export const exportMultipleHangouts = (hangouts: Hangout[]): CalendarExportResul
     for (const hangout of confirmedHangouts) {
       const result = generateCalendarEvent(hangout);
       if (result.success) {
-        console.log(`Successfully generated event for ${hangout.friend_id}`);
+        
       }
     }
     

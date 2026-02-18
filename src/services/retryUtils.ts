@@ -38,7 +38,7 @@ export const withRetry = async <T>(
         delay = Math.min(config.baseDelay * Math.pow(2, attempt - 1), config.maxDelay);
       }
       
-      console.log(`Retry attempt ${attempt} failed, retrying in ${delay}ms:`, error);
+      
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }

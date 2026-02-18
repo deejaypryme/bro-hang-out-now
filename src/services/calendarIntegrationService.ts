@@ -136,7 +136,7 @@ class CalendarIntegrationService {
 
     // For now, just simulate success
     // In a real implementation, this would update the calendar_integrations table
-    console.log(`Disconnecting integration ${integrationId}`);
+    
   }
 
   async syncCalendarEvents(integrationId: string): Promise<CalendarEvent[]> {

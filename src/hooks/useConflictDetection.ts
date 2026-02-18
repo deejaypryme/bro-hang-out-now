@@ -99,7 +99,7 @@ export const useConflictResolution = () => {
     }) => {
       // This would be implemented based on the conflict type
       // For now, we'll just simulate the resolution
-      console.log(`Resolving conflict ${conflictId} with ${resolution}`);
+      
       return { success: true, conflictId, resolution };
     },
     onSuccess: () => {
