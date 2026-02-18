@@ -1,95 +1,108 @@
 
 
-# Phase 2: Core Features Implementation
+# Phase 3: Polish and Consistency
 
 ## Overview
-Three deliverables: a Profile Settings page, a real Activity Feed, and username collection at signup. This completes the core user experience loop.
+Five deliverables: fix BroModePanel responsiveness with real data, clean up all console.log statements, resolve the activities dual data source, add a forgot password flow, and QuickActionsSection is already fixed from Phase 2.
 
 ---
 
-## 1. Profile Settings Page
+## 1. BroModePanel -- Responsive + Real Data
 
-**New file: `src/pages/Profile.tsx`**
+**Problem:** The panel has a hardcoded `w-80` fixed width, uses non-design-system classes, and shows fake challenge progress (70%, 90%, 40%).
 
-A dedicated page where users can edit their profile information. Fields:
-- Full Name (text input)
-- Username (text input, with availability hint)
-- Phone (text input)
-- Timezone (dropdown, reuse existing `TimezoneSelector` component)
-- Avatar URL (text input for now -- Supabase Storage bucket can come later)
+**Fix in `src/components/BroModePanel.tsx`:**
+- Remove the `w-80` fixed width -- make it `w-full` so it fills its parent container
+- Replace raw Tailwind classes (`bg-bg-primary`, `border-l`, `p-6`) with design system tokens (`glass-surface`, `p-bro-lg`, `rounded-bro-xl`, etc.)
+- Calculate real challenge progress from `userStats`:
+  - "Week Warrior" -- progress based on `totalHangouts` toward 5
+  - "Badge Collector" -- progress based on earned achievements count
+  - "Streak Builder" -- progress based on `currentStreak` toward 7
+- Remove the static `recentChallenges` array, generate dynamically from data
 
-Uses `profileService.updateProfile()` which already exists in `src/services/database.ts`. On save, also refresh the profile in AuthContext so the Header updates immediately.
-
-**Add `refreshProfile()` to AuthContext** so after saving profile changes, the app reflects them without a page reload.
-
-**Add route** `/profile` in `App.tsx` as a protected route.
-
-**Add "Profile" option** to the user dropdown menu in `Header.tsx` (currently only has "Sign Out").
-
-**Add Profile link** to `MobileNavigation.tsx` -- replace or add a 5th nav item, or add it as an option accessible from the Header avatar menu (keeping 4 nav items is cleaner for mobile).
+**Fix in `src/pages/BroMode.tsx`:**
+- Already responsive with `max-w-md mx-auto md:max-w-2xl` -- no changes needed here since the panel is wrapped in a Card
 
 ---
 
-## 2. Real Activity Feed
+## 2. Clean Up Console Logs
 
-**Rewrite `src/components/ActivityFeed.tsx`** to query actual data:
+**Problem:** 570+ `console.log` matches across 18 files. These are debug emoji-prefixed logs that clutter the browser console in production.
 
-- Fetch recent hangouts (last 10, ordered by `created_at` desc) from the existing `useHangouts` hook
-- Fetch recent friendships (last 5, ordered by `created_at` desc) from `useFriends` hook  
-- Merge and sort by timestamp to create a unified activity timeline
-- Each item shows: emoji icon, description ("You scheduled Basketball with Alex"), and relative time ("2 hours ago")
+**Approach:** Remove all `console.log` statements from production code. Keep `console.error` calls (those are valuable for debugging real issues). Keep `console.warn` if any exist.
 
-Activity types to display:
-- Hangout created: "You planned {emoji} {activity} with {friend}"
-- Hangout confirmed: "{emoji} {activity} with {friend} is confirmed!"  
-- Hangout completed: "You hung out with {friend} -- {emoji} {activity}"
-- Friend added: "You and {friend} are now friends"
+**Files to clean (all `console.log` removals):**
+- `src/App.tsx` -- remove 2 logs
+- `src/main.tsx` -- remove 1 log
+- `src/contexts/AuthContext.tsx` -- remove ~12 logs (keep `console.error` lines)
+- `src/services/notificationService.ts` -- remove ~6 logs
+- `src/services/smartSuggestionsService.ts` -- remove 1 log
+- `src/lib/calendarExport.ts` -- remove 1 log
+- `src/services/retryUtils.ts` -- remove 1 log
+- Any other files found in the search (18 files total)
 
-Uses data already available from `useHangouts` and `useFriends` -- no new database queries needed. The parent `Home.tsx` already passes `friends` as a prop and has `hangouts` available.
-
-**Update `Home.tsx`** to pass `hangouts` to `ActivityFeed` as well.
-
----
-
-## 3. Fix Username at Signup
-
-**Update `src/pages/Signup.tsx`**:
-- Add a "Username" input field between Full Name and Email
-- Auto-generate a suggestion from the email prefix as the user types their email (e.g., `john` from `john@gmail.com`)
-- Pass `username` in the metadata: `signUp(email, password, { full_name: fullName, username })`
-
-The `handle_new_user` database trigger already reads `username` from `raw_user_meta_data` and inserts it into the profiles table, so no DB changes needed.
+The render-time log in AuthContext (`Rendering with state:`) is particularly bad as it fires on every re-render.
 
 ---
 
-## 4. Remove Dead "Import Contacts" Button
+## 3. Resolve Activities Dual Source
 
-In `QuickActionsSection.tsx`, remove the "Import Contacts" button that has no handler. Replace with a "Schedule Hangout" CTA that navigates to `/invite`.
+**Problem:** Activities exist in two places:
+1. `src/data/activities.ts` -- rich data with 30+ activities, categories, durations, types, emotional signals
+2. Database `activities` table -- 10 rows with only name, emoji, category (no duration, no type)
 
-Also fix the inconsistent styling in this component to use the design system tokens (`glass-surface`, `text-primary-navy`, etc.) instead of raw Tailwind (`bg-white/80`, `text-gray-800`).
+The local file is the real source of truth used by `ActivitySelection.tsx` and `Invite.tsx`. The DB table appears unused in application code.
+
+**Decision:** Keep the local `src/data/activities.ts` file as the single source of truth. It has richer data and is what the UI actually uses. No code changes needed -- just document this decision. The DB `activities` table can stay for potential future use (e.g., user-created custom activities) but won't be referenced by the UI.
+
+No files to change for this item -- it's already correctly using local data.
 
 ---
 
-## Technical Details
+## 4. Add Forgot Password Flow
 
-### Files to Create
-| File | Purpose |
-|------|---------|
-| `src/pages/Profile.tsx` | Profile settings page with form |
+**New file: `src/pages/ForgotPassword.tsx`**
+- Simple form: email input + "Send Reset Link" button
+- Calls `supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + '/reset-password' })`
+- Success message: "Check your email for a password reset link"
+- Styled consistently with Login/Signup (glassmorphism card, same layout)
 
-### Files to Modify
-| File | Changes |
-|------|---------|
-| `src/App.tsx` | Add `/profile` route |
-| `src/contexts/AuthContext.tsx` | Add `refreshProfile()` method |
-| `src/components/Header.tsx` | Add "Profile" link in user menu |
-| `src/pages/Signup.tsx` | Add username field |
-| `src/components/ActivityFeed.tsx` | Rewrite with real data |
-| `src/pages/Home.tsx` | Pass hangouts to ActivityFeed |
-| `src/components/QuickActionsSection.tsx` | Fix styling, remove dead button |
+**New file: `src/pages/ResetPassword.tsx`**
+- Listens for `type=recovery` in URL hash (Supabase redirects here after clicking email link)
+- Form: new password + confirm password
+- Calls `supabase.auth.updateUser({ password })`
+- On success, redirects to `/home`
+- Must be a public route (not behind ProtectedRoute)
 
-### No Database Changes Required
-- `profileService.updateProfile()` already exists
-- `handle_new_user` trigger already handles `username` from metadata
-- Activity feed uses existing hangouts/friends data
+**Update `src/pages/Login.tsx`:**
+- Add "Forgot password?" link below the password field, linking to `/forgot-password`
 
+**Update `src/App.tsx`:**
+- Add `/forgot-password` route (public)
+- Add `/reset-password` route (public)
+
+---
+
+## 5. QuickActionsSection (Already Done)
+
+QuickActionsSection was already fixed in Phase 2 -- it now uses design system tokens and the dead "Import Contacts" button was removed. No further changes needed.
+
+---
+
+## Summary of Changes
+
+| File | Action |
+|------|--------|
+| `src/components/BroModePanel.tsx` | Responsive layout, real challenge data, design system tokens |
+| `src/App.tsx` | Add 2 new routes, remove console.logs |
+| `src/main.tsx` | Remove console.log |
+| `src/contexts/AuthContext.tsx` | Remove ~12 console.logs |
+| `src/services/notificationService.ts` | Remove ~6 console.logs |
+| `src/services/smartSuggestionsService.ts` | Remove console.log |
+| `src/lib/calendarExport.ts` | Remove console.log |
+| `src/services/retryUtils.ts` | Remove console.log |
+| `src/pages/Login.tsx` | Add "Forgot password?" link |
+| `src/pages/ForgotPassword.tsx` | New -- forgot password form |
+| `src/pages/ResetPassword.tsx` | New -- reset password form |
+
+No database changes required.
