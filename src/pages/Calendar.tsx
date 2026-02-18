@@ -27,9 +27,11 @@ const Calendar = () => {
     ? hangouts.filter(h => isSameDay(parseISO(h.scheduled_date), selectedDate))
     : [];
   
+  const completedHangouts = hangouts.filter(h => h.status === 'completed');
+  const confirmedHangouts = hangouts.filter(h => h.status === 'confirmed');
   const userStats = {
-    broPoints: 485,
-    currentStreak: 3,
+    broPoints: (completedHangouts.length * 50) + (confirmedHangouts.length * 10),
+    currentStreak: confirmedHangouts.length,
     totalHangouts: hangouts.filter(h => h.status === 'confirmed' || h.status === 'completed').length,
   };
 

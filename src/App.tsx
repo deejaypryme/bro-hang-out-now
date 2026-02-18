@@ -15,7 +15,7 @@ import Invite from "./pages/Invite";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
+import Landing from "./pages/Landing";
 import HangoutResponse from './components/HangoutResponse';
 
 console.log('📱 [App] Starting App component initialization...');
@@ -32,10 +32,11 @@ function App() {
           <Router>
             <Layout>
               <Routes>
-                <Route path="/" element={<Navigate to="/login" replace />} />
+                <Route path="/" element={<Landing />} />
+                <Route path="/landing" element={<Navigate to="/" replace />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/auth" element={<Auth />} />
+                <Route path="/auth" element={<Navigate to="/login" replace />} />
                 
                 {/* Protected Routes */}
                 <Route path="/home" element={
