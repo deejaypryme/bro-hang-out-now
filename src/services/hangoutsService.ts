@@ -115,18 +115,29 @@ export const hangoutsService = {
     };
   },
 
-  async getHangoutInvitations(userId: string): Promise<HangoutInvitation[]> {
+  async getHangoutInvitations(userId: string): Promise<(HangoutInvitation & { hangout?: any; inviterProfile?: any })[]> {
     const { data, error } = await supabase
       .from('hangout_invitations')
-      .select('*')
+      .select('*, hangout:hangouts(activity_name, activity_emoji, scheduled_date, scheduled_time, status)')
       .or(`inviter_id.eq.${userId},invitee_id.eq.${userId}`)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
+
+    // Fetch inviter profiles for display
+    const inviterIds = [...new Set((data || []).map(d => d.inviter_id))];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url')
+      .in('id', inviterIds);
+
+    const profileMap = new Map((profiles || []).map(p => [p.id, p]));
+
     return (data || []).map(invitation => ({
       ...invitation,
       status: invitation.status as 'pending' | 'accepted' | 'declined' | 'expired',
-      sent_via: invitation.sent_via as 'email' | 'sms' | 'app' | null
+      sent_via: invitation.sent_via as 'email' | 'sms' | 'app' | null,
+      inviterProfile: profileMap.get(invitation.inviter_id) || null,
     }));
   },
 

@@ -2,9 +2,13 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { Bell } from 'lucide-react';
+import NotificationCenter from './NotificationCenter';
+import { useFriendInvitations, useHangoutInvitations } from '@/hooks/useDatabase';
 
 interface HeaderProps {
   userStats: {
@@ -12,6 +16,18 @@ interface HeaderProps {
     currentStreak: number;
   };
 }
+
+const NotificationBadge = () => {
+  const { data: friendInvitations = [] } = useFriendInvitations();
+  const { data: hangoutInvitations = [] } = useHangoutInvitations();
+  const count = friendInvitations.filter((i: any) => i.status === 'pending').length + hangoutInvitations.filter((i: any) => i.status === 'pending').length;
+  if (count === 0) return null;
+  return (
+    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-r from-accent-orange to-accent-light text-white text-xs font-bold rounded-full flex items-center justify-center shadow-lg">
+      {count > 9 ? '9+' : count}
+    </span>
+  );
+};
 
 const Header: React.FC<HeaderProps> = ({ userStats }) => {
   const navigate = useNavigate();
@@ -25,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({ userStats }) => {
         toast.error('Error signing out');
       } else {
         toast.success('Signed out successfully');
-        navigate('/landing');
+        navigate('/');
       }
     } catch (error) {
       toast.error('An unexpected error occurred');
@@ -62,7 +78,7 @@ const Header: React.FC<HeaderProps> = ({ userStats }) => {
             {!user ? (
               <Button 
                 variant="ghost"
-                onClick={() => navigate('/landing')}
+                onClick={() => navigate('/')}
                 className="text-text-secondary hover:text-primary-navy"
               >
                 About App
@@ -85,6 +101,19 @@ const Header: React.FC<HeaderProps> = ({ userStats }) => {
                     <div className="typo-mono text-text-muted hidden md:block">Day Streak</div>
                   </div>
                 </div>
+
+                {/* Notification Bell */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="relative p-bro-sm hover:bg-white/10 rounded-bro-lg transition-all duration-300">
+                      <Bell className="w-5 h-5 text-primary-navy" />
+                      <NotificationBadge />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-96 p-0 border-white/20 shadow-2xl">
+                    <NotificationCenter />
+                  </PopoverContent>
+                </Popover>
 
                 <div className="relative">
                   <button
