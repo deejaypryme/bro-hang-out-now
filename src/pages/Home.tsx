@@ -15,20 +15,9 @@ const Home = () => {
   const { data: friends = [], isLoading: friendsLoading } = useFriends();
   const { data: hangouts = [], isLoading: hangoutsLoading } = useHangouts();
 
-  if (authLoading || !user) {
-    return (
-      <div className="min-h-screen hero-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-3xl text-white mx-auto mb-bro-lg animate-pulse shadow-2xl">
-            👊
-          </div>
-          <p className="typo-body text-white/80">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // Welcome banner state
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
 
-  // Calculate user stats from real data
   const confirmedHangouts = hangouts.filter(h => h.status === 'confirmed');
   const completedHangouts = hangouts.filter(h => h.status === 'completed');
   
@@ -44,11 +33,7 @@ const Home = () => {
   ).length;
   const activeStreak = userStats.currentStreak;
 
-  // Welcome banner state - only show for new users
-  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
-
   useEffect(() => {
-    // Show welcome banner if user is new and hasn't dismissed it
     const hasSeenWelcome = localStorage.getItem('welcomeBannerDismissed');
     if (isNewUser && !hasSeenWelcome) {
       setShowWelcomeBanner(true);
@@ -59,6 +44,19 @@ const Home = () => {
     localStorage.setItem('welcomeBannerDismissed', 'true');
     setShowWelcomeBanner(false);
   };
+
+  if (authLoading || !user) {
+    return (
+      <div className="min-h-screen hero-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 bg-gradient-to-r from-accent-orange to-accent-light rounded-bro-lg flex items-center justify-center text-3xl text-white mx-auto mb-bro-lg animate-pulse shadow-2xl">
+            👊
+          </div>
+          <p className="typo-body text-white/80">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (friendsLoading || hangoutsLoading) {
     return (
@@ -99,7 +97,7 @@ const Home = () => {
         )}
         
         <div className="px-bro-lg md:px-bro-xl">
-          <ActivityFeed isNewUser={isNewUser} friends={friends} />
+          <ActivityFeed isNewUser={isNewUser} friends={friends} hangouts={hangouts} />
         </div>
       </main>
     </div>

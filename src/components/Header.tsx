@@ -143,6 +143,12 @@ const Header: React.FC<HeaderProps> = ({ userStats }) => {
                         <div className="typo-mono text-text-secondary">{user?.email}</div>
                       </div>
                       <button
+                        onClick={() => { setShowUserMenu(false); navigate('/profile'); }}
+                        className="w-full text-left px-bro-lg py-bro-sm typo-body text-primary-navy hover:bg-white/20 transition-colors duration-200"
+                      >
+                        Profile Settings
+                      </button>
+                      <button
                         onClick={handleLogout}
                         className="w-full text-left px-bro-lg py-bro-sm typo-body text-red-600 hover:bg-red-50/80 transition-colors duration-200"
                       >

@@ -13,6 +13,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, metadata?: any) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -118,6 +119,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { error };
   };
 
+  const refreshProfile = async () => {
+    if (user?.id) {
+      try {
+        const userProfile = await profileService.getProfile(user.id);
+        setProfile(userProfile);
+      } catch (error) {
+        console.error('❌ [AuthProvider] Error refreshing profile:', error);
+      }
+    }
+  };
+
   const value = {
     user,
     session,
@@ -125,7 +137,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     signUp,
     signIn,
-    signOut
+    signOut,
+    refreshProfile
   };
 
   console.log('🔐 [AuthProvider] Rendering with state:', { 
