@@ -16,6 +16,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
+import Profile from "./pages/Profile";
 import HangoutResponse from './components/HangoutResponse';
 
 console.log('📱 [App] Starting App component initialization...');
@@ -62,6 +63,11 @@ function App() {
                 <Route path="/invite" element={
                   <ProtectedRoute>
                     <Invite />
+                  </ProtectedRoute>
+                } />
+                <Route path="/profile" element={
+                  <ProtectedRoute>
+                    <Profile />
                   </ProtectedRoute>
                 } />
                 

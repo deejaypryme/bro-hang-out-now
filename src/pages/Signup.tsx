@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -11,46 +11,49 @@ const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { signUp, user } = useAuth();
   const navigate = useNavigate();
 
   // Redirect if already authenticated
-  React.useEffect(() => {
+  useEffect(() => {
     if (user) {
       navigate('/home');
     }
   }, [user, navigate]);
+
+  // Auto-suggest username from email
+  useEffect(() => {
+    if (email && !username) {
+      const prefix = email.split('@')[0]?.toLowerCase().replace(/[^a-z0-9_]/g, '') || '';
+      if (prefix) setUsername(prefix);
+    }
+  }, [email]);
 
   const validateForm = () => {
     if (!email || !password || !fullName || !confirmPassword) {
       toast.error('Please fill in all fields');
       return false;
     }
-
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
       return false;
     }
-
     if (password.length < 6) {
       toast.error('Password must be at least 6 characters');
       return false;
     }
-
     return true;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
     if (!validateForm()) return;
-
     setLoading(true);
-
     try {
-      const { error } = await signUp(email, password, { full_name: fullName });
+      const { error } = await signUp(email, password, { full_name: fullName, username: username || undefined });
       if (error) {
         toast.error(error.message);
       } else {
@@ -91,6 +94,19 @@ const Signup = () => {
                   autoComplete="name"
                   className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
                 />
+                <div>
+                  <Input
+                    type="text"
+                    placeholder="Username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
+                    autoComplete="username"
+                    className="h-12 text-base border-primary-navy/20 focus:border-accent-orange focus:ring-accent-orange/20 bg-white/80 backdrop-blur-sm"
+                  />
+                  <p className="typo-mono text-brand-muted mt-bro-xs text-xs">
+                    Letters, numbers, and underscores only
+                  </p>
+                </div>
                 <Input
                   type="email"
                   placeholder="Email address"
