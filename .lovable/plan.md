@@ -1,141 +1,95 @@
 
 
-# BroYouFree - Deep Dive Assessment
+# Phase 2: Core Features Implementation
 
-## What Is This App?
-
-BroYouFree is a social coordination app for scheduling hangouts with friends. The core loop: sign up, add friends, send hangout invites, coordinate times, track your social activity.
-
----
-
-## WHAT'S WORKING WELL
-
-### Architecture & Code Quality
-- Clean React + TypeScript + Supabase stack
-- Well-organized service layer (`friendsService`, `hangoutsService`, `availabilityService`)
-- Good separation of concerns with custom hooks (`useDatabase.ts` has 20+ hooks)
-- Proper error boundaries and loading fallbacks
-- React Query for data fetching with retry logic
-- Comprehensive TypeScript types in `src/types/database.ts`
-
-### Database Design
-- Solid schema: profiles, friendships (bidirectional), friend_invitations, hangouts, hangout_invitations, user_presence, user_availability
-- RLS enabled on all tables with appropriate policies
-- `handle_new_user` trigger auto-creates profiles and presence on signup
-- User roles system with `has_role()` security definer function (no recursion issues)
-
-### UI/UX
-- Polished glassmorphism design with consistent brand (navy + orange)
-- Comprehensive design system in CSS (typography, buttons, cards, spacing tokens)
-- Mobile-first with bottom navigation
-- Good empty states with CTAs guiding users to next action
-- Welcome banner for new users
-- Loading skeletons throughout
-
-### Auth Flow
-- Dedicated Login + Signup + Auth pages (3 auth entry points)
-- Protected routes with redirect-back-to-origin
-- Profile loaded in AuthContext
-
-### Edge Functions
-- `send-friend-invitation` with email (Resend) + SMS (Twilio) support and retry logic
-- `send-hangout-invitation` and `send-hangout-notification` deployed
+## Overview
+Three deliverables: a Profile Settings page, a real Activity Feed, and username collection at signup. This completes the core user experience loop.
 
 ---
 
-## WHAT'S BROKEN OR INCOMPLETE
+## 1. Profile Settings Page
 
-### Critical Issues (Blocks Core Functionality)
+**New file: `src/pages/Profile.tsx`**
 
-1. **No landing page** - Route `/` redirects to `/login`, Header logout navigates to `/landing` (doesn't exist). No public-facing page explaining what the app is.
+A dedicated page where users can edit their profile information. Fields:
+- Full Name (text input)
+- Username (text input, with availability hint)
+- Phone (text input)
+- Timezone (dropdown, reuse existing `TimezoneSelector` component)
+- Avatar URL (text input for now -- Supabase Storage bucket can come later)
 
-2. **Duplicate auth pages** - Three auth entry points (`/login`, `/signup`, `/auth`) doing the same thing. Confusing routing.
+Uses `profileService.updateProfile()` which already exists in `src/services/database.ts`. On save, also refresh the profile in AuthContext so the Header updates immediately.
 
-3. **NotificationCenter is orphaned** - The component exists and works but is NOT rendered anywhere in the app. Users have no way to see/respond to incoming hangout invitations from within the app.
+**Add `refreshProfile()` to AuthContext** so after saving profile changes, the app reflects them without a page reload.
 
-4. **Hangout invitations have no linked hangout data** - `NotificationCenter` references `invitation.hangout?.activity_name` but `useHangoutInvitations` only fetches the invitation row, not the joined hangout. Hangout notifications will show "Hangout" with no details.
+**Add route** `/profile` in `App.tsx` as a protected route.
 
-5. **Calendar page has hardcoded stats** - `broPoints: 485` is hardcoded on the Calendar page (line 31).
+**Add "Profile" option** to the user dropdown menu in `Header.tsx` (currently only has "Sign Out").
 
-6. **"Import Contacts" button does nothing** - In `QuickActionsSection`, the "Import Contacts" button has no onClick handler.
-
-7. **Activity Feed is static placeholder** - `ActivityFeed.tsx` shows static text, never fetches or displays real activity data. Just says "Your Activity Will Appear Here" forever.
-
-### Medium Issues (Degraded Experience)
-
-8. **No profile editing UI** - Users can't update their name, username, avatar, or phone after signup. The `profileService.updateProfile` exists but no UI calls it.
-
-9. **No notification bell in header** - The Header has no way to access notifications. The `NotificationCenter` component is built but never mounted.
-
-10. **QuickActionsSection inconsistent styling** - Uses raw Tailwind (`bg-white/80`, `text-gray-800`) instead of the design system tokens used everywhere else (`glass-surface`, `text-primary-navy`, etc.).
-
-11. **BroModePanel hardcoded challenges** - "Week Warrior", "Response Rocket", "Activity Explorer" challenges are static with fake progress values (70%, 90%, 40%).
-
-12. **BroModePanel layout issues** - Uses `w-80` fixed width sidebar layout that doesn't work well on mobile, despite the page wrapper trying to be responsive.
-
-13. **CalendarSidebar may be empty/broken** - Not inspected in detail but it receives hangouts prop without clear rendering logic visible.
-
-14. **No username collected at signup** - The signup form collects `full_name` but not `username`. Profile `username` is always null, making user search by username ineffective.
-
-15. **Edge function email sends from `onboarding@resend.dev`** - This is a Resend sandbox domain. Emails likely go to spam or are undeliverable to non-verified addresses.
-
-### Minor Issues
-
-16. **Excessive console.log statements** - Debug logs throughout production code (emoji-prefixed logs in every service call).
-
-17. **`src/data/` directory still exists** - Contains only `activities.ts` now, but the activities data is also in the database (10 rows in `activities` table). Dual source of truth.
-
-18. **Three edge functions with similar patterns** - Could be consolidated but functional as-is.
-
-19. **No "forgot password" flow** - Common feature missing from auth.
-
-20. **friendships table has no DELETE RLS policy** - Users can't unfriend (the `removeFriend` service method exists but will fail due to missing DELETE policy).
+**Add Profile link** to `MobileNavigation.tsx` -- replace or add a 5th nav item, or add it as an option accessible from the Header avatar menu (keeping 4 nav items is cleaner for mobile).
 
 ---
 
-## WHAT WE CAN FIX WITH AGENT MODE
+## 2. Real Activity Feed
 
-### Phase 1: Fix Critical Flow (make it actually work end-to-end)
+**Rewrite `src/components/ActivityFeed.tsx`** to query actual data:
 
-1. **Create a landing page** (`/`) - Public page explaining the app with CTA to sign up
-2. **Consolidate auth** - Remove `/auth` page, keep `/login` and `/signup` with proper routing
-3. **Add notification bell to Header** - Mount `NotificationCenter` as a dropdown/popover from the header
-4. **Fix hangout invitation data** - Update `useHangoutInvitations` to join hangout details
-5. **Fix Calendar hardcoded stats** - Use real data like Home/Friends pages do
-6. **Add DELETE policy to friendships** - So unfriending actually works
+- Fetch recent hangouts (last 10, ordered by `created_at` desc) from the existing `useHangouts` hook
+- Fetch recent friendships (last 5, ordered by `created_at` desc) from `useFriends` hook  
+- Merge and sort by timestamp to create a unified activity timeline
+- Each item shows: emoji icon, description ("You scheduled Basketball with Alex"), and relative time ("2 hours ago")
 
-### Phase 2: Complete Core Features
+Activity types to display:
+- Hangout created: "You planned {emoji} {activity} with {friend}"
+- Hangout confirmed: "{emoji} {activity} with {friend} is confirmed!"  
+- Hangout completed: "You hung out with {friend} -- {emoji} {activity}"
+- Friend added: "You and {friend} are now friends"
 
-7. **Build profile settings page** - Edit name, username, avatar, phone, timezone
-8. **Build real Activity Feed** - Query recent hangouts, friend additions, completed events
-9. **Fix username collection at signup** - Add username field or auto-generate from email
-10. **Remove "Import Contacts" dead button** or implement basic contact import
+Uses data already available from `useHangouts` and `useFriends` -- no new database queries needed. The parent `Home.tsx` already passes `friends` as a prop and has `hangouts` available.
 
-### Phase 3: Polish & Consistency
-
-11. **Fix QuickActionsSection styling** - Align with design system
-12. **Fix BroModePanel** - Make responsive, calculate real challenge progress
-13. **Clean up console logs** - Remove or gate behind dev mode
-14. **Resolve activities dual source** - Use DB activities or local data, not both
-15. **Add forgot password flow**
-
-### Phase 4: Production Readiness
-
-16. **Configure Resend with real domain** - So invitation emails actually deliver
-17. **Admin dashboard** - Leverage the user_roles system that's already built
-18. **Add real-time updates** - Use Supabase realtime subscriptions for presence and notifications
+**Update `Home.tsx`** to pass `hangouts` to `ActivityFeed` as well.
 
 ---
 
-## Recommended Priority
+## 3. Fix Username at Signup
 
-Start with Phase 1 (items 1-6). This gets the core user journey working:
+**Update `src/pages/Signup.tsx`**:
+- Add a "Username" input field between Full Name and Email
+- Auto-generate a suggestion from the email prefix as the user types their email (e.g., `john` from `john@gmail.com`)
+- Pass `username` in the metadata: `signUp(email, password, { full_name: fullName, username })`
 
-```text
-Landing Page --> Sign Up --> Home (with notifications) --> Add Friend --> Send Hangout --> Calendar shows it
-```
+The `handle_new_user` database trigger already reads `username` from `raw_user_meta_data` and inserts it into the profiles table, so no DB changes needed.
 
-Estimated effort: Phase 1 is ~2-3 sessions. Phase 2 is ~2 sessions. Phase 3-4 as time permits.
+---
 
-Shall I start with Phase 1?
+## 4. Remove Dead "Import Contacts" Button
+
+In `QuickActionsSection.tsx`, remove the "Import Contacts" button that has no handler. Replace with a "Schedule Hangout" CTA that navigates to `/invite`.
+
+Also fix the inconsistent styling in this component to use the design system tokens (`glass-surface`, `text-primary-navy`, etc.) instead of raw Tailwind (`bg-white/80`, `text-gray-800`).
+
+---
+
+## Technical Details
+
+### Files to Create
+| File | Purpose |
+|------|---------|
+| `src/pages/Profile.tsx` | Profile settings page with form |
+
+### Files to Modify
+| File | Changes |
+|------|---------|
+| `src/App.tsx` | Add `/profile` route |
+| `src/contexts/AuthContext.tsx` | Add `refreshProfile()` method |
+| `src/components/Header.tsx` | Add "Profile" link in user menu |
+| `src/pages/Signup.tsx` | Add username field |
+| `src/components/ActivityFeed.tsx` | Rewrite with real data |
+| `src/pages/Home.tsx` | Pass hangouts to ActivityFeed |
+| `src/components/QuickActionsSection.tsx` | Fix styling, remove dead button |
+
+### No Database Changes Required
+- `profileService.updateProfile()` already exists
+- `handle_new_user` trigger already handles `username` from metadata
+- Activity feed uses existing hangouts/friends data
 
