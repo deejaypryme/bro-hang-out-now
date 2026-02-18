@@ -207,10 +207,7 @@ export const notificationService = {
         
         // Analyze SMS length and create fallback if needed
         const smsAnalysis = analyzeSMSLength(message);
-        console.log('SMS Analysis:', smsAnalysis);
-        
         if (!smsAnalysis.withinLimit) {
-          console.log('Creating fallback SMS message due to length');
           message = createSMSFallbackMessage(
             friendName,
             organizerName,
@@ -252,7 +249,7 @@ export const notificationService = {
         `;
       }
 
-      console.log(`Sending ${contactType} invitation to ${friendContact}`);
+      
 
       // Send notification with retry logic
       const result = await withRetry(
@@ -285,7 +282,7 @@ export const notificationService = {
         }
       );
 
-      console.log('Notification sent successfully:', result);
+      
       return { success: true, attempts };
 
     } catch (error: any) {
@@ -391,10 +388,10 @@ export const notificationService = {
       // For SMS updates, check character limits
       if (contactType === 'sms') {
         const smsAnalysis = analyzeSMSLength(message);
-        console.log('SMS Update Analysis:', smsAnalysis);
+        
       }
 
-      console.log(`Sending ${contactType} update (${updateType}) to ${friendContact}`);
+      
 
       // Send update with retry logic
       const result = await withRetry(
@@ -426,7 +423,7 @@ export const notificationService = {
         }
       );
 
-      console.log('Update notification sent successfully:', result);
+      
       return { success: true, attempts };
 
     } catch (error: any) {

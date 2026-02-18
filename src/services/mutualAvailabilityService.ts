@@ -46,7 +46,7 @@ export class MutualAvailabilityService {
     preferredDuration: number = 120,
     bufferMinutes: number = this.DEFAULT_BUFFER_MINUTES
   ): Promise<AvailabilityComparison> {
-    console.log(`Finding mutual availability between ${userId} and ${friendId}`);
+    
 
     // Get both users' availability and calendar events
     const [userAvailability, friendAvailability, userEvents, friendEvents] = await Promise.all([

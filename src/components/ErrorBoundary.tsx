@@ -43,12 +43,12 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   private handleReset = () => {
-    console.log('🔄 [ErrorBoundary] Resetting error boundary');
+    
     this.setState({ hasError: false, error: undefined, errorInfo: undefined });
   };
 
   private handleReload = () => {
-    console.log('🔄 [ErrorBoundary] Reloading page');
+    
     window.location.reload();
   };
 

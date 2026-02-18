@@ -32,8 +32,6 @@ export class SmartSuggestionsService {
   };
 
   static async generateSmartSuggestions(request: SmartSuggestionRequest): Promise<SmartSuggestionResponse> {
-    console.log('Generating smart suggestions for users:', request.userId, request.friendId);
-
     // Gather all necessary data
     const [userPatterns, friendPatterns, mutualHistory, mutualAvailability] = await Promise.all([
       this.analyzeUserPatterns(request.userId),

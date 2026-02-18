@@ -17,15 +17,13 @@ import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Profile from "./pages/Profile";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import HangoutResponse from './components/HangoutResponse';
-
-console.log('📱 [App] Starting App component initialization...');
 
 const queryClient = new QueryClient();
 
 function App() {
-  console.log('📱 [App] Rendering App component...');
-  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -37,6 +35,8 @@ function App() {
                 <Route path="/landing" element={<Navigate to="/" replace />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/auth" element={<Navigate to="/login" replace />} />
                 
                 {/* Protected Routes */}

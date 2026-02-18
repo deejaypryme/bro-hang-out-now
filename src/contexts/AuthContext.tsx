@@ -19,24 +19,19 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  console.log('🔐 [AuthProvider] Initializing...');
-  
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load profile independently when user changes
   useEffect(() => {
     if (user?.id) {
-      console.log('👤 [AuthProvider] Loading user profile...');
       profileService.getProfile(user.id)
         .then(userProfile => {
-          console.log('✅ [AuthProvider] Profile loaded successfully');
           setProfile(userProfile);
         })
         .catch(error => {
-          console.error('❌ [AuthProvider] Error loading profile:', error);
+          console.error('Error loading profile:', error);
         });
     } else {
       setProfile(null);
@@ -44,34 +39,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user?.id]);
 
   useEffect(() => {
-    console.log('🔐 [AuthProvider] Setting up auth state listener...');
-    
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        console.log('🔐 [AuthProvider] Auth state changed:', event, !!session);
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('🔐 [AuthProvider] Initial session check:', !!session);
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     return () => {
-      console.log('🔐 [AuthProvider] Cleaning up auth listener...');
       subscription.unsubscribe();
     };
   }, []);
 
   const signUp = async (email: string, password: string, metadata?: any) => {
-    console.log('🔐 [AuthProvider] Signing up user...');
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -84,37 +71,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     
     if (error) {
-      console.error('❌ [AuthProvider] Sign up error:', error);
-    } else {
-      console.log('✅ [AuthProvider] Sign up successful');
+      console.error('Sign up error:', error);
     }
     
     return { error };
   };
 
   const signIn = async (email: string, password: string) => {
-    console.log('🔐 [AuthProvider] Signing in user...');
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
     
     if (error) {
-      console.error('❌ [AuthProvider] Sign in error:', error);
-    } else {
-      console.log('✅ [AuthProvider] Sign in successful');
+      console.error('Sign in error:', error);
     }
     
     return { error };
   };
 
   const signOut = async () => {
-    console.log('🔐 [AuthProvider] Signing out user...');
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error('❌ [AuthProvider] Sign out error:', error);
-    } else {
-      console.log('✅ [AuthProvider] Sign out successful');
+      console.error('Sign out error:', error);
     }
     return { error };
   };
@@ -125,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userProfile = await profileService.getProfile(user.id);
         setProfile(userProfile);
       } catch (error) {
-        console.error('❌ [AuthProvider] Error refreshing profile:', error);
+        console.error('Error refreshing profile:', error);
       }
     }
   };
@@ -140,13 +119,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     refreshProfile
   };
-
-  console.log('🔐 [AuthProvider] Rendering with state:', { 
-    hasUser: !!user, 
-    hasSession: !!session, 
-    hasProfile: !!profile, 
-    loading 
-  });
 
   return (
     <AuthContext.Provider value={value}>
