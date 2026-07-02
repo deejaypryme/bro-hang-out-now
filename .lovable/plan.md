@@ -1,190 +1,160 @@
-# BroYouFree — Product Specification
+# BroYouFree — The Voice, Personality, and Guy-Centric DNA (Recovery Doc)
 
-A product-level spec for handoff to Claude Code. Tech stack and visual design system are intentionally left open — Claude Code should choose the most modern, appropriate tools and define a cohesive design system that fits the vibe described below.
+You're right: over the last dozen rebuilds the mechanics survived but the *soul* got sanded off. This is a written writeup — not a build plan — that reconstructs what actually made BroYouFree feel like *BroYouFree*, pulled from the earliest specs (msg #1, #7, #90–94, #166), the current codebase (`activities.ts`, `BroModePanel.tsx`, `.lovable/plan.md`), and the strategy conversations that got lost between rebuilds.
 
----
-
-## 1. Product Overview
-
-**Name:** BroYouFree
-**Tagline:** Turn "we should hang out" into actual plans.
-
-**Problem:** Friends say "we should hang out" but never follow through. Coordinating over text is tedious — too many messages, no commitment, plans die.
-
-**Solution:** One-tap hangout invites that bundle an activity, a time, and an optional emotional signal ("just need to talk", "wanna chill"). Light gamification (streaks, points) reinforces the habit of actually showing up for friends.
-
-**Audience:** Adults 20–45 with busy lives who want to maintain friendships but struggle with logistics. Tone is casual and warm, male-leaning ("bro") but inclusive.
-
-**Form factor:** Responsive web app, mobile-first. Should feel like a polished consumer product, not a SaaS dashboard.
+Use this as the source of truth the next time you hand a spec to Claude Code (or me). If we start a build and it doesn't reflect what's below, we're off-track.
 
 ---
 
-## 2. Vibe & Design Direction
+## 1. The Core Strategic Insight (why this app exists)
 
-Claude Code chooses the specific design system, but the result should feel:
+From the very first prompt (msg #1):
 
-- **Modern and confident** — think Partiful, Linear, Cal.com. Not corporate, not childish.
-- **Warm and human** — friendship app, not productivity tool. Personality without being cheesy.
-- **Mobile-first** — most usage is on a phone in between other things. Big tap targets, fast flows.
-- **Quiet, not loud** — restrained animation, deliberate color, generous whitespace. One hero moment per screen, not many.
-- **Distinct** — avoid generic AI defaults (Inter + purple gradient + rounded cards). Pick a real point of view.
+> "75% of men want to spend more time with friends but cite scheduling as their biggest barrier."
 
-Things to avoid: bouncing emojis, muddy multi-stop gradients applied to every page, "floating" layouts that don't fill the viewport, cheap glassmorphism stacked on dark gradients.
+This is not a generic calendar app. It's a **friendship-crisis product with a specific target: adult men (25–45) whose social lives are dying from logistical friction, not from lack of desire.** Every design decision should be filtered through: *does this reduce emotional labor for a guy who already feels weird about saying "I miss you"?*
 
-Light and dark mode both supported.
+That framing generated three product principles that keep getting forgotten:
 
----
-
-## 3. Core User Flows
-
-### 3.1 Send a hangout invite (the hero flow)
-The whole product hinges on this being effortless.
-1. From home, user taps "Invite a bro"
-2. Picks a friend (or starts from an activity)
-3. Picks an activity from a curated catalog (or chooses "something else")
-4. Picks a date/time (or offers 2–3 options)
-5. Optionally attaches an emotional signal and a short message
-6. Sends — friend gets an email/SMS with a link to accept/decline without logging in
-
-### 3.2 Add a friend
-- Search existing users by name/username, OR
-- Invite by email/phone — recipient gets a link to sign up and auto-connect
-
-### 3.3 Respond to an invite
-- In-app: bell icon shows pending invites, accept/decline inline
-- Via link: public token-based page that doesn't require an account to respond
-
-### 3.4 Track and reflect
-- See upcoming and past hangouts on a calendar
-- See streaks, points, achievements in a "Bro Mode" view
-- Mark hangouts as completed
-
-### 3.5 Auth
-- Email + password sign up / log in
-- Password reset via email link
-- Auth provider must handle the case where reset is triggered from a preview/localhost origin — the email link must work from the published URL
+1. **Low emotional labor.** A tap is a feeling. You shouldn't have to compose a message to say "wanna hang."
+2. **Action over expression.** Men bond side-by-side around an *activity*, not face-to-face around a *conversation*. The invite always leads with the thing you'll do, not the feelings you'll share.
+3. **Direct, efficient, no fluff.** Linear meets Calendly, not Bumble BFF. No "let's chat about our friendship goals" energy.
 
 ---
 
-## 4. Pages
+## 2. The Voice (what got lost)
 
-**Public**
-- Landing — value prop, 4 feature highlights, sign up CTA. Redirect to home if logged in.
-- Login, Signup, Forgot Password, Reset Password
-- Hangout Response — public token page to accept/decline without an account
+The original voice was **confident, dry, and warm without being soft**. Think group-text-with-your-best-friends, not lifestyle-brand-Instagram. Current copy ("Your availability and hangout coordination hub", "You're most active on weekends!") reads like a productivity SaaS. That's the regression.
 
-**Authenticated**
-- Home — dashboard with upcoming hangouts, quick actions, streak/points, activity feed
-- Friends — list + pending invitations, add-friend modal, per-friend profile sheet
-- Invite — friend grid + activity catalog, invite composer dialog
-- Calendar — month view with hangout markers, day-detail panel, ICS export
-- Bro Mode — challenges, achievements, availability settings
-- Profile — name, username, phone, timezone, avatar
+**Voice pillars:**
 
-**Navigation**
-- Desktop: top header (logo, streak/points, notifications, user menu)
-- Mobile: bottom tab bar (Home, Calendar, Bro Mode, Friends) — hidden on public pages
+| Pillar | Do | Don't |
+|---|---|---|
+| Direct | "Bro you free Thursday?" | "Would you be interested in scheduling a hangout?" |
+| Dry-funny | "Turn 'we should hang' into an actual plan." | "Connect with your besties!" |
+| Low-stakes | "No pressure. He can bail." | "Commit to your friendships!" |
+| Guy-shorthand | "Grab beers", "Shoot hoops", "Watch the game" | "Beverage social", "Athletic activity", "Sports viewing" |
+| Emotionally literate, not emotional | "Something on my mind." (period, no explanation) | "Share your feelings with your bestie 💜" |
 
----
+**Signature phrases from the original spec that should be sacred:**
+- "Bro you free?" (the name is a question — the whole product is a question)
+- "Schedule Bro Time"
+- "Something on my mind" (the emotional signal that isn't therapy)
+- "Vibe Check"
+- "Bro Mode"
+- "Bro Points"
 
-## 5. Data Model (conceptual)
-
-Claude Code picks the database, but the entities are:
-
-- **Profile** — id, username, full name, avatar, phone, timezone, preferred times
-- **Friendship** — bidirectional, status (pending/accepted/blocked), notes, favorite flag
-- **Friend invitation** — inviter, invitee (email/phone or user id), token, status, expires_at
-- **Hangout** — organizer, friend, activity (name + emoji), date, time, location, status (draft/pending/confirmed/completed/cancelled/rescheduled), duration, emotional signal, cancellation metadata
-- **Hangout invitation** — hangout, inviter, invitee, status, token, message, sent_via, expires_at
-- **Hangout time proposal** — multiple proposed times per hangout
-- **User availability** — recurring weekly windows + one-off dates
-- **Time slots** — concrete date/time availability
-- **User role** — must be a separate table from profile, never store roles on the user/profile record
-
-Security: row-level authorization so users can only read/write their own data and data they're a participant in. Tokens for public response links must be unguessable and expirable.
+None of these are jokes. They're the product's identity. Killing them to sound more "professional" is the mistake we keep making.
 
 ---
 
-## 6. Activity Catalog
+## 3. The Guy-Centric Features (the ones that keep vanishing)
 
-~30 activities across 6 categories. Each has a name, emoji, and rough duration.
+These are the features from the original strategy that made this *not just a scheduling app*. Current code has kept the skeleton (activities, points, achievements) but stripped the personality moves that made them feel guy-coded.
 
-- **Chill Vibes** — Coffee, Walk, BBQ, Hang at Home, Park Bench
-- **Food & Drink** — Lunch/Dinner Out, Cook Together, Brewery, Dessert Run
-- **Competitive & Active** — Basketball, Darts, Pool, Video Games, Pickleball, Mini-Golf
-- **Health & Wellness** — Gym, Sauna, Cold Plunge, Walk & Talk, Recovery
-- **Big Plans** — Road Trip, Live Show, Fishing, Sports Game, Car Meet
-- **Short & Sweet** — 15-min Walk, Smoothie Run, Meet at Gym, Kids' Event Check-in
+### 3.1 The Emotional Signal (aka "Vibe Check")
+The single most important guy-centric feature and the one most often watered down. Four states, no more:
 
-**Emotional Signals (optional tag on an invite):**
-- 🎧 Just Need to Talk — something heavy on my mind
-- ☕ Let's Catch Up — life updates
-- 😎 Just Wanna Chill — no agenda
-- ⚡ Need to Blow Off Steam — active outlet
+| Signal | Copy | The unspoken thing it lets a guy say |
+|---|---|---|
+| 🎧 Just Need to Talk | "Something heavy on my mind" | "I'm not okay and I can't type that" |
+| ☕ Let's Catch Up | "Life updates" | "I miss you but that word feels weird" |
+| 😎 Just Wanna Chill | "No agenda" | "I don't need anything, I just want you around" |
+| ⚡ Need to Blow Off Steam | "Stressed, need an outlet" | "I'm about to lose it, help" |
 
----
+Why it matters: men don't lead with feelings — they attach feelings to plans. A tap here is a full sentence a guy would never text. This is the whole thesis of the app in one UI element. It should never be optional-looking or buried.
 
-## 7. Gamification
+### 3.2 The Activity Catalog as a Vibe Map
+The categories aren't just organization — they're emotional archetypes for how guys hang:
 
-- **Bro Points** — small rewards for confirming and completing hangouts
-- **Streaks** — count of confirmed hangouts (v2: date-consecutive)
-- **Achievements** — Getting Started (1st hangout), Social Butterfly (5), Marathon Bro (10), The Connector (3 in a week)
-- **Challenges** — short rolling goals (e.g., 5 hangouts this month, 7-day streak)
+- **Chill Vibes** — parallel play (walk, coffee, park bench)
+- **Food & Drink** — the universal male excuse to sit across from each other
+- **Competitive & Active** — the trojan horse for connection (you're not "talking", you're "playing pool")
+- **Health & Wellness** — the modern guy addition (sauna, cold plunge, gym) that gives permission to hang without alcohol
+- **Big Plans** — the aspirational stuff that never happens without a system
+- **Short & Sweet** — the *"15 min walk"* category is critical: it removes the excuse that hanging out has to be a Whole Thing
 
-Keep this layer playful but not overbearing — it's encouragement, not a points casino.
+The `Short & Sweet` category is the most under-celebrated feature. It's the one that fights the "we should hang out" purgatory directly. "Meet at gym for 30 min" is emotionally identical to "I love you, man" for the target user.
 
----
+### 3.3 Bro Points & Streaks (gamification, not points-casino)
+Rules from msg #92 that should be restored (currently the app just gives 50 pts for a completed hangout — flat and boring):
 
-## 8. Notifications
+- Send invite: **+5**
+- Respond to invite: **+3**
+- Complete hangout: **+10**
+- **Last-minute accept: +15** ← the emotionally important one. Rewards showing up when it's inconvenient. This is the whole point.
+- Suggest a new activity: **+7**
 
-- **In-app** — bell icon with badge; popover lists pending friend + hangout invitations with inline accept/decline
-- **Email** — invites, confirmations, cancellations, reschedules
-- **SMS (optional)** — for users with a phone on file
+Streaks should be tracked in **plural dimensions**, not just "consecutive hangouts":
+- Daily social interaction
+- Weekly (≥2 hangouts)
+- Response streak (never leave a bro on read)
 
----
+### 3.4 Achievement Badges with Guy-Coded Names
+Original set (currently generic in code — "Getting Started", "Social Butterfly"):
+- 🔥 Streak Master (7+ days)
+- 🤝 Social Butterfly → **rename: "The Regular"** (10 hangouts/month — like being a regular at the bar)
+- ⚡ Quick Responder (<1hr avg)
+- 🎯 Planner Pro → **"The Wingman"** (5 events created for others)
+- 🌟 Vibe Curator (uses emotional signals regularly — rewards vulnerability without naming it)
 
-## 9. Acceptance Criteria
+Missing from current code but originally proposed:
+- **The Anchor** — the friend everyone else invites most
+- **Last-Minute Legend** — highest last-minute accept rate
+- **The Connector** — introduced two friends who then hung out
 
-- [ ] User can sign up, log in, and reset their password — reset link works whether triggered from preview or production
-- [ ] User can add a friend by search or by email/phone invite
-- [ ] User can send a hangout invite in 3 taps or fewer from the home screen
-- [ ] Invitee receives a notification with a working accept/decline link that does not require login
-- [ ] Accepting an invite confirms the hangout and shows it on both users' calendars
-- [ ] Points and streak update correctly as hangouts are confirmed and completed
-- [ ] Mobile bottom nav only appears on authenticated routes
-- [ ] Layout fills the viewport; no "floating centered" page wrapper
-- [ ] Light and dark mode both work end-to-end
-- [ ] A user cannot read or modify another user's data (verified)
+### 3.5 Friend Cards with "Response Rate" and "Preferred Times"
+The original friend model included `responseRate`, `preferredTimes`, and `favoriteActivities`. Current app dropped these. They're the *social intelligence layer* — the thing that made the app feel like it knew your friends. Without them the friend list is just a contact list.
 
----
-
-## 10. Out of Scope for v1
-
-- Group hangouts (>2 people)
-- Calendar OAuth sync (Google/Outlook) — scaffold the data model but don't ship the integration
-- Native iOS/Android apps
-- Payments
-- Public profiles / social feed
-
----
-
-## 11. Suggested Build Order
-
-1. Auth + profiles + protected routing
-2. Friends (add, accept, list, profile)
-3. Hangout invite flow end-to-end (compose → send → respond → confirm)
-4. Calendar view + ICS export
-5. Home dashboard (stats, upcoming, activity feed)
-6. Bro Mode (points, streaks, achievements)
-7. Notifications (in-app bell + transactional email)
-8. Polish pass: dark mode, empty states, mobile QA, accessibility
+Restoring these enables the *actual killer feature*: **suggested invites** — "Marcus usually says yes to pickleball on Sunday mornings. Send it?"
 
 ---
 
-## 12. Notes for Claude Code
+## 4. Features That Were Discussed But Never Built (worth resurrecting)
 
-- Choose the stack you'd pick for a modern, fast, mobile-first consumer web app in 2026. Optimize for developer velocity and user-perceived performance.
-- Define a real design system up front — typography pair, color tokens, spacing scale, radii, shadows — and use it consistently. No raw color literals in components.
-- Animate sparingly and intentionally. Prefer easing and timing over movement distance.
-- Treat the invite flow as the make-or-break surface. Spend extra time there.
-- Build with row-level security in mind from day one — don't bolt it on later.
+Pulled from strategy threads. These are the things that would make BYF feel like a real product with a point of view, not another scheduling tool:
+
+1. **The Wingman prompt** — weekly nudge: "You haven't hung with Marcus in 6 weeks. He's usually free Thursday nights. One tap to invite." Passive social memory the user doesn't have to maintain.
+2. **"Bro you free?" broadcast** — one-tap invite to your top 3 friends simultaneously. First to accept wins. Solves the "I want to do something tonight but don't want to text 5 people" problem.
+3. **Standing hangs** — recurring plans (e.g. "Wednesday pickleball with Dan") that regenerate themselves. Zero-friction recurring friendship.
+4. **The bail button, done with grace** — cancellation includes a required reschedule tap. You can't just kill the plan, you have to propose a new one. Structural friendship insurance.
+5. **Read-with-emotional-signal** — when a friend opens your 🎧 "Something on my mind" invite, you get a subtle "he saw it" indicator. No pressure, but the connection is acknowledged.
+6. **Post-hangout one-tap check-in** — 24 hours after a hangout: "That was good." One button. That's the whole interaction. Feeds the streak and, over time, becomes a private record of the friendship.
+7. **Guy-centric onboarding** — instead of "Add your friends!", the first-run flow asks: "Name 3 guys you'd hang with tomorrow if scheduling were free." Reframes the ask.
+
+---
+
+## 5. Where the Personality Got Lost (diagnosis)
+
+Looking at the current code vs. the original spec, here's the pattern of drift — useful so we can stop repeating it:
+
+| Original | What it became | Why it happened |
+|---|---|---|
+| "Turn 'we should hang out' into actual plans" | "Your availability and hangout coordination hub" | Rebuilds defaulted to SaaS-copy voice |
+| Emotional Signals front-and-center on invite | Optional afterthought, if present | Treated as feature, not thesis |
+| Bro Points with 5 different earning rules | Flat "50 pts per completed" | Simplified for MVP, never restored |
+| Guy-coded badge names ("The Regular", "Wingman") | "Getting Started", "Social Butterfly" | Generic gamification defaults |
+| Rich friend model (response rate, preferred times) | Just name + status | Dropped when DB was cleaned up |
+| Category names like "Chill Vibes", "Big Plans" | Kept ✅ (one of the few things that survived) | You defended it |
+| Landing page "Built for Male Psychology" section | Deleted in polish passes | Read as "too edgy" — was actually the point |
+
+The recurring failure mode: **each rebuild treats personality as decoration and mechanics as substance**. In this product they're the same thing. The 🎧 signal *is* the mechanic. "Bro Time" *is* the feature. Strip the voice and there's nothing left but a worse Calendly.
+
+---
+
+## 6. The One-Paragraph Spec (paste this into every rebuild prompt)
+
+> BroYouFree is a scheduling app for men who miss their friends but hate the logistics of saying so. The whole product is a low-emotional-labor way to turn "we should hang out" into a confirmed plan in 3 taps: pick a bro, pick an activity, pick a time. The voice is direct, dry, and warm — group-text-with-best-friends, not lifestyle brand. Four "Vibe Check" signals (🎧 Just Need to Talk, ☕ Let's Catch Up, 😎 Just Wanna Chill, ⚡ Need to Blow Off Steam) let a guy attach emotional context to a plan without having to type feelings. Gamification (Bro Points, streaks, "Wingman" and "Regular" badges) rewards the specifically male friendship behaviors: showing up last-minute, being the one who plans, being a reliable Wednesday. Activities are guy-coded and vibe-mapped (Chill Vibes, Competitive & Active, Short & Sweet). Every UI moment should ask: would this feel natural in a group text between three guys who love each other and would rather die than say so?
+
+---
+
+## 7. What I'd Do Next
+
+Since you've been starting from scratch each rebuild and losing the DNA, the highest-leverage move is not another rebuild — it's **locking this document as the canonical brief** and, before the next build, converting sections 2, 3, and 6 into project memory (`mem://`) so it survives session resets and can never get sanded off again by a well-meaning "polish" pass.
+
+If you want, next I can:
+- (a) Turn sections 2, 3, and 6 into a set of `mem://` files (voice, guy-centric features, one-paragraph spec) so every future session inherits this
+- (b) Rewrite `.lovable/plan.md` to lead with voice + guy-centric features (currently it leads with data model)
+- (c) Do a copy audit of the *current* app and replace SaaS-voice strings with the real voice, no other changes
+
+Which of those you want first?
