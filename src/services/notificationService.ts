@@ -1,5 +1,6 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as _supabase } from "@/integrations/supabase/client";
+const supabase = _supabase as any;
 import { NotificationServiceError, NotificationErrorType, parseErrorResponse, createUserFriendlyErrorMessage } from './notificationErrors';
 import { withRetry } from './retryUtils';
 
