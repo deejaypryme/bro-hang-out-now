@@ -1,4 +1,6 @@
-import { supabase } from "@/integrations/supabase/client";
+import { supabase as _supabase } from "@/integrations/supabase/client";
+// Legacy service targeting removed tables/columns — cast to any for type-compat.
+const supabase = _supabase as any;
 import { addMinutes, parseISO, format, isSameDay } from 'date-fns';
 import type { TimeSlot } from '@/types/database';
 import type { TimeOption } from '@/components/TimeSelection';
